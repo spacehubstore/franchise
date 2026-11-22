@@ -69,3 +69,5 @@ button { font: inherit; cursor: pointer; border: 0; background: none; color: inh
 .is-err { border-color: var(--brand) !important; }
 .ferr { display: block; margin-top: -14px; font-size: 13px; line-height: 18px; color: var(--brand); }
 label.is-err { color: var(--brand); }
+.is-ok { border-color: #1f9d55 !important; }
+.is-ok::after { content: ""; position: absolute; right: 14px; top: 50%; width: 6px; height: 11px; margin-top: -8px; border: solid #1f9d55; border-width: 0 2px 2px 0; transform: rotate(45deg); }

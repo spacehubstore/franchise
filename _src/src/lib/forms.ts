@@ -1,11 +1,17 @@
 // Поля форм (CMO 22.11.2026): телефон с маской страны, проверка полей с подсказкой под полем, общие данные между формами.
 // Телефон – libphonenumber-js: формат по мере ввода, страна по вставленному «+971…» / «00971…», в заявку – E.164 (+971501234567).
-import { AsYouType, getCountries, getCountryCallingCode, parsePhoneNumberFromString, isValidPhoneNumber, getExampleNumber, type CountryCode } from "libphonenumber-js";
+import { AsYouType, validatePhoneNumberLength, getCountries, getCountryCallingCode, parsePhoneNumberFromString, isValidPhoneNumber, getExampleNumber, type CountryCode } from "libphonenumber-js";
 import examples from "libphonenumber-js/mobile/examples";
 
 const TOP: CountryCode[] = ["AE", "TH", "SA", "EE", "PH", "TR"];
 const TZ: Record<string, CountryCode> = { "Asia/Dubai": "AE", "Asia/Bangkok": "TH", "Asia/Riyadh": "SA", "Europe/Tallinn": "EE", "Asia/Manila": "PH", "Europe/Istanbul": "TR" };
 const KEY = "sh_lead_fields";
+type Full = typeof import("libphonenumber-js/max");
+let FULL: Full | null = null;
+const loadFull = () => { if (!FULL) import("libphonenumber-js/max").then((m) => (FULL = m)).catch(() => {}); };
+// номер верен по правилам страны: полные метаданные, пока не загрузились – проверка длины
+const valid = (v: string, c: CountryCode) => (FULL ? FULL.isValidPhoneNumber(v, c) : isValidPhoneNumber(v, c));
+const shortName = (c: CountryCode) => ({ AE: "the UAE", US: "the US", GB: "the UK", PH: "the Philippines" } as Record<string, string>)[c] || names.of(c) || c;
 const flag = (c: string) => c.replace(/./g, (ch) => String.fromCodePoint(127397 + ch.charCodeAt(0)));
 const names = new Intl.DisplayNames(["en"], { type: "region" });
 const dl = (o: object) => (window as any).dataLayer?.push(o);
@@ -38,7 +44,25 @@ function initPhone(form: HTMLFormElement): Ph | null {
   const lab = document.createElement("b"); cc.prepend(lab);
   inp.type = "tel"; inp.inputMode = "tel"; inp.autocomplete = "tel-national";
   const country = () => (sel.value || "AE") as CountryCode;
-  const fmt = () => { const raw = inp.value.replace(/[^\d]/g, ""); inp.value = new AsYouType(country()).input(raw); };
+  // лишние цифры сверх максимальной длины номера страны не вводятся (правила libphonenumber, учитывая ведущий 0)
+  // потолок – длина мобильного номера страны (пример из правил libphonenumber), плюс ведущий 0, если человек его набрал
+  const cut = (raw: string) => {
+    const ex = getExampleNumber(country(), examples);
+    const max = (ex ? ex.nationalNumber.length : 15) + (raw.startsWith("0") ? 1 : 0);
+    raw = raw.slice(0, max);
+    while (raw.length > 4 && validatePhoneNumberLength(raw, country()) === "TOO_LONG") raw = raw.slice(0, -1);
+    return raw;
+  };
+  const fmt = () => {
+    let raw = inp.value.replace(/[^\d]/g, "");
+    // набрали код страны без «+» («971501234567»): если без кода номер верной длины – код отрезаем
+    const code = getCountryCallingCode(country());
+    const ex = getExampleNumber(country(), examples), mob = ex ? ex.nationalNumber.length : 0;
+    if (mob && raw.startsWith(code) && !raw.startsWith("0") && raw.length - code.length >= mob - 1 && raw.length > mob) raw = raw.slice(code.length);
+    inp.value = new AsYouType(country()).input(cut(raw));
+    mark();
+  };
+  const mark = () => box(inp).classList.toggle("is-ok", !!inp.value && valid(inp.value, country()));
   const set = (c: CountryCode, user = false) => {
     sel.value = c; lab.textContent = `${flag(c)} +${getCountryCallingCode(c)}`;
     const ex = getExampleNumber(c, examples);
@@ -58,7 +82,13 @@ function initPhone(form: HTMLFormElement): Ph | null {
     fmt(); save("phone", inp.value);
     clearErr(inp);
   });
-  inp.addEventListener("blur", () => { if (inp.value && !isValidPhoneNumber(inp.value, country())) showErr(inp, `Check the number: ${names.of(country())} numbers look like ${inp.placeholder}`); });
+  inp.addEventListener("focus", loadFull);
+  inp.addEventListener("blur", () => {
+    if (!inp.value) return;
+    if (!valid(inp.value, country())) { box(inp).classList.remove("is-ok"); showErr(inp, `Check the number. Example for ${shortName(country())}: ${inp.placeholder}`); return; }
+    const p = parsePhoneNumberFromString(inp.value, country()); if (p) { inp.value = p.formatNational(); save("phone", inp.value); }
+    mark();
+  });
   const st = store();
   set((sel.dataset.country as CountryCode) || defaultCountry());
   if (st.phone && !inp.value) { inp.value = st.phone; fmt(); }
@@ -126,7 +156,7 @@ export function checkForm(form: HTMLFormElement, where: string): { ok: boolean; 
   if (ph) {
     const p = parsePhoneNumberFromString(ph.inp.value, ph.country());
     if (!ph.inp.value.trim()) bad.push([ph.inp, "phone", "Please add your phone number"]);
-    else if (!p || !p.isValid()) bad.push([ph.inp, "phone", `Check the number: ${names.of(ph.country())} numbers look like ${ph.inp.placeholder}`]);
+    else if (!p || !valid(ph.inp.value, ph.country())) bad.push([ph.inp, "phone", `Check the number. Example for ${shortName(ph.country())}: ${ph.inp.placeholder}`]);
     else phone = p.number;
   }
   const email = form.querySelector<HTMLInputElement>('input[name="email"]');
