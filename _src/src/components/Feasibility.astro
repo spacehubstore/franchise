@@ -2,7 +2,7 @@
 // Блок «What the feasibility study includes» (Figma 1913:1363), переработан (CMO 22.11.2026):
 // слева два этапа – бесплатная оценка и платное исследование (цена – в FAQ), справа четыре документа исследования.
 // Иллюстрации – Nano Banana Pro в стиле One floor, по реальным фото оснащения (landing-icons/gen_study*.py: market-4, layout-8,
-// budget-1). Надписи поверх – кодом, позиции в % от кадра 4:3. Планировка – цифры модели Шарджи (185 м² пола → 301 м² в аренду, F-1783).
+// budget-1; layout-9 и budget-0 – кадры для анимации). Надписи поверх – кодом, позиции в % от кадра 4:3. Планировка – цифры модели Шарджи (185 м² пола → 301 м² в аренду, F-1783).
 // Финмодель – схема без сумм: стройка, рост заполнения, выход на целевую загрузку, 4–5× к текущей аренде (как на первом экране).
 // Анимация – одна карточка за раз: играет, когда карточка доходит до середины экрана, и останавливается в конечном виде.
 const stages = [
@@ -12,12 +12,27 @@ const stages = [
 // пины конкурентов: x, y (% кадра, кончик пина) и цена за м² – условные, для образца
 const pins = [[14, 47, "$38/m²"], [81, 44, "$44/m²"], [56, 17, "$52/m²"], [47, 78, "$41/m²"]];
 const kit = ["Doors and frames", "Partitions", "Ladders", "Access and locks", "CCTV", "Delivery and installation"];
-// схема дохода: 0–3 мес стройка, до 21 мес рост заполнения, дальше целевая загрузка; текущая аренда = 1/4.5 целевого дохода
-const W = 520, H = 150, X = (m: number) => +(m * (W / 120)).toFixed(1), Y = (k: number) => +(H - k * (H - 22)).toFixed(1);
-const k = (m: number) => (m < 3 ? 0 : Math.min(1, ((m - 3) / 18) ** 0.8));
-const line = "M" + Array.from({ length: 121 }, (_, m) => `${X(m)},${Y(k(m))}`).join("L");
+// размерные линии планировки (координаты кадра 1200×896, вдоль контура помещения, снаружи): растут из середины к концам
+type P = [number, number];
+const dims: { a: P; b: P; to: number; d: number }[] = [
+  { a: [85, 538], b: [610, 883], to: 14.8, d: 0 },
+  { a: [666, 882], b: [1076, 587], to: 12.5, d: 150 },
+];
+const dimG = dims.map(({ a, b, to, d }) => {
+  const [dx, dy] = [b[0] - a[0], b[1] - a[1]], L = Math.hypot(dx, dy), u: P = [dx / L, dy / L], n: P = [-u[1], u[0]];
+  const m: P = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const head = (t: P, s: number) => `M${t[0] - s * 22 * u[0] + 9 * n[0]},${t[1] - s * 22 * u[1] + 9 * n[1]}L${t[0]},${t[1]}L${t[0] - s * 22 * u[0] - 9 * n[0]},${t[1] - s * 22 * u[1] - 9 * n[1]}`;
+  const tick = (t: P) => `M${t[0] - 16 * n[0]},${t[1] - 16 * n[1]}L${t[0] + 16 * n[0]},${t[1] + 16 * n[1]}`;
+  return { to, d, m, ang: (Math.atan2(dy, dx) * 180) / Math.PI, half1: `M${m[0]},${m[1]}L${a[0]},${a[1]}`, half2: `M${m[0]},${m[1]}L${b[0]},${b[1]}`,
+           heads: head(a, -1) + head(b, 1), ticks: tick(a) + tick(b) };
+});
+// схема дохода за первые 3 года: отделка (0–4 мес), заполнение (до 22 мес), полная загрузка; текущая аренда = 1/4.5 итогового дохода
+const W = 520, H = 150, M = 36, X = (m: number) => +(m * (W / M)).toFixed(1), Y = (k: number) => +(H - k * (H - 16)).toFixed(1);
+const k = (m: number) => (m < 4 ? 0 : 1 - (1 - Math.min(1, (m - 4) / 18)) ** 2);
+const line = "M" + Array.from({ length: M * 4 + 1 }, (_, i) => `${X(i / 4)},${Y(k(i / 4))}`).join("L");
 const area = `${line}L${W},${H}L0,${H}Z`;
 const RENT = Y(1 / 4.5), TOP = Y(1);
+const phases: [string, number, number][] = [["Fit-out", 0, 4], ["Filling up", 4, 22], ["Full", 22, 36]];
 ---
 <section class="fs-wrap wrap" id="study">
   <div class="fs">
@@ -52,14 +67,23 @@ const RENT = Y(1 / 4.5), TOP = Y(1);
         <div class="fc__t">
           <h3>Unit layout</h3>
           <p>The mix of unit sizes that earns the most from your floor, based on our rental data. A second level where the ceiling allows</p>
-          <div class="fc__stat"><b>185 m²</b><i>→</i><b class="o">301 m²</b><span>floor</span><span></span><span>to rent</span></div>
+          <div class="fc__stat"><b data-to="185" data-suf=" m²" data-d="900">185 m²</b><i>→</i><b class="o" data-to="301" data-suf=" m²" data-d="1100">301 m²</b><span>floor</span><span></span><span>to rent</span></div>
         </div>
         <div class="fc__img">
           <img src="/assets/study/layout.webp" width="960" height="717" alt="" loading="lazy" />
-          <span class="dim" style="left:27%;top:79%;--r:34.7deg;--d:0ms">14.8 m</span>
-          <span class="dim" style="left:73.5%;top:81%;--r:-33.6deg;--d:120ms">12.5 m</span>
-          <span class="tag" style="left:37%;top:42%;--d:320ms">1 m²</span>
-          <span class="tag" style="left:42%;top:60%;--d:440ms">3 m²</span>
+          <svg class="dims" viewBox="0 0 1200 896" aria-hidden="true">
+            {dimG.map((g) => (
+              <g style={`--d:${g.d}ms`}>
+                <path d={g.ticks} class="dims__tick" />
+                <path d={g.half1} class="dims__ln" pathLength="1" /><path d={g.half2} class="dims__ln" pathLength="1" />
+                <path d={g.heads} class="dims__head" />
+                <g transform={`translate(${g.m[0]} ${g.m[1]}) rotate(${g.ang})`} class="dims__v">
+                  <rect x="-84" y="-34" width="168" height="58" rx="10" />
+                  <text y="12" text-anchor="middle" data-to={g.to} data-dec="1" data-suf=" m" data-d={g.d + 250}>{g.to} m</text>
+                </g>
+              </g>
+            ))}
+          </svg>
         </div>
       </div>
 
@@ -69,8 +93,8 @@ const RENT = Y(1 / 4.5), TOP = Y(1);
           <ul class="kit">{kit.map((t, i) => <li style={`--d:${i * 90}ms`}>{t}</li>)}</ul>
         </div>
         <div class="fc__img">
-          <img src="/assets/study/budget.webp" width="960" height="717" alt="" loading="lazy" />
-          <span class="tag tag--total" style="left:24%;top:16%;--d:600ms">One total price</span>
+          <img src="/assets/study/budget.webp" width="960" height="717" alt="" loading="lazy" data-final />
+          <video class="fc__vid" muted playsinline preload="none" poster="/assets/study/budget-0.webp" data-drop data-src="/assets/study/budget.mp4" hidden></video>
         </div>
       </div>
 
@@ -80,21 +104,20 @@ const RENT = Y(1 / 4.5), TOP = Y(1);
           <h3>Financial model</h3>
           <p>Occupancy, revenue, costs and your net income, month by month for 10 years, and what the property is worth. The calculator above, built for your address</p>
         </div>
-        <svg class="fm" viewBox={`-6 -20 ${W + 12} ${H + 46}`} aria-hidden="true">
-          <text x="0" y="-6" class="fm__lab fm__opt">Net income a month</text>
-          <path d={`M0 ${H}H${W}`} class="fm__base" />
+        <svg class="fm" viewBox={`-4 -10 ${W + 8} ${H + 44}`} aria-hidden="true">
           <path d={area} class="fm__area" />
           <path d={`M0 ${RENT}H${W}`} class="fm__rent" />
-          <text x={W} y={RENT + 16} class="fm__lab" text-anchor="end">Today's rent</text>
           <path d={line} class="fm__line" pathLength="1" />
-          <g class="fm__note" style="--d:0ms"><path d={`M${X(3)} ${H}V${H + 6}`} class="fm__tick" /><text x={X(3)} y={H + 20} class="fm__ax" text-anchor="middle">Opening</text></g>
-          <g class="fm__note fm__opt" style="--d:300ms"><text x={X(13) + 8} y={Y(k(13)) + 4} class="fm__lab">Occupancy grows</text></g>
-          <g class="fm__note" style="--d:600ms"><circle cx={X(21)} cy={TOP} r="5" class="fm__dot" /><text x={X(21) + 10} y={TOP - 8} class="fm__lab">Target occupancy</text></g>
-          <g class="fm__note" style="--d:900ms">
-            <path d={`M${W - 110} ${RENT - 3}V${TOP + 4}`} class="fm__span" />
-            <text x={W - 118} y={(RENT + TOP) / 2 + 6} class="fm__big" text-anchor="end">4–5× today's rent</text>
+          <text x={W} y={RENT + 20} class="fm__lab" text-anchor="end">Today's rent</text>
+          <text x={W} y={TOP - 10} class="fm__lab fm__note" style="--d:0ms" text-anchor="end">With SpaceHub</text>
+          <g class="fm__note" style="--d:200ms">
+            <path d={`M${X(29)} ${RENT - 4}V${TOP + 5}`} class="fm__span" />
+            <text x={X(29) - 12} y={(RENT + TOP) / 2 + 11} class="fm__big" text-anchor="end">4–5×</text>
           </g>
-          {[5, 10].map((y) => <text x={X(y * 12)} y={H + 20} class="fm__ax" text-anchor={y === 10 ? "end" : "middle"}>{`Year ${y}`}</text>)}
+          <path d={`M0 ${H}H${W}`} class="fm__base" />
+          {phases.map(([t, a, b], i) => (
+            <g><path d={`M${X(b)} ${H}V${H + 10}`} class="fm__sep" style={i === 2 ? "display:none" : ""} /><text x={(X(a) + X(b)) / 2} y={H + 26} class="fm__ax" text-anchor="middle">{t}</text></g>
+          ))}
         </svg>
         <ul class="fm__chips">{["Occupancy", "Revenue", "Costs", "Net income", "Property value"].map((t) => <li>{t}</li>)}</ul>
       </div>
@@ -111,9 +134,29 @@ const RENT = Y(1 / 4.5), TOP = Y(1);
   }));
   // анимация по одной карточке: срабатывает в средней полосе экрана, играет один раз
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // досчёт чисел: размеры после того, как выросли линии, площади – следом
+  const count = (el: HTMLElement) => {
+    const to = +el.dataset.to!, dec = +(el.dataset.dec || 0), suf = el.dataset.suf || "", d = +(el.dataset.d || 0);
+    const f = (n: number) => n.toFixed(dec) + suf;
+    el.textContent = f(0);
+    setTimeout(() => { const t0 = performance.now(); const tick = (t: number) => { const q = Math.min(1, (t - t0) / 700);
+      el.textContent = f(to * (1 - (1 - q) ** 3)); if (q < 1) requestAnimationFrame(tick); }; requestAnimationFrame(tick); }, d);
+  };
+  // бюджет: детали падают на паллет (ролик), останавливается на последнем кадре = итоговой картинке
+  const vid = root.querySelector<HTMLVideoElement>("[data-drop]");
+  const img = root.querySelector<HTMLImageElement>("[data-final]");
+  if (vid && img && !still) {
+    // пока карточка не доиграла – пустой паллет; ролик грузится заранее, когда блок близко
+    vid.hidden = false; img.style.visibility = "hidden";
+    new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { vid.src = vid.dataset.src!; vid.preload = "auto"; o.disconnect(); } }, { rootMargin: "600px 0px" }).observe(vid);
+    vid.addEventListener("ended", () => { img.style.visibility = ""; vid.hidden = true; });
+  }
+  function drop(v: HTMLVideoElement) { if (!v.src) v.src = v.dataset.src!; v.playbackRate = 1.6; v.play().catch(() => { img!.style.visibility = ""; v.hidden = true; }); }
   const io = new IntersectionObserver((es) => es.forEach((e) => {
     if (!e.isIntersecting) return;
     const c = e.target as HTMLElement; c.classList.add("play"); io.unobserve(c);
+    c.querySelectorAll<HTMLElement | SVGElement>("[data-to]").forEach((el) => count(el as HTMLElement));
+    const v = c.querySelector<HTMLVideoElement>("[data-drop]"); if (v) drop(v);
     (window as any).dataLayer?.push({ event: "study_card_viewed", card: c.dataset.card });
   }), { rootMargin: "-40% 0px -40% 0px" });
   root.querySelectorAll("[data-play]").forEach((c) => (still ? c.classList.add("play") : io.observe(c)));
@@ -150,14 +193,19 @@ const RENT = Y(1 / 4.5), TOP = Y(1);
   .fc__stat span { font-size: 13px; font-weight: 600; color: var(--gray-500); }
 
   /* надписи поверх иллюстраций */
-  .mk, .tag, .dim { position: absolute; white-space: nowrap; font-weight: 700; font-size: 12px; line-height: 16px; }
+  .mk { position: absolute; white-space: nowrap; font-weight: 700; font-size: 12px; line-height: 16px; }
   .mk { transform: translate(-50%, -100%); padding: 5px 9px; border-radius: 99px; background: var(--gray-900); color: var(--white); box-shadow: 0 6px 14px rgba(0,0,0,.18); }
   .mk::after { content: ""; position: absolute; left: 50%; top: 100%; margin-left: -5px; border: 5px solid transparent; border-top-color: var(--gray-900); }
   .mk--me { background: var(--brand); padding: 6px 12px; }
   .mk--me::after { border-top-color: var(--brand); }
-  .tag { transform: translate(-50%, -50%); padding: 3px 8px; border-radius: 6px; background: var(--brand); color: var(--white); }
   .dim { transform: translate(-50%, -50%) rotate(var(--r)); padding: 1px 6px; background: var(--white); color: var(--gray-700); font-weight: 700; font-size: 12px; }
-  .tag--total { padding: 6px 12px; font-size: 13px; border-radius: 99px; background: var(--gray-900); box-shadow: 0 6px 14px rgba(0,0,0,.18); }
+  .fc__vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--white); }
+  .dims { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .dims__ln { fill: none; stroke: var(--gray-900); stroke-width: 3.5; stroke-dasharray: 1; stroke-dashoffset: 0; }
+  .dims__tick { fill: none; stroke: var(--gray-700); stroke-width: 3; }
+  .dims__head { fill: none; stroke: var(--gray-900); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+  .dims__v rect { fill: var(--white); }
+  .dims__v text { font: 800 46px "Manrope", sans-serif; fill: var(--gray-900); font-variant-numeric: tabular-nums; }
   .kit { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; }
   .kit li { padding: 3px 9px; border-radius: 99px; background: var(--gray-100); font-size: 12px; font-weight: 700; color: var(--gray-700); }
 
@@ -173,19 +221,22 @@ const RENT = Y(1 / 4.5), TOP = Y(1);
   .fm__area { fill: rgba(255, 255, 255, .16); }
   .fm__rent { stroke: rgba(255, 255, 255, .75); stroke-width: 1.5; stroke-dasharray: 5 5; }
   .fm__line { fill: none; stroke: var(--white); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
-  .fm__tick, .fm__span { stroke: var(--white); stroke-width: 1.5; }
-  .fm__dot { fill: var(--white); }
-  .fm__lab { fill: rgba(255, 255, 255, .9); font-size: 12px; font-weight: 700; }
-  .fm__big { fill: var(--white); font-size: 17px; font-weight: 800; }
-  .fm__ax { fill: rgba(255, 255, 255, .75); font-size: 11px; font-weight: 600; }
+  .fm__span { stroke: var(--white); stroke-width: 2; }
+  .fm__sep { stroke: rgba(255, 255, 255, .5); stroke-width: 1; }
+  .fm__lab { fill: var(--white); font-size: 14px; font-weight: 700; }
+  .fm__big { fill: var(--white); font-size: 34px; font-weight: 800; }
+  .fm__ax { fill: rgba(255, 255, 255, .8); font-size: 13px; font-weight: 600; }
   .fm__chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; }
   .fm__chips li { padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .45); font-size: 12px; font-weight: 700; }
 
   /* анимация: начальное состояние только до .play; без JS всё видно */
   .fc[data-play]:not(.play) .mk { opacity: 0; transform: translate(-50%, -160%) scale(.6); }
   .mk { transition: transform .45s cubic-bezier(.2, 1.5, .4, 1) var(--d), opacity .2s var(--d); }
-  .fc[data-play]:not(.play) .tag, .fc[data-play]:not(.play) .dim { opacity: 0; }
-  .tag, .dim { transition: opacity .3s var(--d); }
+  .fc[data-play]:not(.play) .dims__ln { stroke-dashoffset: 1; }
+  .dims__ln { transition: stroke-dashoffset .5s cubic-bezier(.4, 0, .2, 1) var(--d); }
+  .fc[data-play]:not(.play) .dims__head, .fc[data-play]:not(.play) .dims__tick, .fc[data-play]:not(.play) .dims__v { opacity: 0; }
+  .dims__head, .dims__tick { transition: opacity .2s calc(var(--d) + .45s); }
+  .dims__v { transition: opacity .25s calc(var(--d) + .2s); }
   .fc[data-play]:not(.play) .kit li { opacity: 0; transform: translateY(4px); }
   .kit li { transition: opacity .25s var(--d), transform .25s ease-out var(--d); }
   .fc[data-play]:not(.play) .fm__line { stroke-dashoffset: 1; }
@@ -193,7 +244,7 @@ const RENT = Y(1 / 4.5), TOP = Y(1);
   .fc[data-play]:not(.play) .fm__area, .fc[data-play]:not(.play) .fm__note { opacity: 0; }
   .fm__area { transition: opacity .5s .8s; }
   .fm__note { transition: opacity .35s calc(var(--d) + .2s); }
-  @media (prefers-reduced-motion: reduce) { .mk, .tag, .dim, .kit li, .fm__line, .fm__area, .fm__note { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .mk, .dims__ln, .dims__head, .dims__tick, .dims__v, .kit li, .fm__line, .fm__area, .fm__note { transition: none; } }
 
   @media (max-width: 1100px) {
     .fs { flex-direction: column; padding: 40px 20px; gap: 32px; border-radius: 24px; }
@@ -212,7 +263,6 @@ const RENT = Y(1 / 4.5), TOP = Y(1);
     .fc__t { padding-inline: 6px; }
     .fc--model { padding: 24px 18px 20px; }
     .fc--model h3 { font-size: 26px; line-height: 30px; }
-    .fm__lab { font-size: 22px; } .fm__big { font-size: 28px; } .fm__ax { font-size: 20px; }
-    .fm__opt { display: none; }
+    .fm__lab { font-size: 22px; } .fm__big { font-size: 44px; } .fm__ax { font-size: 20px; }
   }
 </style>
