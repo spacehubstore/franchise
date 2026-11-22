@@ -30,7 +30,7 @@ export const CITIES: City[] = [
     space: "37 m²", note: "SpaceHub model, after management commission",
     photos: { before: "/assets/case-bkk-before.jpg", after: "/assets/case-bkk-after.jpg" } },
   { id: "riga", name: "Riga", region: "Europe", verified: false, before: "$970", after: "$2,970",
-    space: "176 m²", note: "SpaceHub estimate, after management commission. Illustration",
+    space: "176 m²", note: "SpaceHub model, after management commission. Illustration",
     photos: { before: "/assets/case-rig-before.jpg", after: "/assets/case-rig-after.jpg" } },
 ];
 
