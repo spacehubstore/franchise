@@ -22,6 +22,7 @@
           <h3>Marketing</h3>
           <p>Search and maps listings, Google Ads, social campaigns and a landing page for your facility</p>
         </div>
+        <span class="leads" aria-hidden="true"><i class="leads__dot"></i>New leads <b data-leads>0</b></span>
         <span class="logo logo--g"><img src="/assets/figma/inc-google.svg" width="50" height="50" alt="Google" /></span>
         <span class="logo logo--m"><img src="/assets/figma/inc-meta.svg" width="60" height="60" alt="Meta" /></span>
         <span class="logo logo--p"><img src="/assets/figma/inc-maps.png" width="43" height="55" alt="Google Maps" /></span>
@@ -29,7 +30,7 @@
       </article>
       <article class="ic ic--ops" data-mi>
         <img class="ic__chat" src="/assets/figma/inc-chat.webp" width="118" height="118" alt="" loading="lazy" />
-        <span class="ic__reply" aria-hidden="true">Booked for you ✓</span>
+        <ol class="ops" aria-hidden="true"><li>Chat answered</li><li>Price agreed</li><li>Contract signed</li><li>Paid ✓</li></ol>
         <div class="ic__txt">
           <h3>Operations</h3>
           <p>Call centre and chat in your language, pricing, contracts, payments and debt collection</p>
@@ -50,6 +51,28 @@
   // микроанимация карточки: класс .play – при наведении; без наведения – один раз, когда карточка в экране
   const cards = Array.from(document.querySelectorAll<HTMLElement>("[data-mi]"));
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // Marketing: точка-заявка из каждой иконки летит в плашку «New leads», счётчик растёт с каждым прилётом
+    const mkt = document.querySelector<HTMLElement>(".ic--mkt");
+    const flyLeads = () => {
+      if (!mkt) return;
+      const box = mkt.getBoundingClientRect(), badge = mkt.querySelector<HTMLElement>(".leads")!.getBoundingClientRect();
+      const cnt = mkt.querySelector<HTMLElement>("[data-leads]")!;
+      cnt.textContent = "0";
+      mkt.querySelectorAll(".fly").forEach((d) => d.remove());
+      mkt.querySelectorAll<HTMLElement>(".logo").forEach((lg, i) => {
+        const r = lg.getBoundingClientRect(), d = document.createElement("i");
+        d.className = "fly";
+        d.style.left = `${r.left - box.left + r.width / 2}px`; d.style.top = `${r.top - box.top + r.height / 2}px`;
+        d.style.setProperty("--dx", `${badge.left - r.left - r.width / 2 + 14}px`);
+        d.style.setProperty("--dy", `${badge.top - r.top - r.height / 2 + badge.height / 2}px`);
+        d.style.animationDelay = `${i * 80}ms`;
+        mkt.appendChild(d);
+        setTimeout(() => { cnt.textContent = String(i + 1); cnt.classList.remove("tick"); void cnt.offsetWidth; cnt.classList.add("tick"); }, i * 80 + 400);
+      });
+    };
+    const resetLeads = () => { if (!mkt) return; mkt.querySelectorAll(".fly").forEach((d) => d.remove()); };
+    cards.forEach((c) => new MutationObserver(() => { if (c === mkt) (c.classList.contains("play") ? flyLeads() : resetLeads()); })
+      .observe(c, { attributes: true, attributeFilter: ["class"] }));
     if (matchMedia("(hover: hover)").matches) {
       cards.forEach((c) => {
         c.addEventListener("mouseenter", () => c.classList.add("play"));
@@ -88,16 +111,28 @@
   .play .knob .shackle { transform: translateY(-2.5px) rotate(18deg); transition-delay: .45s; }
   .play .slide__t--a { opacity: 0; }
   .play .slide__t--b { opacity: 1; transition-delay: .4s; }
-  /* Marketing: иконки по очереди подпрыгивают, 300 мс с шагом 60 мс */
-  .play .logo { animation: hop .3s cubic-bezier(.3,1.6,.5,1) both; }
-  .play .logo--m { animation-delay: .06s; } .play .logo--p { animation-delay: .12s; } .play .logo--t { animation-delay: .18s; }
-  @keyframes hop { 50% { translate: 0 -12px; } }
-  /* Operations: пузырь пружинит, рядом короткий ответ */
-  .ic__reply { position: absolute; left: 32px; top: 40px; background: var(--white); border-radius: 14px 14px 14px 4px; padding: 8px 14px; font-weight: 600; font-size: 14px;
-               box-shadow: 0 8px 20px rgba(0,0,0,.08); opacity: 0; translate: 0 6px; transition: opacity .2s, translate .2s; }
-  .play .ic__reply { opacity: 1; translate: 0 0; transition: opacity .25s .25s, translate .3s .25s cubic-bezier(.3,1.5,.5,1); }
-  .play .ic__chat { animation: boing .3s cubic-bezier(.3,1.6,.5,1); }
-  @keyframes boing { 50% { scale: 1.08; } }
+  /* Marketing: заявки из каналов летят в плашку «New leads» (~0,8 с) */
+  .leads { position: absolute; right: 22px; top: 26px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px 6px 8px; border-radius: 100px;
+           background: var(--white); box-shadow: 0 6px 16px rgba(0,0,0,.06); font-weight: 600; font-size: 13px; color: var(--gray-600); z-index: 2; }
+  .leads b { min-width: 18px; text-align: center; color: var(--brand); font-variant-numeric: tabular-nums; }
+  .leads b.tick { animation: tick .2s ease-out; }
+  .leads__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
+  :global(.fly) { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 4px rgba(255,79,0,.18);
+         z-index: 3; pointer-events: none; opacity: 0; animation: fly .4s cubic-bezier(.5,0,.6,1) both; }
+  @keyframes fly { 0% { opacity: 0; transform: scale(.4); } 15% { opacity: 1; transform: scale(1); } 100% { opacity: 1; transform: translate(var(--dx), var(--dy)) scale(.5); } }
+  @keyframes tick { 50% { scale: 1.35; } }
+  .ic--mkt h3 { padding-right: 130px; }
+  /* Operations: цепочка операционки загорается по очереди (шаг 120 мс, ~0,7 с) */
+  .ops { position: absolute; left: 32px; top: 30px; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .ops li { display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 5px 12px 5px 8px; border-radius: 100px; font-weight: 600; font-size: 13px;
+            color: var(--gray-400); background: rgba(255,255,255,.5); transition: background .2s, color .2s, box-shadow .2s; }
+  .ops li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--gray-300); transition: background .2s; }
+  .play .ops li { background: var(--white); color: var(--gray-900); box-shadow: 0 6px 14px rgba(0,0,0,.06); }
+  .play .ops li::before { background: var(--brand); }
+  .play .ops li:nth-child(2), .play .ops li:nth-child(2)::before { transition-delay: .12s; }
+  .play .ops li:nth-child(3), .play .ops li:nth-child(3)::before { transition-delay: .24s; }
+  .play .ops li:nth-child(4) { background: var(--brand); color: var(--white); transition-delay: .36s; }
+  .play .ops li:nth-child(4)::before { background: var(--white); transition-delay: .36s; }
   .logo { position: absolute; width: 86px; height: 86px; border-radius: 24px; background: rgba(255,255,255,.2); box-shadow: 4px 4px 4px rgba(0,0,0,.05);
           display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
   .logo--g { left: -18px; top: 155px; transform: rotate(-23deg); }
@@ -130,5 +165,7 @@
     .logo--g { left: 0; top: 190px; } .logo--m { left: 90px; top: 175px; } .logo--p { left: 180px; top: 200px; } .logo--t { left: 270px; top: 170px; }
     .ic--eq { height: 460px; }
     .ic__eq { left: 8px; top: 190px; width: 440px; }
+    .ic--mkt h3 { padding-right: 0; } .ic--mkt .ic__txt { padding-top: 34px; }
+    .leads { right: auto; left: 24px; top: 20px; }
   }
 </style>
