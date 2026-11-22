@@ -7,8 +7,8 @@
 // подписи должны читаться вместе с анимацией). Смена пункта – по факту окончания ролика, не по таймеру.
 // Тексты пунктов – макет v7 и решения CMO (второй уровень «до 80 %», 20.10.2026); 2,5–3× – макет v7; 25 и 96 % – по планировке сцены.
 const items = [
-  // заголовки – CMO 22.11.2026; «up to 5–6×» (заголовок и плашка сцены 1) – решение CMO, кейсы лендинга дают 4,6–4,8× (Шарджа, Бангкок), источник 5–6× – F-1783
-  { t: "Same space, up to 5–6× the income", d: "Small units rent for more per m² than one tenant leasing the whole floor" },
+  // заголовки – CMO 22.11.2026; «up to 4–5×» (заголовок и плашка сцены 1) – кейсы лендинга: Шарджа 4,8× (ставки модели Романенкова 24.09), Бангкок ~4,6× (F-1783)
+  { t: "Same space, up to 4–5× the income", d: "Small units rent for more per m² than one tenant leasing the whole floor" },
   { t: "Up to 80% more space to rent", d: "Where the ceiling allows, a loft tier of smaller units goes above the main ones" },
   { t: "No staff on site", d: "Customers book, pay and open their unit in the app 24/7. Our dispatch centre watches every facility on CCTV" },
   { t: "Steady cash flow every month", d: "Dozens of tenants pay monthly. If one leaves, income dips by a few percent" },
@@ -45,7 +45,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
         <div class="fr"><video src={V("s1")} poster={F("s1").a} muted playsinline preload="metadata"></video></div>
         <div class="cap">
           <div class="cap__a"><small>Before</small><b>1 tenant</b><span>pays one rent for the whole floor</span></div>
-          <div class="cap__b"><small>After</small><b>25 small units</b><span>the same space earns up to 5–6× more</span></div>
+          <div class="cap__b"><small>After</small><b>25 small units</b><span>the same space earns up to 4–5× more</span></div>
         </div>
       </div>
 
