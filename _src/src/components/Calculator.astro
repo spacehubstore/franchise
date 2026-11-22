@@ -81,7 +81,6 @@ import Units from "./Units.astro";
       <input name="phone" type="tel" autocomplete="tel-national" placeholder="81 234 5678" />
     </div>
     <div class="cf__checks">
-      <label><input type="checkbox" name="wa" checked /> Message me on WhatsApp</label>
       <label><input type="checkbox" name="agree" /> <span>I agree to the processing of my data under the <a href="https://spacehubstore.com/thailand/en/privacy" target="_blank" rel="noopener">privacy policy</a></span></label>
     </div>
     <button class="btn btn--or" type="submit">Send</button>
@@ -151,7 +150,7 @@ import Units from "./Units.astro";
     err.hidden = true;
     const phone = `${fd.get("code")} ${fd.get("phone")}`.trim();
     const how = await sendLead({ form: "calculator", name: fd.get("name"), email: fd.get("email"), city: fd.get("city"), phone,
-                                 messenger: fd.get("wa") ? "whatsapp" : "call", calc: last },
+                                 calc: last },
       `Franchise request from the calculator: ${last.market}, ${last.area_m2} m², ${last.levels} level(s), earns $${last.earns_now_usd} → $${last.income_usd} a month. ${fd.get("name")}, ${phone}, ${fd.get("city") || ""}`);
     (window as any).dataLayer?.push({ event: "franchise_callback_form_sent", form_location: "calculator", site_variant: location.pathname, delivery: how });
     form.querySelector<HTMLElement>("[data-cm-ok]")!.hidden = false;
