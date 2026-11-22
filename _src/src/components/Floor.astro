@@ -32,7 +32,11 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
           </li>
         ))}
       </ol>
-      <p class="stat"><b>+7–8%</b> a year: self-storage market growth in the Middle East, Africa and Asia Pacific</p>
+      <div class="stat">
+        <img class="stat__glow" src="/assets/figma/glow-49.svg" alt="" aria-hidden="true" />
+        <b>+7–8%</b>
+        <span>a year: self-storage market growth in the Middle East, Africa and Asia Pacific</span>
+      </div>
     </div>
 
     <div class="stage" aria-hidden="true">
@@ -162,8 +166,11 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .acc__it.is-on .acc__d { max-height: 100px; opacity: 1; margin-top: 6px; }
   .acc__it.is-on .acc__bar { opacity: 1; }
   .acc__it > .vis { display: none; }
-  .stat { font-size: 14px; line-height: 20px; color: var(--gray-500); }
-  .stat b { color: var(--brand); font-size: 16px; margin-right: 4px; }
+  /* карточка роста рынка (Figma 1819:1403): серый фон, оранжевое свечение, крупная цифра; цифра и текст в строку – экономит высоту */
+  .stat { position: relative; overflow: hidden; background: var(--gray-100); border-radius: var(--radius-l); padding: 20px 24px; display: flex; align-items: center; gap: 18px; }
+  .stat__glow { position: absolute; right: -100px; top: -63px; width: 418px; max-width: none; pointer-events: none; }
+  .stat b { position: relative; flex: none; font-weight: 700; font-size: 44px; line-height: 1; letter-spacing: -1px; color: var(--brand); }
+  .stat span { position: relative; font-weight: 500; font-size: 15px; line-height: 21px; }
 
   .stage { position: relative; height: clamp(400px, calc(100svh - var(--hdr-h) - 140px), 600px); border-radius: var(--radius-l); background: #fff; border: 1px solid var(--gray-200); overflow: hidden; }
   .stage__n { position: absolute; right: 16px; bottom: 12px; font-size: 12px; font-weight: 600; color: var(--gray-400); font-variant-numeric: tabular-nums; }
@@ -237,6 +244,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
     .fl__grid { grid-template-columns: 1fr; gap: 24px; }
     .fl__head h2 { font-size: 32px; line-height: 38px; }
     .stage { display: none; }
+    .stat { flex-direction: column; align-items: flex-start; gap: 10px; }
     .acc__t { font-size: 19px; line-height: 24px; color: var(--gray-900); }
     .acc__n { color: var(--brand); }
     .acc__d { max-height: none; opacity: 1; margin-top: 6px; }
