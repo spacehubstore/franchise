@@ -1,29 +1,23 @@
 ---
 // Блок «What the feasibility study includes» (Figma 1913:1363), переработан (CMO 22.11.2026):
 // слева два этапа – бесплатная оценка и платное исследование (цена – в FAQ), справа четыре документа исследования.
-// Вместо 3D-иконок – схемы самих документов (SVG), финансовая модель выделена как итог. Цифры финмодели – как в калькуляторе
-// по Шардже по умолчанию (238 м², два уровня: $9,932 в месяц, стоимость объекта $1.4M при cap rate 8.5%), подписаны «Sample».
+// Иллюстрации – Nano Banana Pro в стиле One floor, по реальным фото оснащения (landing-icons/gen_study*.py: market-4, layout-8,
+// budget-1). Надписи поверх – кодом, позиции в % от кадра 4:3. Планировка – цифры модели Шарджи (185 м² пола → 301 м² в аренду, F-1783).
+// Финмодель – схема без сумм: стройка, рост заполнения, выход на целевую загрузку, 4–5× к текущей аренде (как на первом экране).
 // Анимация – одна карточка за раз: играет, когда карточка доходит до середины экрана, и останавливается в конечном виде.
 const stages = [
   { t: "Free assessment", w: "48 hours", d: "Send the address and a few photos. We tell you if the space fits" },
   { t: "Feasibility study", w: "2 weeks", d: "If it fits, we prepare four documents for your address", note: "Paid step, only after the assessment" },
 ];
-// доход по месяцам за 10 лет: заполнение растёт до 90 % за 18 месяцев (образец)
-const W = 520, H = 150, MAX = 12000, INC = 9932;
-const pts = Array.from({ length: 121 }, (_, m) => {
-  const k = Math.min(1, 0.15 + (0.85 * m) / 18);
-  return [+(m * (W / 120)).toFixed(1), +(H - (INC * k * H) / MAX).toFixed(1)];
-});
-const line = "M" + pts.map((p) => p.join(",")).join("L");
+// пины конкурентов: x, y (% кадра, кончик пина) и цена за м² – условные, для образца
+const pins = [[14, 47, "$38/m²"], [81, 44, "$44/m²"], [56, 17, "$52/m²"], [47, 78, "$41/m²"]];
+const kit = ["Doors and frames", "Partitions", "Ladders", "Access and locks", "CCTV", "Delivery and installation"];
+// схема дохода: 0–3 мес стройка, до 21 мес рост заполнения, дальше целевая загрузка; текущая аренда = 1/4.5 целевого дохода
+const W = 520, H = 150, X = (m: number) => +(m * (W / 120)).toFixed(1), Y = (k: number) => +(H - k * (H - 22)).toFixed(1);
+const k = (m: number) => (m < 3 ? 0 : Math.min(1, ((m - 3) / 18) ** 0.8));
+const line = "M" + Array.from({ length: 121 }, (_, m) => `${X(m)},${Y(k(m))}`).join("L");
 const area = `${line}L${W},${H}L0,${H}Z`;
-const budget = [["Doors and partitions", 92], ["Locks and access", 70], ["CCTV and alarm", 56], ["Delivery and installation", 80]];
-// план этажа: боксы вдоль двух коридоров, цвет – размер (s, m, l)
-const units = [
-  [8, 8, 26, 34, "s"], [36, 8, 26, 34, "s"], [64, 8, 40, 34, "m"], [106, 8, 40, 34, "m"], [148, 8, 58, 34, "l"], [208, 8, 24, 34, "s"],
-  [8, 64, 40, 40, "m"], [50, 64, 26, 40, "s"], [78, 64, 26, 40, "s"], [106, 64, 58, 40, "l"], [166, 64, 40, 40, "m"], [208, 64, 24, 40, "s"],
-  [8, 126, 58, 36, "l"], [68, 126, 26, 36, "s"], [96, 126, 40, 36, "m"], [138, 126, 26, 36, "s"], [166, 126, 66, 36, "l"],
-];
-const pins = [[58, 46, "$38"], [186, 34, "$44"], [200, 122, "$52"], [40, 128, "$41"]];
+const RENT = Y(1 / 4.5), TOP = Y(1);
 ---
 <section class="fs-wrap wrap" id="study">
   <div class="fs">
@@ -45,74 +39,64 @@ const pins = [[58, 46, "$38"], [186, 34, "$44"], [200, 122, "$52"], [40, 128, "$
     </div>
 
     <div class="fs__cards">
-      <div class="fc fc--map" data-play>
+      <div class="fc" data-play data-card="market">
         <div class="fc__t"><h3>Market and competitors</h3><p>Competitors near you, their prices and the unit sizes the area is missing. We price every unit to win that demand</p></div>
-        <svg class="fc__v" viewBox="0 0 240 170" aria-hidden="true">
-          <rect width="240" height="170" rx="14" class="sv-paper" />
-          <path d="M0 60H240M0 112H240M84 0V170M162 0V170" class="sv-road" />
-          <circle cx="122" cy="86" r="46" class="sv-zone" />
-          {pins.map(([x, y, p], i) => (
-            <g class="pin" style={`--d:${i * 110 + 120}ms;transform-origin:${x}px ${+y + 10}px`}>
-              <rect x={+x - 17} y={+y - 9} width="34" height="19" rx="9.5" class="sv-dark" /><text x={x} y={+y + 4.5} class="sv-tw">{p}</text>
-            </g>
-          ))}
-          <g class="pin pin--me" style="--d:0ms;transform-origin:122px 96px">
-            <circle cx="122" cy="86" r="11" class="sv-brand" /><circle cx="122" cy="86" r="4" class="sv-paper" />
-          </g>
-        </svg>
+        <div class="fc__img">
+          <img src="/assets/study/market.webp" width="960" height="717" alt="" loading="lazy" />
+          <span class="mk mk--me" style="left:51%;top:40%;--d:0ms">You</span>
+          {pins.map(([x, y, p], i) => <span class="mk" style={`left:${x}%;top:${y}%;--d:${180 + i * 140}ms`}>{p}</span>)}
+        </div>
       </div>
 
-      <div class="fc fc--plan" data-play>
-        <div class="fc__t"><h3>Unit layout</h3><p>The mix of unit sizes that earns the most from your floor, based on our rental data. A second level where the ceiling allows</p></div>
-        <svg class="fc__v" viewBox="0 0 240 170" aria-hidden="true">
-          <rect x="1" y="1" width="238" height="168" rx="6" class="sv-wall" />
-          {units.map(([x, y, w, h, s], i) => (
-            <rect x={x} y={y} width={w} height={h} rx="2" class={`unit u-${s}`} style={`--d:${i * 38}ms`} />
-          ))}
-          <rect x="0" y="46" width="8" height="14" class="sv-door" />
-        </svg>
-        <ul class="fc__key" aria-hidden="true"><li><i class="u-s"></i>Small</li><li><i class="u-m"></i>Medium</li><li><i class="u-l"></i>Large</li></ul>
+      <div class="fc" data-play data-card="layout">
+        <div class="fc__t">
+          <h3>Unit layout</h3>
+          <p>The mix of unit sizes that earns the most from your floor, based on our rental data. A second level where the ceiling allows</p>
+          <div class="fc__stat"><b>185 m²</b><i>→</i><b class="o">301 m²</b><span>floor</span><span></span><span>to rent</span></div>
+        </div>
+        <div class="fc__img">
+          <img src="/assets/study/layout.webp" width="960" height="717" alt="" loading="lazy" />
+          <span class="dim" style="left:27%;top:79%;--r:34.7deg;--d:0ms">14.8 m</span>
+          <span class="dim" style="left:73.5%;top:81%;--r:-33.6deg;--d:120ms">12.5 m</span>
+          <span class="tag" style="left:37%;top:42%;--d:320ms">1 m²</span>
+          <span class="tag" style="left:42%;top:60%;--d:440ms">3 m²</span>
+        </div>
       </div>
 
-      <div class="fc fc--budget" data-play>
-        <div class="fc__t"><h3>Equipment budget</h3><p>Every item your layout needs, with delivery and installation, in one total price</p></div>
-        <svg class="fc__v" viewBox="0 0 240 170" aria-hidden="true">
-          <rect width="240" height="170" rx="14" class="sv-paper" />
-          {budget.map(([t, w], i) => (
-            <g class="row" style={`--d:${i * 120}ms`}>
-              <text x="16" y={34 + i * 28} class="sv-t">{t}</text>
-              <rect x={224 - +w * 0.62} y={25 + i * 28} width={+w * 0.62} height="12" rx="6" class="sv-mute" />
-            </g>
-          ))}
-          <g class="row row--total" style="--d:560ms">
-            <path d="M16 140H224" class="sv-rule" />
-            <text x="16" y="158" class="sv-tb">Total</text>
-            <rect x="160" y="148" width="64" height="14" rx="7" class="sv-brand" />
-          </g>
-        </svg>
+      <div class="fc" data-play data-card="budget">
+        <div class="fc__t">
+          <h3>Equipment budget</h3><p>Every item your layout needs, with delivery and installation, in one total price</p>
+          <ul class="kit">{kit.map((t, i) => <li style={`--d:${i * 90}ms`}>{t}</li>)}</ul>
+        </div>
+        <div class="fc__img">
+          <img src="/assets/study/budget.webp" width="960" height="717" alt="" loading="lazy" />
+          <span class="tag tag--total" style="left:24%;top:16%;--d:600ms">One total price</span>
+        </div>
       </div>
 
-      <div class="fc fc--model" data-play>
+      <div class="fc fc--model" data-play data-card="model">
         <div class="fc__t">
           <span class="fc__tag">The result of the study</span>
           <h3>Financial model</h3>
-          <p>Occupancy, revenue, costs, payback and your net income, month by month for 10 years. The calculator above, built for your address</p>
+          <p>Occupancy, revenue, costs and your net income, month by month for 10 years, and what the property is worth. The calculator above, built for your address</p>
         </div>
-        <div class="fm">
-          <div class="fm__kpi">
-            <div><b data-count="9932">$9,932</b><span>Net income a month</span></div>
-            <div><b>$1.4M</b><span>Property value</span></div>
-          </div>
-          <svg class="fm__chart" viewBox={`-34 -8 ${W + 44} ${H + 30}`} aria-hidden="true">
-            {[0, 4000, 8000, 12000].map((v) => (
-              <g><path d={`M0 ${H - (v * H) / MAX}H${W}`} class="fm__grid" /><text x="-8" y={H - (v * H) / MAX + 4} class="fm__ax" text-anchor="end">{v ? `$${v / 1000}k` : "$0"}</text></g>
-            ))}
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((y) => <text x={(y * 12 - 6) * (W / 120)} y={H + 18} class="fm__ax" text-anchor="middle">{`Y${y}`}</text>)}
-            <path d={area} class="fm__area" />
-            <path d={line} class="fm__line" pathLength="1" />
-          </svg>
-          <small class="fm__note">Sample: 238 m² space in Sharjah, two levels, as in the calculator above</small>
-        </div>
+        <svg class="fm" viewBox={`-6 -20 ${W + 12} ${H + 46}`} aria-hidden="true">
+          <text x="0" y="-6" class="fm__lab fm__opt">Net income a month</text>
+          <path d={`M0 ${H}H${W}`} class="fm__base" />
+          <path d={area} class="fm__area" />
+          <path d={`M0 ${RENT}H${W}`} class="fm__rent" />
+          <text x={W} y={RENT + 16} class="fm__lab" text-anchor="end">Today's rent</text>
+          <path d={line} class="fm__line" pathLength="1" />
+          <g class="fm__note" style="--d:0ms"><path d={`M${X(3)} ${H}V${H + 6}`} class="fm__tick" /><text x={X(3)} y={H + 20} class="fm__ax" text-anchor="middle">Opening</text></g>
+          <g class="fm__note fm__opt" style="--d:300ms"><text x={X(13) + 8} y={Y(k(13)) + 4} class="fm__lab">Occupancy grows</text></g>
+          <g class="fm__note" style="--d:600ms"><circle cx={X(21)} cy={TOP} r="5" class="fm__dot" /><text x={X(21) + 10} y={TOP - 8} class="fm__lab">Target occupancy</text></g>
+          <g class="fm__note" style="--d:900ms">
+            <path d={`M${W - 110} ${RENT - 3}V${TOP + 4}`} class="fm__span" />
+            <text x={W - 118} y={(RENT + TOP) / 2 + 6} class="fm__big" text-anchor="end">4–5× today's rent</text>
+          </g>
+          {[5, 10].map((y) => <text x={X(y * 12)} y={H + 20} class="fm__ax" text-anchor={y === 10 ? "end" : "middle"}>{`Year ${y}`}</text>)}
+        </svg>
+        <ul class="fm__chips">{["Occupancy", "Revenue", "Costs", "Net income", "Property value"].map((t) => <li>{t}</li>)}</ul>
       </div>
     </div>
   </div>
@@ -126,25 +110,19 @@ const pins = [[58, 46, "$38"], [186, 34, "$44"], [200, 122, "$52"], [40, 128, "$
     text: (who) => `Franchise request: free assessment (feasibility block). ${who}`,
   }));
   // анимация по одной карточке: срабатывает в средней полосе экрана, играет один раз
-  const count = (el: HTMLElement) => {
-    const to = +el.dataset.count!, t0 = performance.now();
-    const tick = (t: number) => { const k = Math.min(1, (t - t0) / 900); el.textContent = "$" + Math.round(to * (1 - Math.pow(1 - k, 3))).toLocaleString("en-US"); if (k < 1) requestAnimationFrame(tick); };
-    requestAnimationFrame(tick);
-  };
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const io = new IntersectionObserver((es) => es.forEach((e) => {
     if (!e.isIntersecting) return;
     const c = e.target as HTMLElement; c.classList.add("play"); io.unobserve(c);
-    const n = c.querySelector<HTMLElement>("[data-count]"); if (n && !still) count(n);
-    (window as any).dataLayer?.push({ event: "study_card_viewed", card: c.className.match(/fc--(\w+)/)?.[1] });
-  }), { rootMargin: "-42% 0px -42% 0px" });
+    (window as any).dataLayer?.push({ event: "study_card_viewed", card: c.dataset.card });
+  }), { rootMargin: "-40% 0px -40% 0px" });
   root.querySelectorAll("[data-play]").forEach((c) => (still ? c.classList.add("play") : io.observe(c)));
 </script>
 
 <style>
   .fs-wrap { padding-block: 24px 96px; }
   .fs { background: var(--gray-900); color: var(--white); border-radius: 32px; padding: 72px; display: flex; gap: 64px; max-width: 1296px; margin: 0 auto; }
-  .fs__left { flex: none; width: 460px; display: flex; flex-direction: column; gap: 36px; position: sticky; top: calc(var(--hdr-h) + 32px); align-self: flex-start; }
+  .fs__left { flex: none; width: 420px; display: flex; flex-direction: column; gap: 36px; position: sticky; top: calc(var(--hdr-h) + 32px); align-self: flex-start; }
   .fs__head { display: flex; flex-direction: column; gap: 20px; }
   .fs__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
   .fs__head p { font-weight: 500; font-size: 20px; line-height: 28px; color: var(--gray-300); }
@@ -159,64 +137,63 @@ const pins = [[58, 46, "$38"], [186, 34, "$44"], [200, 122, "$52"], [40, 128, "$
   .fs__cta { align-self: flex-start; }
 
   .fs__cards { flex: 1; min-width: 0; display: grid; gap: 8px; }
-  .fc { position: relative; overflow: hidden; display: flex; gap: 20px; align-items: center; min-height: 230px; border-radius: 24px; padding: 28px 24px; background: var(--gray-200); color: var(--gray-900); }
-  .fc__t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  .fc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 20px; align-items: center; border-radius: 24px; padding: 20px 20px 20px 28px; background: var(--white); color: var(--gray-900); }
+  .fc__t { display: flex; flex-direction: column; gap: 12px; }
   .fc h3 { font-weight: 700; font-size: 24px; line-height: 28px; letter-spacing: -0.48px; }
   .fc p { font-weight: 500; font-size: 15px; line-height: 22px; color: var(--gray-700); }
-  .fc__v { flex: none; width: 240px; height: auto; overflow: visible; }
-  .fc--plan .fc__v { margin-bottom: 18px; }
-  .fc__key { position: absolute; right: 24px; bottom: 16px; display: flex; gap: 12px; list-style: none; font-size: 12px; font-weight: 600; color: var(--gray-600); }
-  .fc__key li { display: flex; align-items: center; gap: 5px; }
-  .fc__key i { width: 10px; height: 10px; border-radius: 2px; }
+  .fc__img { position: relative; aspect-ratio: 960 / 717; border-radius: 16px; overflow: hidden; background: var(--white); }
+  .fc__img img { width: 100%; height: 100%; display: block; }
+  .fc__stat { display: grid; grid-template-columns: auto auto auto; justify-content: start; column-gap: 10px; align-items: baseline; margin-top: 4px; }
+  .fc__stat b { font-weight: 800; font-size: 26px; line-height: 30px; font-variant-numeric: tabular-nums; }
+  .fc__stat b.o { color: var(--brand); }
+  .fc__stat i { font-style: normal; font-size: 20px; color: var(--gray-500); }
+  .fc__stat span { font-size: 13px; font-weight: 600; color: var(--gray-500); }
 
-  /* SVG-краски */
-  .sv-paper { fill: var(--white); }
-  .sv-road { stroke: var(--gray-200); stroke-width: 10; fill: none; }
-  .sv-zone { fill: rgba(255, 79, 0, .08); stroke: var(--brand); stroke-width: 1; stroke-dasharray: 3 4; }
-  .sv-dark { fill: var(--gray-900); }
-  .sv-brand { fill: var(--brand); }
-  .sv-mute { fill: var(--gray-200); }
-  .sv-wall { fill: var(--white); stroke: var(--gray-900); stroke-width: 2; }
-  .sv-door { fill: var(--brand); }
-  .sv-rule { stroke: var(--gray-300); stroke-width: 1; }
-  .fc text { font-family: "Manrope", sans-serif; }
-  .sv-tw { fill: var(--white); font-size: 10px; font-weight: 700; text-anchor: middle; }
-  .sv-t { fill: var(--gray-600); font-size: 11px; font-weight: 600; }
-  .sv-tb { fill: var(--gray-900); font-size: 12px; font-weight: 800; }
-  .u-s { fill: var(--gray-300); background: var(--gray-300); }
-  .u-m { fill: var(--gray-500); background: var(--gray-500); }
-  .u-l { fill: var(--brand); background: var(--brand); }
+  /* надписи поверх иллюстраций */
+  .mk, .tag, .dim { position: absolute; white-space: nowrap; font-weight: 700; font-size: 12px; line-height: 16px; }
+  .mk { transform: translate(-50%, -100%); padding: 5px 9px; border-radius: 99px; background: var(--gray-900); color: var(--white); box-shadow: 0 6px 14px rgba(0,0,0,.18); }
+  .mk::after { content: ""; position: absolute; left: 50%; top: 100%; margin-left: -5px; border: 5px solid transparent; border-top-color: var(--gray-900); }
+  .mk--me { background: var(--brand); padding: 6px 12px; }
+  .mk--me::after { border-top-color: var(--brand); }
+  .tag { transform: translate(-50%, -50%); padding: 3px 8px; border-radius: 6px; background: var(--brand); color: var(--white); }
+  .dim { transform: translate(-50%, -50%) rotate(var(--r)); padding: 1px 6px; background: var(--white); color: var(--gray-700); font-weight: 700; font-size: 12px; }
+  .tag--total { padding: 6px 12px; font-size: 13px; border-radius: 99px; background: var(--gray-900); box-shadow: 0 6px 14px rgba(0,0,0,.18); }
+  .kit { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; }
+  .kit li { padding: 3px 9px; border-radius: 99px; background: var(--gray-100); font-size: 12px; font-weight: 700; color: var(--gray-700); }
 
   /* финансовая модель – итог, выделена */
-  .fc--model { flex-direction: column; align-items: stretch; gap: 24px; padding: 32px 28px 24px; background: var(--brand); color: var(--white); box-shadow: 0 24px 60px rgba(255, 79, 0, .28); }
-  .fc--model .fc__t { max-width: 520px; }
+  .fc--model { grid-template-columns: 1fr; gap: 20px; padding: 32px 28px 26px; background: var(--brand); color: var(--white); box-shadow: 0 24px 60px rgba(255, 79, 0, .28); }
+  .fc--model .fc__t { max-width: 540px; }
   .fc--model h3 { font-size: 30px; line-height: 34px; }
   .fc--model p { font-size: 16px; line-height: 24px; color: rgba(255, 255, 255, .88); }
   .fc__tag { align-self: flex-start; padding: 4px 12px; border-radius: 99px; background: rgba(255, 255, 255, .18); font-weight: 700; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
-  .fm { display: flex; flex-direction: column; gap: 14px; }
-  .fm__kpi { display: flex; gap: 32px; }
-  .fm__kpi div { display: flex; flex-direction: column; gap: 2px; }
-  .fm__kpi b { font-weight: 800; font-size: 32px; line-height: 36px; font-variant-numeric: tabular-nums; }
-  .fm__kpi span { font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .78); }
-  .fm__chart { width: 100%; height: auto; overflow: visible; }
-  .fm__grid { stroke: rgba(255, 255, 255, .22); stroke-width: 1; }
-  .fm__ax { fill: rgba(255, 255, 255, .75); font: 600 11px "Manrope", sans-serif; }
+  .fm { width: 100%; height: auto; overflow: visible; }
+  .fm text { font-family: "Manrope", sans-serif; }
+  .fm__base { stroke: rgba(255, 255, 255, .4); stroke-width: 1; }
   .fm__area { fill: rgba(255, 255, 255, .16); }
+  .fm__rent { stroke: rgba(255, 255, 255, .75); stroke-width: 1.5; stroke-dasharray: 5 5; }
   .fm__line { fill: none; stroke: var(--white); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
-  .fm__note { font-size: 12px; color: rgba(255, 255, 255, .7); }
+  .fm__tick, .fm__span { stroke: var(--white); stroke-width: 1.5; }
+  .fm__dot { fill: var(--white); }
+  .fm__lab { fill: rgba(255, 255, 255, .9); font-size: 12px; font-weight: 700; }
+  .fm__big { fill: var(--white); font-size: 17px; font-weight: 800; }
+  .fm__ax { fill: rgba(255, 255, 255, .75); font-size: 11px; font-weight: 600; }
+  .fm__chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; }
+  .fm__chips li { padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .45); font-size: 12px; font-weight: 700; }
 
   /* анимация: начальное состояние только до .play; без JS всё видно */
-  .fc[data-play]:not(.play) .pin { transform: translateY(-14px) scale(.4); opacity: 0; }
-  .pin { transition: transform .45s cubic-bezier(.2, 1.5, .4, 1) var(--d), opacity .2s var(--d); }
-  .fc[data-play]:not(.play) .unit { opacity: 0; transform: scale(.6); }
-  .unit { transform-box: fill-box; transform-origin: center; transition: opacity .25s var(--d), transform .35s cubic-bezier(.2, 1.4, .4, 1) var(--d); }
-  .fc[data-play]:not(.play) .row { opacity: 0; transform: translateX(-10px); }
-  .row { transition: opacity .3s var(--d), transform .3s ease-out var(--d); }
+  .fc[data-play]:not(.play) .mk { opacity: 0; transform: translate(-50%, -160%) scale(.6); }
+  .mk { transition: transform .45s cubic-bezier(.2, 1.5, .4, 1) var(--d), opacity .2s var(--d); }
+  .fc[data-play]:not(.play) .tag, .fc[data-play]:not(.play) .dim { opacity: 0; }
+  .tag, .dim { transition: opacity .3s var(--d); }
+  .fc[data-play]:not(.play) .kit li { opacity: 0; transform: translateY(4px); }
+  .kit li { transition: opacity .25s var(--d), transform .25s ease-out var(--d); }
   .fc[data-play]:not(.play) .fm__line { stroke-dashoffset: 1; }
-  .fm__line { stroke-dasharray: 1; stroke-dashoffset: 0; transition: stroke-dashoffset 1s cubic-bezier(.4, 0, .2, 1) .1s; }
-  .fc[data-play]:not(.play) .fm__area { opacity: 0; }
-  .fm__area { transition: opacity .5s .7s; }
-  @media (prefers-reduced-motion: reduce) { .pin, .unit, .row, .fm__line, .fm__area { transition: none; } }
+  .fm__line { stroke-dasharray: 1; stroke-dashoffset: 0; transition: stroke-dashoffset 1.1s cubic-bezier(.4, 0, .2, 1) .1s; }
+  .fc[data-play]:not(.play) .fm__area, .fc[data-play]:not(.play) .fm__note { opacity: 0; }
+  .fm__area { transition: opacity .5s .8s; }
+  .fm__note { transition: opacity .35s calc(var(--d) + .2s); }
+  @media (prefers-reduced-motion: reduce) { .mk, .tag, .dim, .kit li, .fm__line, .fm__area, .fm__note { transition: none; } }
 
   @media (max-width: 1100px) {
     .fs { flex-direction: column; padding: 40px 20px; gap: 32px; border-radius: 24px; }
@@ -231,13 +208,11 @@ const pins = [[58, 46, "$38"], [186, 34, "$44"], [200, 122, "$52"], [40, 128, "$
     .fs__stages em { margin-left: 0; }
     .fs__stages p, .fs__stages small { padding-left: 46px; }
     .fs__cta { align-self: stretch; }
-    .fc { flex-direction: column; align-items: stretch; gap: 16px; min-height: 0; padding: 22px 18px; }
-    .fc__v { width: 100%; max-width: 260px; max-height: 150px; align-self: center; }
-    .fc--plan .fc__v { margin-bottom: 22px; }
-    .fc__key { left: 18px; right: auto; }
+    .fc { grid-template-columns: 1fr; gap: 14px; padding: 20px 14px 14px; }
+    .fc__t { padding-inline: 6px; }
+    .fc--model { padding: 24px 18px 20px; }
     .fc--model h3 { font-size: 26px; line-height: 30px; }
-    .fm__kpi { gap: 20px; }
-    .fm__kpi b { font-size: 26px; line-height: 30px; }
-    .fm__ax { font-size: 20px; }
+    .fm__lab { font-size: 22px; } .fm__big { font-size: 28px; } .fm__ax { font-size: 20px; }
+    .fm__opt { display: none; }
   }
 </style>
