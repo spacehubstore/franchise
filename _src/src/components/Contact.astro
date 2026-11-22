@@ -11,11 +11,13 @@ import { CONTACTS } from "../data/site";
       <p>We reply within 1 working hour. Free, no obligation</p>
     </div>
     <div class="who">
-      <img src="/assets/alexey.webp" width="88" height="88" alt="Alexey Romanenkov" loading="lazy" />
-      <div class="who__txt"><b>Alexey Romanenkov</b><span>Head of partnerships</span></div>
-      <div class="who__msg">
+      <img src="/assets/alexey-portrait.webp" width="340" height="416" alt="Alexey Romanenkov" loading="lazy" />
+      <div class="who__side">
+        <div class="who__txt"><b>Alexey Romanenkov</b><span>Head of partnerships</span></div>
+        <div class="who__msg">
         <a href={CONTACTS.whatsapp.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="contact"><img src="/assets/figma/whatsapp-24.svg" width="20" height="20" alt="" />WhatsApp</a>
         <a href={CONTACTS.line.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="line" data-loc="contact" data-line hidden><i class="line-ic">LINE</i>LINE</a>
+        </div>
       </div>
     </div>
     <form class="cf" data-cf novalidate>
@@ -63,11 +65,13 @@ import { CONTACTS } from "../data/site";
   .ct__head { grid-area: head; align-self: end; position: relative; display: flex; flex-direction: column; gap: 20px; max-width: 540px; }
   .ct__head h2 { font-weight: 700; font-size: 60px; line-height: 1.08; letter-spacing: -1.8px; text-wrap: balance; }
   .ct__head p { font-weight: 500; font-size: 20px; line-height: 28px; opacity: .92; }
-  .who { grid-area: who; align-self: start; position: relative; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .who > img { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; object-position: top; background: var(--white); border: 3px solid rgba(255,255,255,.6); }
-  .who__txt b { display: block; font-size: 17px; line-height: 22px; }
-  .who__txt span { font-size: 15px; opacity: .9; }
-  .who__msg { display: flex; gap: 8px; margin-left: 12px; }
+  /* Алексей – портретом, рядом имя, роль и мессенджеры */
+  .who { grid-area: who; align-self: start; position: relative; display: flex; align-items: flex-end; gap: 20px; }
+  .who__side { display: flex; flex-direction: column; gap: 14px; padding-bottom: 4px; }
+  .who > img { flex: none; width: 150px; height: 184px; border-radius: 20px; object-fit: cover; object-position: top; box-shadow: 0 16px 40px rgba(120, 30, 0, .3); }
+  .who__txt b { display: block; font-size: 22px; line-height: 28px; }
+  .who__txt span { font-size: 16px; opacity: .9; }
+  .who__msg { display: flex; gap: 8px; }
   .who__msg a[hidden] { display: none; }
   .who__msg a { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border-radius: 100px; background: var(--white); color: var(--gray-900); font-weight: 600; font-size: 14px; transition: transform .2s; }
   .who__msg a:hover { transform: translateY(-2px); }
@@ -103,9 +107,8 @@ import { CONTACTS } from "../data/site";
     .ct__head { gap: 12px; }
     .ct__head h2 { font-size: 36px; letter-spacing: -1px; }
     .ct__head p { font-size: 17px; line-height: 24px; }
-    .who > img { width: 64px; height: 64px; }
-    .who__msg { margin-left: 0; width: 100%; }
-    .who__msg a { flex: 1; justify-content: center; }
+    .who > img { width: 112px; height: 136px; border-radius: 16px; }
+    .who__txt b { font-size: 19px; line-height: 24px; }
     .cf { padding: 28px 16px 20px; }
   }
 </style>
