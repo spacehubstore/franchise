@@ -7,6 +7,7 @@ export const CONTACTS = {
 
 // Кейсы первого экрана: доход владельца за всё помещение в месяц, до и после (CMO 22.11.2026: без пересчёта на м²).
 // Бангкок: шопхаус 37 м², ฿5 000 аренды → ~฿23 000 после комиссии 20 % (финмодель Романенкова, решение CMO 21.11.2026).
+// В долларах (CMO 22.11.2026: все цифры в $): $858,6 выручки модели × 0,8 = $687 → «$690»; ฿5 000 / 33,6 (курс модели) = $149 → «$150».
 // Шарджа и Таллин: пример на площади по умолчанию калькулятора × ставки макета v7 (Шарджа 250 м² × $12 → $58 – модель
 // Романенкова 24.09; Таллин 300 м² × $7 → $35 – заглушка макета). НЕ проверены: до публикации заменить или скрыть город.
 export type City = {
@@ -18,7 +19,7 @@ export type City = {
 };
 
 export const CITIES: City[] = [
-  { id: "bangkok", name: "Bangkok", region: "Southeast Asia", verified: true, before: "฿5,000", after: "฿23,000",
+  { id: "bangkok", name: "Bangkok", region: "Southeast Asia", verified: true, before: "$150", after: "$690",
     space: "37 m² shophouse", note: "SpaceHub forecast for a real property, after our 20% fee",
     photos: { before: "/assets/case-bkk-before.jpg", after: "/assets/case-bkk-after.jpg" } },
   { id: "sharjah", name: "Sharjah", region: "Middle East", verified: false, before: "$3,000", after: "$14,500",
