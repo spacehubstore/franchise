@@ -1,7 +1,7 @@
 ---
 // Калькулятор «What your space could earn» (Figma 1318:9853). Логика – калькулятор v6 макета (`equipment-hub-2026-10-07/mockups/franchise.js`,
 // встреча 15.10, CMO 19.10): арендопригодно = площадь × 70 % (× 1,8 при двух уровнях); выручка = арендопригодно × ставка × 90 % (загрузка – CMO 22.11.2026, было 85 %);
-// доход = выручка − роялти 20 % − операционные 10 % − расходы собственника; стоимость = доход × 12 / cap rate, осторожно +1 п.п.
+// доход = выручка − роялти 20 % (поле расходов собственника убрано, CMO 22.11.2026: одинаковы до и после, на сравнение не влияют); стоимость = доход × 12 / cap rate, осторожно +1 п.п.
 // Ставки по рынкам – значения по умолчанию из макета (ресерч 19.10, «сверить»); Таиланд – ставка кейса Бангкока (финмодель, ~$20/м²).
 // CMO 22.11.2026: Шарджа по модели Романенкова 24.09 – 238 м² (185 м² пола + уличная часть) → 301 м² арендопригодно с антресолью,
 // выручка $46 за арендопригодный м², рынок сдал бы 185 м² × $12 = $2,220. Прочие операционные расходы (было 10 % для всех) не
@@ -34,11 +34,6 @@ import Units from "./Units.astro";
           <input data-k="rent" inputmode="decimal" />
           <span class="fld__sfx">$ a month</span>
         </label>
-        <label class="fld">
-          <span class="fld__lb">Your costs as the owner <img src="/assets/figma/info.svg" width="16" height="16" alt="" title="Taxes, insurance and other costs you pay as the owner" /></span>
-          <input data-k="own" inputmode="decimal" />
-          <span class="fld__sfx">$ a month</span>
-        </label>
         <div class="ceil">
           <span class="fld__lb fld__lb--static">Ceiling height</span>
           <div class="ceil__opts">
@@ -54,7 +49,6 @@ import Units from "./Units.astro";
         <div><dt>Rentable area</dt><dd data-o="units"></dd></div>
         <div><dt>Revenue at 90% occupancy</dt><dd data-o="rev"></dd></div>
         <div><dt>Royalty 20%</dt><dd data-o="roy"></dd></div>
-        <div><dt>Running costs</dt><dd class="dd--soft">in the feasibility study</dd></div>
       </dl>
       <div class="box">
         <span>Your income a month, after our 20% royalty</span>
@@ -83,8 +77,8 @@ import Units from "./Units.astro";
   const root = document.querySelector<HTMLElement>("[data-calc]")!;
   const q = <T extends Element>(s: string) => root.querySelector<T>(s)!;
   const inp = { country: q<HTMLSelectElement>('[data-k="country"]'), area: q<HTMLInputElement>('[data-k="area"]'),
-                rent: q<HTMLInputElement>('[data-k="rent"]'), own: q<HTMLInputElement>('[data-k="own"]') };
-  const st = { c: "ae", unit: "m2", lv: 2, area: 0, inc: 0, own: 0, incSet: false };
+                rent: q<HTMLInputElement>('[data-k="rent"]') };
+  const st = { c: "ae", unit: "m2", lv: 2, area: 0, inc: 0, incSet: false };
   Object.entries(MARKETS).forEach(([k, m]) => inp.country.add(new Option(m.name, k)));
   const num = (v: string) => { const n = parseFloat(String(v).replace(/[^\d.]/g, "")); return isFinite(n) ? n : 0; };
   const show = (n: number) => Math.round(n).toLocaleString("en-US");
@@ -92,12 +86,12 @@ import Units from "./Units.astro";
   const usdR = (n: number) => usd(Math.round(n / 1000) * 1000);
   const f = () => (st.unit === "ft" ? FT : 1);
   const out = (k: string, v: string) => { const e = root.querySelector(`[data-o="${k}"]`); if (e) e.textContent = v; };
-  const fill = () => { inp.area.value = show(st.area * f()); inp.rent.value = show(st.inc); inp.own.value = show(st.own); inp.country.value = st.c; };
+  const fill = () => { inp.area.value = show(st.area * f()); inp.rent.value = show(st.inc); inp.country.value = st.c; };
   const calc = () => {
     const m = MARKETS[st.c];
     const units = st.area * NET * (st.lv === 2 ? 1 + LV2 : 1);
     const rev = units * m.ss * OCC, roy = rev * ROY;
-    const now = st.inc - st.own, ss = rev - roy - st.own, cap = m.cap / 100;
+    const now = st.inc, ss = rev - roy, cap = m.cap / 100;
     out("units", `${show(units * f())} ${st.unit === "ft" ? "sq ft" : "m²"}`);
     out("rev", `${usd(rev)} a month`); out("roy", `−${usd(roy)}`);
     out("incNow", usd(now)); out("incSS", usd(ss));
@@ -108,8 +102,7 @@ import Units from "./Units.astro";
   inp.country.addEventListener("change", () => { setMarket(inp.country.value); (window as any).dataLayer?.push({ event: "calc_country", country: st.c }); });
   inp.area.addEventListener("input", () => { st.area = num(inp.area.value) / f(); if (!st.incSet) { st.inc = Math.round((st.area * MARKETS[st.c].rent) / 10) * 10; inp.rent.value = show(st.inc); } calc(); });
   inp.rent.addEventListener("input", () => { st.inc = num(inp.rent.value); st.incSet = true; calc(); });
-  inp.own.addEventListener("input", () => { st.own = num(inp.own.value); calc(); });
-  [inp.area, inp.rent, inp.own].forEach((e) => e.addEventListener("blur", () => { fill(); (window as any).dataLayer?.push({ event: "calc_change" }); }));
+  [inp.area, inp.rent].forEach((e) => e.addEventListener("blur", () => { fill(); (window as any).dataLayer?.push({ event: "calc_change" }); }));
   root.querySelectorAll<HTMLButtonElement>("[data-lv]").forEach((b) => b.addEventListener("click", () => {
     st.lv = +b.dataset.lv!; root.querySelectorAll("[data-lv]").forEach((x) => x.classList.toggle("on", x === b)); calc(); }));
   setMarket("ae");
@@ -149,7 +142,6 @@ import Units from "./Units.astro";
   .opt.on i { background-image: url(/assets/figma/radio-on.svg); }
   .res { flex: none; width: 507px; align-self: stretch; background: var(--gray-900); color: var(--white); border-radius: 25px; padding: 32px; display: flex; flex-direction: column; gap: 24px; }
   .res h3 { color: var(--brand); }
-  .dd--soft { color: var(--gray-400); font-size: 14px; }
   .res dl div { display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--gray-700); font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; }
   .box { background: var(--gray-800); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
   .box > span { font-weight: 500; font-size: 16px; line-height: 24px; }
