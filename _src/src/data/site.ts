@@ -8,8 +8,9 @@ export const CONTACTS = {
 // Кейсы первого экрана: доход владельца за всё помещение в месяц, до и после (CMO 22.11.2026: без пересчёта на м²).
 // Бангкок: шопхаус 37 м², ฿5 000 аренды → ~฿23 000 после комиссии 20 % (финмодель Романенкова, решение CMO 21.11.2026).
 // В долларах (CMO 22.11.2026: все цифры в $): $858,6 выручки модели × 0,8 = $687 → «$690»; ฿5 000 / 33,6 (курс модели) = $149 → «$150».
-// Шарджа и Таллин: пример на площади по умолчанию калькулятора × ставки макета v7 (Шарджа 250 м² × $12 → $58 – модель
-// Романенкова 24.09; Таллин 300 м² × $7 → $35 – заглушка макета). НЕ проверены: до публикации заменить или скрыть город.
+// Шарджа (CMO 22.11.2026): модель Романенкова 24.09 – 185 м² пола (238 с уличной частью, 301 арендопригодно с антресолью),
+// рынок сдал бы по $12/м² = $2,220, чистая прибыль ~$9,700/мес (со слов Романенкова, встреча 24.09) = 4,4×. Подтвердить файлом модели.
+// Таллин 300 м² × $7 → $35 – заглушка макета v7, НЕ проверен: до публикации заменить или скрыть город.
 export type City = {
   id: string; name: string; region: string; verified: boolean;
   before: string; after: string;            // доход за всё помещение в месяц
@@ -22,8 +23,8 @@ export const CITIES: City[] = [
   { id: "bangkok", name: "Bangkok", region: "Southeast Asia", verified: true, before: "$150", after: "$690",
     space: "37 m² shophouse", note: "SpaceHub forecast for a real property, after our 20% fee",
     photos: { before: "/assets/case-bkk-before.jpg", after: "/assets/case-bkk-after.jpg" } },
-  { id: "sharjah", name: "Sharjah", region: "Middle East", verified: false, before: "$3,000", after: "$14,500",
-    space: "250 m² warehouse unit", note: "Example at our model rates for Sharjah. Photos: SpaceHub Al Quoz, Dubai",
+  { id: "sharjah", name: "Sharjah", region: "Middle East", verified: false, before: "$2,220", after: "$9,700",
+    space: "185 m² unit with a loft tier", note: "SpaceHub model for a real property, after our 20% fee. Photos: SpaceHub Al Quoz, Dubai",
     photos: { before: "/assets/case-uae-before.jpg", after: "/assets/case-uae-after.jpg" } },
   { id: "tallinn", name: "Tallinn", region: "Europe", verified: false, before: "$2,100", after: "$10,500",
     space: "300 m² industrial floor", note: "Example at our model rates for Tallinn. Photos: SpaceHub Tammsaare, Tallinn",

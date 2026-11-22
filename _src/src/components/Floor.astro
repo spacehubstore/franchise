@@ -72,16 +72,16 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
         <div class="ln">
           <svg viewBox="0 0 560 230" aria-hidden="true">
             <line class="ln__g" x1="40" y1="200" x2="460" y2="200" /><line class="ln__g" x1="40" y1="115" x2="460" y2="115" /><line class="ln__g" x1="40" y1="30" x2="460" y2="30" />
-            <text class="ln__ax" x="34" y="204">$0</text><text class="ln__ax" x="34" y="119">$7.5k</text><text class="ln__ax" x="34" y="34">$15k</text>
+            <text class="ln__ax" x="34" y="204">$0</text><text class="ln__ax" x="34" y="119">$6k</text><text class="ln__ax" x="34" y="34">$12k</text>
             <defs><clipPath id="ln-clip"><rect class="ln__clip" x="0" y="0" width="0" height="230" /></clipPath></defs>
             <g clip-path="url(#ln-clip)"><path class="ln__one" d="" /><path class="ln__many" d="" /></g>
             <text class="ln__ax ln__m" x="40" y="222">Month 1</text><text class="ln__ax ln__m ln__end" x="460" y="222">12</text>
           </svg>
-          <div class="ln__lab ln__lab--many" data-l="many"><b>25 tenants</b><span>$14,500</span></div>
-          <div class="ln__lab ln__lab--one" data-l="one"><b>1 tenant</b><span>$3,000</span></div>
+          <div class="ln__lab ln__lab--many" data-l="many"><b>25 tenants</b><span>$9,700</span></div>
+          <div class="ln__lab ln__lab--one" data-l="one"><b>1 tenant</b><span>$2,220</span></div>
           <i class="ln__dot ln__dot--many" data-h="many"></i><i class="ln__dot ln__dot--one" data-h="one"></i>
         </div>
-        <p class="foot">Example: 250 m² in Sharjah at our model rates. Tenant changes are illustrative</p>
+        <p class="foot">Example: 185 m² unit in Sharjah, SpaceHub model, after our 20% fee. Tenant changes are illustrative</p>
       </div>
       <span class="stage__n" data-count>1 / {items.length}</span>
     </div>
@@ -117,10 +117,10 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
     sc._t = window.setTimeout(() => { v.playbackRate = RATE; v.play().catch(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); }); }, +(v.dataset.pre || 0));
   }
 
-  // график сцены 4 (CMO 22.11.2026): доход в $ за 12 месяцев. 25 арендаторов × $580 = $14,500 (Шарджа, 250 м², ставки модели),
+  // график сцены 4 (CMO 22.11.2026): доход в $ за 12 месяцев. 25 арендаторов × $388 = $9,700 и 1 арендатор $2,220 (Шарджа, модель Романенкова 24.09),
   // 1 арендатор $3,000; арендаторы уходят и приходят (иллюстрация). Линии и подписи на их концах бегут слева направо, события ±N всплывают
   const MANY = [25, 25, 24, 24, 25, 26, 25, 23, 24, 25, 26, 25], ONE = [1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1];
-  const X = (m: number) => 40 + m * (420 / 11), Y = (usd: number) => 200 - usd * 170 / 15000;
+  const X = (m: number) => 40 + m * (420 / 11), Y = (usd: number) => 200 - usd * 170 / 12000;
   const usd = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
   const pts = (arr: number[], per: number) => arr.map((n, m) => [X(m), Y(n * per)] as [number, number]);
   const smooth = (p: [number, number][]) => p.reduce((d, [x, y], i) => {
@@ -130,7 +130,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   }, "");
   function runChart(sc: HTMLElement, instant: boolean) {
     const svg = sc.querySelector("svg")!, box = sc.querySelector<HTMLElement>(".ln")!;
-    const P = { many: pts(MANY, 580), one: pts(ONE, 3000) };
+    const P = { many: pts(MANY, 388), one: pts(ONE, 2220) };
     svg.querySelector(".ln__many")!.setAttribute("d", smooth(P.many));
     svg.querySelector(".ln__one")!.setAttribute("d", smooth(P.one));
     // у копии сцены в мобильном списке тот же id – делаем свой, иначе линии режет чужой clipPath
@@ -153,7 +153,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
       const p = D ? Math.min(1, Math.max(0, (now - t0) / D)) : 1, xm = 40 + 420 * p, m = Math.min(11, Math.floor(p * 11 + 1e-6));
       clip.setAttribute("width", String(xm));
       for (const k of ["many", "one"] as const) {
-        const arr = k === "many" ? MANY : ONE, per = k === "many" ? 580 : 3000, pp = P[k];
+        const arr = k === "many" ? MANY : ONE, per = k === "many" ? 388 : 2220, pp = P[k];
         const f = Math.min(1, p * 11 - m), y = m < 11 ? pp[m][1] + (pp[m + 1][1] - pp[m][1]) * (3 * f * f - 2 * f * f * f) : pp[11][1];
         place(heads[k], xm, y);
         place(labs[k], 40, pp[0][1]);
