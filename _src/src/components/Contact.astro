@@ -27,7 +27,6 @@ const next = [
     <form class="cf" data-cf novalidate>
       <h3>Get a free assessment</h3>
       <label class="cf__f"><span>Name</span><input name="name" autocomplete="name" placeholder="Your name" /></label>
-      <label class="cf__f"><span>Email</span><input name="email" type="email" autocomplete="email" placeholder="Your email" /></label>
       <label class="cf__f"><span>City</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
       <div class="cf__f cf__ph">
         <span>Phone number</span>
@@ -55,7 +54,7 @@ const next = [
     const f = new FormData(form);
     const { ok, phone } = checkForm(form, "contact");
     if (!ok) return;
-    const how = await sendLead({ form: "contact", name: f.get("name"), email: f.get("email"), city: f.get("city"), phone },
+    const how = await sendLead({ form: "contact", name: f.get("name"), city: f.get("city"), phone },
                                `Franchise request. ${f.get("name")}, ${phone}, ${f.get("city") || ""}`);
     (window as any).dataLayer?.push({ event: "franchise_callback_form_sent", form_location: "contact", site_variant: location.pathname, delivery: how });
     form.querySelector<HTMLElement>("[data-cf-ok]")!.hidden = false;
