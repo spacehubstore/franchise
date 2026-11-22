@@ -21,7 +21,7 @@ export type City = {
 
 // Порядок и состав – CMO 23.11.2026: Шарджа, Бангкок, Рига. Фото Шарджи и Риги – иллюстрации (генерация по типажу местных
 // помещений: landing-icons/gen_cases.py, «после» плотное – gen_cases2.py), не фото объектов. Рига – расчёт SpaceHub по лиду (amoCRM 35552471): 176 м² × $5,5 сейчас →
-// 234 м² по нашей планировке × $17,6 (ставка Таллина по сайту без акции, €16) × 90 % × 80 %; склад не открыт (F-1784).
+// 234 м² по нашей планировке × $24,2 (€22, ставка Риги по решению CMO 23.11, курс ЕЦБ 1,099) × 90 % × 80 % = $4,070 (4,2×); склад не открыт (F-1784).
 export const CITIES: City[] = [
   { id: "sharjah", name: "Sharjah", region: "Middle East", verified: false, before: "$2,220", after: "$9,700",
     space: "185 m²", note: "SpaceHub model, after management commission",
@@ -29,7 +29,7 @@ export const CITIES: City[] = [
   { id: "bangkok", name: "Bangkok", region: "Southeast Asia", verified: true, before: "$150", after: "$690",
     space: "37 m²", note: "SpaceHub model, after management commission",
     photos: { before: "/assets/case-bkk-before", after: "/assets/case-bkk-after" } },
-  { id: "riga", name: "Riga", region: "Europe", verified: false, before: "$970", after: "$2,970",
+  { id: "riga", name: "Riga", region: "Europe", verified: false, before: "$970", after: "$4,070",
     space: "176 m²", note: "SpaceHub model, after management commission",
     photos: { before: "/assets/case-rig-before", after: "/assets/case-rig-after" } },
 ];
