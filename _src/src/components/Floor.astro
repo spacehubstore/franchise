@@ -61,13 +61,15 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
         <div class="fr fr--s3"><video src={V("s3")} poster={F("s3").a} muted playsinline preload="metadata" data-pre="900"></video></div>
         <div class="phone"><img src="/assets/figma/inc-phone.webp" alt="" loading="lazy" /><div class="slide"><span class="slide__t slide__t--a">Open</span><span class="slide__t slide__t--b">Unlocked</span><i class="knob"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i></div></div>
         <svg class="sig" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M2 30 C 30 2, 70 2, 98 24" /></svg>
-        <ol class="steps3"><li>Booked online</li><li>Paid in the app</li><li>Unit opened, no staff</li></ol>
+        <div class="cap">
+          <div class="cap__a"><small>Self-service, 24/7</small><b>Booked and paid online</b><span>no office visit</span></div>
+          <div class="cap__b"><small>Self-service, 24/7</small><b>Opened from the phone</b><span>no keys, no staff on site</span></div>
+        </div>
       </div>
 
       <div class="vis sc s4" data-vis="3" data-ms="3000" data-chart>
-        <div class="cap">
-          <div class="cap__a"><small>Monthly income, 12 months</small><b>1 tenant vs 25 tenants</b><span>the same 250 m² floor</span></div>
-          <div class="cap__b"><small>Monthly income, 12 months</small><b>~5× the income</b><span>and no month at zero</span></div>
+        <div class="cap cap--static">
+          <div class="cap__a"><small>Monthly income, 12 months</small><b>1 tenant vs 25 tenants</b><span>the same floor, month by month</span></div>
         </div>
         <div class="ln">
           <svg viewBox="0 0 560 230" aria-hidden="true">
@@ -77,8 +79,9 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
             <g clip-path="url(#ln-clip)"><path class="ln__one" d="" /><path class="ln__many" d="" /></g>
             <text class="ln__ax ln__m" x="40" y="222">Month 1</text><text class="ln__ax ln__m ln__end" x="460" y="222">12</text>
           </svg>
-          <div class="ln__head ln__head--many" data-h="many"><b>25 tenants</b><span>$14,500</span></div>
-          <div class="ln__head ln__head--one" data-h="one"><b>1 tenant</b><span>$3,000</span></div>
+          <div class="ln__lab ln__lab--many" data-l="many"><b>25 tenants</b><span>$14,500</span></div>
+          <div class="ln__lab ln__lab--one" data-l="one"><b>1 tenant</b><span>$3,000</span></div>
+          <i class="ln__dot ln__dot--many" data-h="many"></i><i class="ln__dot ln__dot--one" data-h="one"></i>
         </div>
         <p class="foot">Example: 250 m² in Sharjah at our model rates. Tenant changes are illustrative</p>
       </div>
@@ -137,6 +140,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
     cp.id = id; svg.querySelector("g[clip-path]")!.setAttribute("clip-path", `url(#${id})`);
     const clip = svg.querySelector<SVGRectElement>(".ln__clip")!;
     const heads = { many: box.querySelector<HTMLElement>('[data-h="many"]')!, one: box.querySelector<HTMLElement>('[data-h="one"]')! };
+    const labs = { many: box.querySelector<HTMLElement>('[data-l="many"]')!, one: box.querySelector<HTMLElement>('[data-l="one"]')! };
     box.querySelectorAll(".ln__ev").forEach((e) => e.remove());
     const D = instant ? 0 : 2400, t0 = performance.now(); let lastM = 0;
     const place = (el: HTMLElement, x: number, y: number) => {
@@ -154,8 +158,9 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
         const arr = k === "many" ? MANY : ONE, per = k === "many" ? 580 : 3000, pp = P[k];
         const f = Math.min(1, p * 11 - m), y = m < 11 ? pp[m][1] + (pp[m + 1][1] - pp[m][1]) * (3 * f * f - 2 * f * f * f) : pp[11][1];
         place(heads[k], xm, y);
-        heads[k].querySelector("b")!.textContent = `${arr[m]} tenant${arr[m] === 1 ? "" : "s"}`;
-        heads[k].querySelector("span")!.textContent = usd(arr[m] * per);
+        place(labs[k], 40, pp[0][1]);
+        const lb = labs[k].querySelector("b")!, lv = labs[k].querySelector("span")!, nt = `${arr[m]} tenant${arr[m] === 1 ? "" : "s"}`;
+        if (lb.textContent !== nt) { lb.textContent = nt; lv.textContent = usd(arr[m] * per); labs[k].classList.remove("blip"); void labs[k].offsetWidth; labs[k].classList.add("blip"); }
         if (D && m > lastM) for (let j = lastM + 1; j <= m; j++) {
           const dn = arr[j] - arr[j - 1];
           if (dn) ev(X(j), pp[j][1], (dn > 0 ? "+" : "−") + Math.abs(dn), dn > 0);
@@ -307,7 +312,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .is-cap .cap__b .meter u { width: calc(var(--w) * 100%); }
 
   /* 3: приложение открывает бокс */
-  .fr--s3 { width: 80%; margin-left: 26%; }
+  .fr--s3 { width: 74%; margin-left: 30%; margin-top: 8%; }
   .phone { position: absolute; left: 3%; bottom: 5%; width: 25%; }
   .phone img { width: 100%; filter: drop-shadow(0 20px 30px rgba(0,0,0,.12)); }
   /* ползунок «Open» поверх нарисованного в телефоне (Figma inc-phone: дорожка x 52–549, y 977–1088 из 600×1225) */
@@ -326,14 +331,6 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .sig { position: absolute; left: 22%; top: 38%; width: 22%; height: 12%; overflow: visible; }
   .sig path { fill: none; stroke: var(--brand); stroke-width: 2.5; stroke-dasharray: 5 6; vector-effect: non-scaling-stroke; opacity: 0; }
   .is-on .sig path { animation: in .25s .85s forwards, flow .8s linear .85s 3; }
-  .steps3 { position: absolute; right: 5%; top: 6%; list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .steps3 li { background: var(--white); border-radius: 100px; padding: 8px 14px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 22px rgba(0,0,0,.08); opacity: 0; transform: translateX(10px); transition: opacity .35s, transform .35s; }
-  .steps3 li::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--brand); vertical-align: 1px; }
-  .is-on .steps3 li:nth-child(1) { animation: in .3s 0s forwards; }
-  .is-on .steps3 li:nth-child(2) { animation: in .3s .25s forwards; }
-  .steps3 li:nth-child(3) { background: var(--brand); color: var(--white); }
-  .steps3 li:nth-child(3)::before { background: var(--white); }
-  .is-cap .steps3 li:nth-child(3) { opacity: 1; transform: none; }
 
   /* 4: две линии дохода в $ за 12 месяцев; подпись каждой линии бежит на её конце, события ±N всплывают и гаснут */
   .s4 { flex-direction: column; justify-content: center; padding: 16% 6% 8%; }
@@ -345,13 +342,17 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .ln__one, .ln__many { fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .ln__many { stroke: var(--brand); stroke-width: 5; }
   .ln__one { stroke: var(--gray-400); stroke-width: 4; }
-  .ln__head { position: absolute; transform: translate(10px, -50%); display: flex; flex-direction: column; line-height: 1.1; white-space: nowrap; pointer-events: none; }
-  .ln__head b { font-size: 12px; font-weight: 600; color: var(--gray-500); }
-  .ln__head span { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; font-variant-numeric: tabular-nums; }
-  .ln__head--many span { color: var(--brand); }
-  .ln__head--one span { color: var(--gray-600); }
-  .ln__head::before { content: ""; position: absolute; left: -16px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
-  .ln__head--many::before { background: var(--brand); } .ln__head--one::before { background: var(--gray-400); }
+  /* подпись линии закреплена над её началом, цифры меняются по ходу; на конце линии – точка */
+  .ln__lab { position: absolute; transform: translate(0, calc(-100% - 8px)); display: flex; align-items: baseline; gap: 8px; white-space: nowrap; pointer-events: none; }
+  .ln__lab b { font-size: 13px; font-weight: 600; color: var(--gray-600); font-variant-numeric: tabular-nums; }
+  .ln__lab span { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; font-variant-numeric: tabular-nums; }
+  .ln__lab--many span { color: var(--brand); } .ln__lab--one span { color: var(--gray-600); }
+  .ln__lab.blip span { animation: blip .35s ease-out; }
+  @keyframes blip { 40% { transform: scale(1.12); } }
+  .ln__lab span { display: inline-block; transform-origin: left center; }
+  .ln__dot { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); pointer-events: none; }
+  .ln__dot--many { background: var(--brand); } .ln__dot--one { background: var(--gray-400); }
+  .cap--static .cap__a { opacity: 1 !important; transform: none !important; }
   :global(.ln__ev) { position: absolute; transform: translate(-50%, -100%); font-style: normal; font-weight: 700; font-size: 12px; padding: 2px 7px; border-radius: 100px;
                      background: var(--gray-900); color: #fff; pointer-events: none; animation: ev .9s ease-out forwards; }
   :global(.ln__ev--up) { background: var(--brand); }
@@ -379,10 +380,9 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
     .acc__it > .vis { display: flex; position: relative; opacity: 1; min-height: 300px; padding: 84px 0 28px; margin-top: 16px; border-radius: 20px; border: 1px solid var(--gray-200); background: #fff; overflow: hidden; }
     .cap { top: 10px; left: 10px; min-width: 0; max-width: 70%; }
     .cap > div { padding: 8px 12px; } .cap b { font-size: 17px; line-height: 20px; } .cap span { font-size: 11px; line-height: 14px; }
-    .steps3 { top: 10px; right: 10px; } .steps3 li { font-size: 11px; padding: 5px 10px; }
     .foot { bottom: 8px; font-size: 11px; }
     .acc__it > .s4 { padding: 84px 10px 32px; }
     .acc__it > .s4 .foot { position: static; margin-top: 10px; }
-    .ln__head span { font-size: 15px; } .ln__head b { font-size: 10px; }
+    .ln__lab span { font-size: 15px; } .ln__lab b { font-size: 11px; }
   }
 </style>
