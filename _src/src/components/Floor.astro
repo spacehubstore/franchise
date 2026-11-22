@@ -36,7 +36,8 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
       <div class="stat">
         <img class="stat__glow" src="/assets/figma/glow-49.svg" alt="" aria-hidden="true" />
         <b>+7–8%</b>
-        <span>a year: self-storage market growth in the Middle East, Africa and Asia Pacific</span>
+        <!-- Grand View Research (Horizon), прогноз 2026–2033, проверено 22.11.2026: APAC 8,4 %, LatAm 8,0 %, MEA 7,2 %, Европа 7,0 % -->
+        <span>a year: self-storage market growth in Asia, the Middle East, Europe and Latin America<small>Grand View Research, forecast 2026–2033</small></span>
       </div>
     </div>
 
@@ -281,6 +282,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .stat__glow { position: absolute; right: -100px; top: -63px; width: 418px; max-width: none; pointer-events: none; }
   .stat b { position: relative; flex: none; font-weight: 700; font-size: 44px; line-height: 1; letter-spacing: -1px; color: var(--brand); }
   .stat span { position: relative; font-weight: 500; font-size: 15px; line-height: 21px; }
+  .stat small { display: block; margin-top: 4px; font-size: 11px; line-height: 14px; color: var(--gray-500); }
 
   .stage { position: relative; height: clamp(400px, calc(100svh - var(--hdr-h) - 140px), 600px); border-radius: var(--radius-l); background: #fff; border: 1px solid var(--gray-200); overflow: hidden; }
   .stage__n { position: absolute; right: 16px; bottom: 12px; font-size: 12px; font-weight: 600; color: var(--gray-400); font-variant-numeric: tabular-nums; }
