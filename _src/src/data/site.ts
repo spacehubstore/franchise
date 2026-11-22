@@ -26,9 +26,6 @@ export const CITIES: City[] = [
   { id: "sharjah", name: "Sharjah", region: "Middle East", verified: false, before: "$2,220", after: "$9,700",
     space: "185 m²", note: "SpaceHub model, after management commission",
     photos: { before: "/assets/case-uae-before.jpg", after: "/assets/case-uae-after.jpg" } },
-  { id: "tallinn", name: "Tallinn", region: "Europe", verified: false, before: "$2,100", after: "$10,500",
-    space: "300 m²", note: "SpaceHub model, after management commission",
-    photos: { before: "/assets/case-tll-before.jpg", after: "/assets/case-tll-after.jpg" } },
 ];
 
 // Приёмник заявок: сервис в Google Cloud → amoCRM (решение CMO 22.11.2026, вариант «а»). Пока адреса нет – заявка уходит
