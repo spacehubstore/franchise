@@ -63,9 +63,9 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
     (["before", "after", "name", "space", "note"] as const).forEach((k) => (box.querySelector(`[data-v=${k}]`)!.textContent = c[k]));
     const ba = box.querySelector<HTMLElement>(".ba")!; ba.classList.remove("is-pop"); void ba.offsetWidth; ba.classList.add("is-pop");
   };
-  // автопереключение кейсов (CMO 23.11.2026): раз в 7 с, тонкая полоска прогресса под активной вкладкой;
+  // автопереключение кейсов (CMO 23.11.2026): раз в 5 с, тонкая полоска прогресса под активной вкладкой;
   // клик по вкладке или движение слайдера останавливает автопоказ; пауза при наведении и когда первый экран не виден
-  const STEP = 7000;
+  const STEP = 5000;
   let auto = !matchMedia("(prefers-reduced-motion: reduce)").matches, hover = false, seen = true, left = STEP, last = performance.now();
   const cur = () => tabs.findIndex((t) => t.classList.contains("tab--on"));
   const bar = () => tabs.forEach((t, i) => t.style.setProperty("--p", i === cur() && auto ? String(1 - left / STEP) : "0"));
