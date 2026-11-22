@@ -1,0 +1,50 @@
+---
+// Единое окно заявки (CMO 22.11.2026): калькулятор, «Feasibility study» и другие кнопки открывают его через lib/leadModal.ts.
+// Поля одни и те же везде: имя, город, телефон с маской страны, согласие. Email не спрашиваем.
+---
+<dialog class="cm" data-lead-modal aria-labelledby="lm-h">
+  <form class="cm__f" novalidate>
+    <button type="button" class="cm__x" data-lm-close aria-label="Close">×</button>
+    <h3 id="lm-h" data-lm-h></h3>
+    <p class="cm__lead" data-lm-lead></p>
+    <label class="cf__f"><span>Name</span><input name="name" autocomplete="name" placeholder="Your name" /></label>
+    <label class="cf__f"><span>City</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
+    <div class="cf__f cf__ph"><span>Phone number</span>
+      <select name="code" aria-label="Country code"></select><i></i>
+      <input name="phone" type="tel" autocomplete="tel-national" placeholder="81 234 5678" />
+    </div>
+    <div class="cf__checks">
+      <label><input type="checkbox" name="agree" /> <span>I agree to the processing of my data under the <a href="https://spacehubstore.com/thailand/en/privacy" target="_blank" rel="noopener">privacy policy</a></span></label>
+    </div>
+    <button class="btn btn--or" type="submit">Send</button>
+    <div class="cm__ok" hidden data-lm-ok><b>Thank you</b><span>Alexey will get in touch within 1 working hour</span></div>
+  </form>
+</dialog>
+
+<style>
+  .cm { margin: auto; width: min(480px, calc(100vw - 32px)); max-height: calc(100svh - 32px); padding: 0; border: 0; border-radius: 25px; background: var(--white); color: var(--gray-900);
+        box-shadow: 0 30px 80px rgba(0,0,0,.3); }
+  .cm::backdrop { background: rgba(24,24,27,.55); backdrop-filter: blur(3px); }
+  .cm[open] { animation: cmIn .25s cubic-bezier(.2,.8,.2,1); }
+  @keyframes cmIn { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+  .cm__f { position: relative; display: flex; flex-direction: column; gap: 18px; padding: 32px 28px 26px; }
+  .cm__x { position: absolute; right: 14px; top: 12px; width: 36px; height: 36px; border-radius: 50%; font-size: 24px; line-height: 1; color: var(--gray-500); }
+  .cm__x:hover { background: var(--gray-100); }
+  .cm h3 { font-weight: 700; font-size: 24px; line-height: 28px; padding-right: 30px; }
+  .cm__lead { margin-top: -10px; font-size: 15px; line-height: 21px; color: var(--gray-600); }
+  .cm .cf__f { position: relative; display: flex; align-items: center; gap: 10px; height: 52px; border: 1px solid var(--gray-300); border-radius: 12px; padding: 0 14px; }
+  .cm .cf__f:focus-within { border-color: var(--gray-900); }
+  .cm .cf__f > span { position: absolute; left: 10px; top: -9px; padding: 0 4px; background: var(--white); font-weight: 500; font-size: 13px; color: var(--gray-500); }
+  .cm .cf__f input, .cm .cf__f select { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: 500 15px "Manrope", sans-serif; color: var(--gray-900); }
+  .cm .cf__ph select { flex: none; }
+  .cm .cf__ph i { width: 1px; height: 22px; background: var(--gray-300); }
+  .cm .cf__checks { display: flex; flex-direction: column; gap: 10px; font-weight: 500; font-size: 14px; line-height: 20px; color: #333; }
+  .cm .cf__checks label { display: flex; gap: 10px; align-items: flex-start; }
+  .cm .cf__checks input { width: 18px; height: 18px; margin-top: 1px; accent-color: var(--brand); flex: none; }
+  .cm .cf__checks a { text-decoration: underline; }
+  .cm .btn--or { width: 100%; }
+  .cm .cf__err { color: var(--brand); font-size: 14px; }
+  .cm__ok { position: absolute; inset: 0; border-radius: 25px; background: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 32px; }
+  .cm__ok[hidden] { display: none; }
+  .cm__ok b { font-size: 26px; } .cm__ok span { color: var(--gray-600); }
+</style>

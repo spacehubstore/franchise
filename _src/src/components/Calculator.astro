@@ -66,31 +66,10 @@ import Units from "./Units.astro";
   </div>
 </section>
 
-<!-- окно заявки калькулятора (CMO 22.11.2026): поля как в «Let's discuss your project», расчёт уходит в заявку -->
-<dialog class="cm" data-calc-modal aria-labelledby="cm-h">
-  <form class="cm__f" data-cm-form novalidate>
-    <button type="button" class="cm__x" data-cm-close aria-label="Close">×</button>
-    <h3 id="cm-h">Exact calculation for your space</h3>
-    <p class="cm__lead">We check the address and come back with layout, budget and income</p>
-    <label class="cf__f"><span>Name</span><input name="name" autocomplete="name" placeholder="Your name" /></label>
-    <label class="cf__f"><span>Email</span><input name="email" type="email" autocomplete="email" placeholder="Your email" /></label>
-    <label class="cf__f"><span>City</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
-    <div class="cf__f cf__ph"><span>Phone number</span>
-      <select name="code" aria-label="Country code"></select><i></i>
-      <input name="phone" type="tel" autocomplete="tel-national" placeholder="81 234 5678" />
-    </div>
-    <div class="cf__checks">
-      <label><input type="checkbox" name="agree" /> <span>I agree to the processing of my data under the <a href="https://spacehubstore.com/thailand/en/privacy" target="_blank" rel="noopener">privacy policy</a></span></label>
-    </div>
-    <button class="btn btn--or" type="submit">Send</button>
-    <div class="cm__ok" hidden data-cm-ok><b>Thank you</b><span>Alexey will contact you within 1 working hour</span></div>
-  </form>
-</dialog>
 
 <script>
   import { onUnit } from "../lib/units";
-  import { sendLead } from "../lib/lead";
-  import { initForm, checkForm, setPhoneCountry, refillForm } from "../lib/forms";
+  import { openLead } from "../lib/leadModal";
   const MARKETS: Record<string, { name: string; area: number; rent: number; ss: number; cap: number; now?: number }> = {
     ae: { name: "UAE · Sharjah", area: 238, rent: 12, ss: 46, cap: 8.5, now: 2220 },
     th: { name: "Thailand · Bangkok", area: 200, rent: 5, ss: 20, cap: 8 },
@@ -139,31 +118,13 @@ import Units from "./Units.astro";
   root.querySelectorAll<HTMLButtonElement>("[data-lv]").forEach((b) => b.addEventListener("click", () => {
     st.lv = +b.dataset.lv!; root.querySelectorAll("[data-lv]").forEach((x) => x.classList.toggle("on", x === b)); calc(); touched(); }));
   setMarket("ae");
-  // окно заявки
-  const dlg = document.querySelector<HTMLDialogElement>("[data-calc-modal]")!, form = dlg.querySelector<HTMLFormElement>("[data-cm-form]")!;
-  initForm(form);
-  // город подставляется из калькулятора, его можно исправить; расчёт уходит в заявку без показа (CMO 22.11.2026)
-  const cityIn = dlg.querySelector<HTMLInputElement>('input[name="city"]')!;
-  root.querySelector("[data-open-calc]")!.addEventListener("click", () => {
-    refillForm(form);
-    if (!cityIn.dataset.touched) cityIn.value = st.c === "xx" ? "" : String(last.market).split(" · ").pop()!;
-    setPhoneCountry(form, { ae: "AE", th: "TH", ee: "EE" }[st.c] || "");
-    dlg.showModal();
-  });
-  cityIn.addEventListener("input", () => (cityIn.dataset.touched = "1"));
-  dlg.querySelector("[data-cm-close]")!.addEventListener("click", () => dlg.close());
-  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const fd = new FormData(form);
-    const { ok, phone } = checkForm(form, "calculator");
-    if (!ok) return;
-    const city = fd.get("city");
-    const how = await sendLead({ form: "calculator", name: fd.get("name"), email: fd.get("email"), city, phone, calc: last },
-      `Franchise request from the calculator: ${last.market}, ${last.area_m2} m², ${last.levels} level(s), earns $${last.earns_now_usd} → $${last.income_usd} a month. ${fd.get("name")}, ${phone}, ${city || ""}`);
-    (window as any).dataLayer?.push({ event: "franchise_callback_form_sent", form_location: "calculator", site_variant: location.pathname, delivery: how });
-    form.querySelector<HTMLElement>("[data-cm-ok]")!.hidden = false;
-  });
+  // заявка – общее окно (LeadModal): город и страна из калькулятора, расчёт уходит в заявку без показа
+  root.querySelector("[data-open-calc]")!.addEventListener("click", () => openLead({
+    form: "calculator", title: "Exact calculation for your space", lead: "We check the address and come back with layout, budget and income",
+    city: st.c === "xx" ? "" : String(last.market).split(" · ").pop()!, country: ({ ae: "AE", th: "TH", ee: "EE" } as Record<string, string>)[st.c] || "",
+    data: { calc: last },
+    text: (who) => `Franchise request from the calculator: ${last.market}, ${last.area_m2} m², ${last.levels} level(s), earns $${last.earns_now_usd} → $${last.income_usd} a month. ${who}`,
+  }));
   onUnit((u) => {
     st.unit = u; fill(); calc();
     const h = u === "ft" ? "16 ft" : "4.8 m";
@@ -173,32 +134,6 @@ import Units from "./Units.astro";
 
 <style>
 
-  /* окно заявки калькулятора */
-  .cm { margin: auto; width: min(480px, calc(100vw - 32px)); max-height: calc(100svh - 32px); padding: 0; border: 0; border-radius: 25px; background: var(--white); color: var(--gray-900);
-        box-shadow: 0 30px 80px rgba(0,0,0,.3); }
-  .cm::backdrop { background: rgba(24,24,27,.55); backdrop-filter: blur(3px); }
-  .cm[open] { animation: cmIn .25s cubic-bezier(.2,.8,.2,1); }
-  @keyframes cmIn { from { opacity: 0; transform: translateY(12px) scale(.98); } }
-  .cm__f { position: relative; display: flex; flex-direction: column; gap: 18px; padding: 32px 28px 26px; }
-  .cm__x { position: absolute; right: 14px; top: 12px; width: 36px; height: 36px; border-radius: 50%; font-size: 24px; line-height: 1; color: var(--gray-500); }
-  .cm__x:hover { background: var(--gray-100); }
-  .cm h3 { font-weight: 700; font-size: 24px; line-height: 28px; padding-right: 30px; }
-  .cm__lead { margin-top: -10px; font-size: 15px; line-height: 21px; color: var(--gray-600); }
-  .cm .cf__f { position: relative; display: flex; align-items: center; gap: 10px; height: 52px; border: 1px solid var(--gray-300); border-radius: 12px; padding: 0 14px; }
-  .cm .cf__f:focus-within { border-color: var(--gray-900); }
-  .cm .cf__f > span { position: absolute; left: 10px; top: -9px; padding: 0 4px; background: var(--white); font-weight: 500; font-size: 13px; color: var(--gray-500); }
-  .cm .cf__f input, .cm .cf__f select { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: 500 15px "Manrope", sans-serif; color: var(--gray-900); }
-  .cm .cf__ph select { flex: none; }
-  .cm .cf__ph i { width: 1px; height: 22px; background: var(--gray-300); }
-  .cm .cf__checks { display: flex; flex-direction: column; gap: 10px; font-weight: 500; font-size: 14px; line-height: 20px; color: #333; }
-  .cm .cf__checks label { display: flex; gap: 10px; align-items: flex-start; }
-  .cm .cf__checks input { width: 18px; height: 18px; margin-top: 1px; accent-color: var(--brand); flex: none; }
-  .cm .cf__checks a { text-decoration: underline; }
-  .cm .btn--or { width: 100%; }
-  .cm .cf__err { color: var(--brand); font-size: 14px; }
-  .cm__ok { position: absolute; inset: 0; border-radius: 25px; background: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 32px; }
-  .cm__ok[hidden] { display: none; }
-  .cm__ok b { font-size: 26px; } .cm__ok span { color: var(--gray-600); }
   .calc { position: relative; overflow: hidden; background: var(--gray-100); padding: 72px var(--gutter); }
   .calc__g1 { position: absolute; left: 831px; top: 384px; width: 1192px; max-width: none; pointer-events: none; }
   .calc__g2 { position: absolute; left: -549px; top: -170px; width: 930px; max-width: none; pointer-events: none; }

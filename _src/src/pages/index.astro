@@ -11,6 +11,7 @@ import Faq from "../components/Faq.astro";
 import Timeline from "../components/Timeline.astro";
 import Contact from "../components/Contact.astro";
 import Footer from "../components/Footer.astro";
+import LeadModal from "../components/LeadModal.astro";
 ---
 <Base>
   <Header />
@@ -26,6 +27,7 @@ import Footer from "../components/Footer.astro";
     <Contact />
   </main>
   <Footer />
+  <LeadModal />
   <script>
     // появление блоков при прокрутке (.rv)
     const rvo = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); rvo.unobserve(e.target); } }),
