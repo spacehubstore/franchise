@@ -126,6 +126,7 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
           </g>
         </svg>
       </div>
+      <button type="button" class="btn btn--or fs__cta fs__cta--m" data-open-study data-ev="study_cta" data-loc="feasibility_bottom">Start with a free assessment</button>
     </div>
   </div>
 </section>
@@ -133,10 +134,10 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
 <script>
   import { openLead } from "../lib/leadModal";
   const root = document.querySelector<HTMLElement>("#study")!;
-  root.querySelector("[data-open-study]")!.addEventListener("click", () => openLead({
+  root.querySelectorAll("[data-open-study]").forEach((b) => b.addEventListener("click", () => openLead({
     form: "feasibility", title: "Free assessment of your space", lead: "We get in touch within 1 working hour and tell you if the space fits. The study comes after, only if it does",
     text: (who) => `Franchise request: free assessment (feasibility block). ${who}`,
-  }));
+  })));
   // Анимация карточек (CMO 22.11.2026: была нестабильной). Запуск – по положению при каждой прокрутке, не по пересечению узкой
   // полосы: при быстрой прокрутке и переходе по якорю полоса проскакивалась, и карточка оставалась пустой. Ролики грузятся целиком
   // (fetch → blob), без частичных запросов, на которых Safari подвисал. Любой сбой или задержка – сразу итоговая картинка.
@@ -209,6 +210,7 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
   .fs__stages .on b { color: var(--brand); }
   .fs__stages .on em { border-color: var(--brand); color: var(--brand); }
   .fs__cta { align-self: flex-start; }
+  .fs__cta--m { display: none; }
 
   .fs__cards { flex: 1; min-width: 0; display: grid; gap: 8px; }
   .fc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 20px; align-items: center; border-radius: 24px; padding: 20px 20px 20px 28px; background: var(--white); color: var(--gray-900); }
@@ -295,6 +297,9 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
     .fs__stages em { margin-left: 0; }
     .fs__stages p, .fs__stages small { padding-left: 46px; }
     .fs__cta { align-self: stretch; }
+    /* мобилка (CMO 23.11.2026): кнопка после финмодели, а не под этапами */
+    .fs__left .fs__cta { display: none; }
+    .fs__cta--m { display: flex; justify-content: center; margin-top: 8px; }
     .fc { grid-template-columns: 1fr; gap: 14px; padding: 20px 14px 14px; }
     .fc__t { padding-inline: 6px; }
     .fc--model { padding: 24px 18px 20px; }
