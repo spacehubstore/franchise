@@ -45,7 +45,6 @@ import Units from "./Units.astro";
       </div>
     </div>
     <div class="res">
-      <button type="button" class="calc__back" data-calc-back><img src="/assets/figma/arrow-left.svg" width="18" height="18" alt="" />Back</button>
       <h3>With SpaceHub</h3>
       <dl>
         <div><dt>Rentable area</dt><dd data-o="units"></dd></div>
@@ -62,7 +61,10 @@ import Units from "./Units.astro";
         <p><em data-o="valNow"></em><img src="/assets/figma/arrow-right.svg" width="24" height="24" alt="" /><strong data-o="valSS"></strong></p>
         <small data-o="cau"></small>
       </div>
-      <button type="button" class="btn btn--or" data-ev="calc_cta" data-loc="calculator" data-open-calc>Get an exact calculation</button>
+      <div class="res__btns">
+        <button type="button" class="btn btn--light calc__back" data-calc-back aria-label="Back to inputs"><img src="/assets/figma/arrow-left.svg" width="20" height="20" alt="" />Back</button>
+        <button type="button" class="btn btn--or" data-ev="calc_cta" data-loc="calculator" data-open-calc>Get an exact calculation</button>
+      </div>
       <small class="res__note">Estimate. Running costs not included</small>
     </div>
   </div>
@@ -199,5 +201,10 @@ import Units from "./Units.astro";
   }
   .calc__go, .calc__back { display: none; }
   .calc__go { width: 100%; justify-content: center; }
-  .calc__back { align-items: center; gap: 6px; align-self: flex-start; font-weight: 600; font-size: 14px; color: var(--gray-600); }
+  /* «Back» рядом с главной кнопкой (CMO 23.11.2026), только на телефоне */
+  .res__btns { display: flex; gap: 10px; }
+  .res__btns .btn--or { flex: 1; }
+  .calc__back { flex: none; align-items: center; gap: 4px; padding-inline: 14px 16px; }
+  .res__btns .btn { padding-inline: 14px; white-space: nowrap; min-width: 0; font-size: 15px; }
+  .res__btns .calc__back { width: auto; }
 </style>
