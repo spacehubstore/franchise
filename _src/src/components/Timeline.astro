@@ -13,9 +13,13 @@ const FILL_MS = 1800;
 const total = stages.reduce((a, s) => a + s.f, 0);
 let acc = 0;
 const at = stages.map((s) => { const v = Math.round((acc / total) * FILL_MS); acc += s.f; return v; });
-const AGREE_MS = Math.round((stages[0].f / total) * FILL_MS);
+// узлы шкалы: старт, границы этапов (первая – подписание договора); середины отрезков – для сроков
+let x = 0;
+const nodes = [{ x: 0, t: 0, agree: false }, ...stages.slice(0, -1).map((s, i) => { x += s.f; return { x: (x / total) * 100, t: Math.round((x / total) * FILL_MS), agree: i === 0 }; })];
+let y = 0;
+const mids = stages.map((s) => { const m = ((y + s.f / 2) / total) * 100; y += s.f; return m; });
 ---
-<section class="tl" id="timeline" data-tl style={`--fill:${FILL_MS}ms;--agree:${AGREE_MS}ms`}>
+<section class="tl" id="timeline" data-tl style={`--fill:${FILL_MS}ms`}>
   <div class="tl__head wrap">
     <h2>From the first call to opening</h2>
     <p>In markets where we already work</p>
@@ -35,11 +39,11 @@ const AGREE_MS = Math.round((stages[0].f / total) * FILL_MS);
       <p>First customers move in</p>
     </div>
     <div class="track" aria-hidden="true">
-      {stages.map((s, i) => <span class="seg" style={`flex:${s.f}`}><em>{s.w}</em></span>)}
-      <i class="track__fill"></i>
-      <span class="agree" style={`left:${(stages[0].f / total) * 100}%`}><i></i><small>Agreement</small></span>
+      <span class="rail"><i class="rail__fill"></i></span>
+      {nodes.map((n) => <i class={`node ${n.agree ? "node--agree" : ""}`} style={`left:${n.x}%;--t:${n.t}ms`}>{n.agree && <small>Agreement</small>}</i>)}
+      {stages.map((s, i) => <em class="dur" style={`left:${mids[i]}%;--t:${at[i]}ms`}>{s.w}</em>)}
     </div>
-    <div class="finish"><i></i><b>10–13 weeks</b><span>to opening</span></div>
+    <div class="finish" style={`--t:${FILL_MS}ms`}><i></i><b>10–13 weeks</b><span>to opening</span></div>
   </div>
 </section>
 
@@ -68,23 +72,24 @@ const AGREE_MS = Math.round((stages[0].f / total) * FILL_MS);
   .st__w { display: none; }
   .st p { font-weight: 500; font-size: 15px; line-height: 22px; color: var(--gray-400); }
 
-  .track { grid-column: 1 / 4; grid-row: 2; position: relative; display: flex; gap: 4px; height: 44px; }
-  .seg { position: relative; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: var(--gray-800); overflow: hidden; }
-  .seg em { position: relative; z-index: 1; font-style: normal; font-weight: 700; font-size: 15px; white-space: nowrap; }
-  .track__fill { position: absolute; inset: 0; border-radius: 10px; background: var(--brand); transform-origin: left; mix-blend-mode: normal; z-index: 0; opacity: .95; }
-  .seg { z-index: 1; background: transparent; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
-  .track { background: linear-gradient(var(--gray-800), var(--gray-800)); border-radius: 10px; }
-  .agree { position: absolute; top: 50%; z-index: 2; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; }
-  .agree i { width: 16px; height: 16px; background: var(--white); border: 3px solid var(--gray-900); transform: rotate(45deg); }
-  .agree small { position: absolute; top: 30px; white-space: nowrap; font-size: 13px; font-weight: 700; color: var(--gray-300); }
-  .finish { grid-column: 4; grid-row: 2; display: flex; flex-direction: column; justify-content: center; padding-left: 8px; position: relative; }
-  .finish i { position: absolute; left: -14px; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 5px rgba(255, 79, 0, .25); }
-  .finish b { font-size: 28px; line-height: 32px; font-weight: 800; }
+  /* шкала: тонкий рельс, узлы на границах этапов, сроки под отрезками; финиш – оранжевый узел с итогом */
+  .track { grid-column: 1 / 4; grid-row: 2; position: relative; height: 56px; }
+  .rail { position: absolute; left: 0; right: 0; top: 14px; height: 4px; border-radius: 4px; background: var(--gray-700); overflow: hidden; }
+  .rail__fill { position: absolute; inset: 0; background: var(--brand); transform-origin: left; }
+  .node { position: absolute; top: 16px; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--gray-900); box-shadow: inset 0 0 0 3px var(--gray-600); transition: box-shadow .3s; transition-delay: var(--t); }
+  .node--agree small { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 3px 9px; border-radius: 99px; background: var(--gray-800); font-style: normal; font-size: 12px; font-weight: 700; color: var(--gray-300); }
+  .dur { position: absolute; top: 30px; transform: translateX(-50%); font-style: normal; font-weight: 700; font-size: 15px; white-space: nowrap; color: var(--gray-400); transition: color .3s; transition-delay: var(--t); }
+  .finish { grid-column: 4; grid-row: 2; position: relative; padding-left: 22px; align-self: start; }
+  .finish i { position: absolute; left: 0; top: 16px; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; background: var(--gray-700); transition: background .3s, box-shadow .3s; transition-delay: var(--t); }
+  .finish b { display: block; font-size: 28px; line-height: 32px; font-weight: 800; margin-top: -1px; }
   .finish span { font-size: 14px; color: var(--gray-400); }
+  .tl.in .node { box-shadow: inset 0 0 0 3px var(--brand); }
+  .tl.in .dur { color: var(--white); }
+  .tl.in .finish i { background: var(--brand); box-shadow: 0 0 0 6px rgba(255, 79, 0, .22); }
 
   /* анимация: шкала заполняется, этапы падают на место по ходу заливки */
-  .tl:not(.in) .track__fill { transform: scaleX(0); }
-  .track__fill { transition: transform var(--fill) cubic-bezier(.45, 0, .55, 1) .15s; }
+  .tl:not(.in) .rail__fill { transform: scaleX(0); }
+  .rail__fill { transition: transform var(--fill) linear .15s; }
   .tl:not(.in) .st { opacity: 0; }
   .tl.in .st { animation: stDrop .7s var(--d) both; }
   @keyframes stDrop {
@@ -93,11 +98,10 @@ const AGREE_MS = Math.round((stages[0].f / total) * FILL_MS);
     72% { transform: translateY(-10px); animation-timing-function: cubic-bezier(.5, 0, 1, .6); }
     86% { transform: none; } 93% { transform: translateY(-3px); } 100% { opacity: 1; transform: none; }
   }
-  .tl:not(.in) .agree, .tl:not(.in) .finish { opacity: 0; }
-  .agree { transition: opacity .25s var(--agree); }
-  .finish { transition: opacity .3s calc(var(--fill) + .1s); }
+  .tl:not(.in) .finish b, .tl:not(.in) .finish span, .tl:not(.in) .node--agree small { opacity: 0; }
+  .finish b, .finish span, .node--agree small { transition: opacity .3s; transition-delay: var(--t); }
   .tl.now .st { animation: none; opacity: 1; }
-  .tl.now .track__fill, .tl.now .agree, .tl.now .finish { transition: none; }
+  .tl.now .rail__fill, .tl.now .node, .tl.now .dur, .tl.now .finish i, .tl.now .finish b, .tl.now .finish span, .tl.now .node--agree small { transition: none; }
 
   @media (max-width: 900px) {
     .tl { padding-block: 64px; gap: 32px; }
@@ -113,7 +117,7 @@ const AGREE_MS = Math.round((stages[0].f / total) * FILL_MS);
     .st__w { display: block; grid-column: 2; font-weight: 700; font-size: 14px; color: var(--brand); }
     .st { grid-template-rows: auto auto auto; }
     .st img { grid-row: 1 / 4; }
-    .finish { grid-column: 1; grid-row: auto; padding: 8px 0 0; text-align: center; align-items: center; }
+    .finish { grid-column: 1; grid-row: auto; padding: 8px 0 0; text-align: center; }
     .finish i { display: none; }
   }
 </style>
