@@ -242,14 +242,13 @@ const STEPS: Record<string, Step[]> = {
 </script>
 
 <style>
-  .qz { position: relative; overflow: hidden; padding-block: 96px; }
+  .qz { position: relative; overflow: hidden; padding-block: 64px; }
   .qz__in { position: relative; display: flex; flex-direction: column; align-items: center; gap: 48px; }
   .qz__head { max-width: 768px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
   .qz__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
   .qz__head p { font-weight: 500; font-size: 20px; line-height: 28px; }
   /* фиксированная высота: шаги разной высоты не двигают страницу, кнопки навигации внизу */
   .qz__body { width: 100%; max-width: 820px; display: flex; flex-direction: column; align-items: center; gap: 28px; min-height: 640px; }
-  .nav { margin-top: auto; }
 
 
   .step { display: none; flex-direction: column; align-items: center; gap: 24px; width: 100%; }
@@ -315,9 +314,10 @@ const STEPS: Record<string, Step[]> = {
   .done p { color: var(--gray-600); font-size: 18px; text-align: center; }
   .nav { display: flex; gap: 16px; }
   .nav .btn:disabled { opacity: .35; }
+  .nav[hidden], .nav [hidden] { display: none; }
 
   @media (max-width: 900px) {
-    .qz { padding-block: 64px; }
+    .qz { padding-block: 48px; }
     .qz__in { gap: 28px; }
     .qz__head h2 { font-size: 32px; line-height: 38px; }
     .qz__head p { font-size: 17px; line-height: 24px; }
