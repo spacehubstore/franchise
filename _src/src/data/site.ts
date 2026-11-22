@@ -21,13 +21,13 @@ export type City = {
 
 export const CITIES: City[] = [
   { id: "bangkok", name: "Bangkok", region: "Southeast Asia", verified: true, before: "$150", after: "$690",
-    space: "37 m² shophouse", note: "SpaceHub forecast for a real property, after SpaceHub management commission",
+    space: "37 m² shophouse", note: "SpaceHub model, after management commission",
     photos: { before: "/assets/case-bkk-before.jpg", after: "/assets/case-bkk-after.jpg" } },
   { id: "sharjah", name: "Sharjah", region: "Middle East", verified: false, before: "$2,220", after: "$9,700",
-    space: "185 m² unit with a loft tier", note: "SpaceHub model for a real property, after SpaceHub management commission. Photos: SpaceHub Al Quoz, Dubai",
+    space: "185 m² unit with a loft tier", note: "SpaceHub model, after management commission. Photo: Al Quoz, Dubai",
     photos: { before: "/assets/case-uae-before.jpg", after: "/assets/case-uae-after.jpg" } },
   { id: "tallinn", name: "Tallinn", region: "Europe", verified: false, before: "$2,100", after: "$10,500",
-    space: "300 m² industrial floor", note: "Example at our model rates for Tallinn. Photos: SpaceHub Tammsaare, Tallinn",
+    space: "300 m² industrial floor", note: "SpaceHub model, after management commission. Photo: Tammsaare, Tallinn",
     photos: { before: "/assets/case-tll-before.jpg", after: "/assets/case-tll-after.jpg" } },
 ];
 
