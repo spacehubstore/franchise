@@ -72,7 +72,6 @@ import Units from "./Units.astro";
     <button type="button" class="cm__x" data-cm-close aria-label="Close">×</button>
     <h3 id="cm-h">Exact calculation for your space</h3>
     <p class="cm__lead">We check the address and come back with layout, budget and income</p>
-    <p class="cm__sum" data-cm-sum></p>
     <label class="cf__f"><span>Name</span><input name="name" autocomplete="name" placeholder="Your name" /></label>
     <label class="cf__f"><span>Email</span><input name="email" type="email" autocomplete="email" placeholder="Your email" /></label>
     <label class="cf__f"><span>City</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
@@ -136,11 +135,16 @@ import Units from "./Units.astro";
   setMarket("ae");
   // окно заявки
   const dlg = document.querySelector<HTMLDialogElement>("[data-calc-modal]")!, form = dlg.querySelector<HTMLFormElement>("[data-cm-form]")!;
+  // город подставляется из калькулятора, его можно исправить; расчёт уходит в заявку без показа (CMO 22.11.2026)
+  const cityIn = dlg.querySelector<HTMLInputElement>('input[name="city"]')!;
   root.querySelector("[data-open-calc]")!.addEventListener("click", () => {
-    dlg.querySelector("[data-cm-sum]")!.textContent =
-      `${last.market} · ${show(+last.area_m2 * f())} ${st.unit === "ft" ? "sq ft" : "m²"} · ${usd(+last.earns_now_usd)} → ${usd(+last.income_usd)} a month`;
+    if (!cityIn.dataset.touched) cityIn.value = st.c === "xx" ? "" : String(last.market).split(" · ").pop()!;
+    const code = { ae: "+971", th: "+66", ee: "+372" }[st.c]; const sel = dlg.querySelector<HTMLSelectElement>('select[name="code"]')!;
+    if (code && !sel.dataset.touched) sel.value = code;
     dlg.showModal();
   });
+  cityIn.addEventListener("input", () => (cityIn.dataset.touched = "1"));
+  dlg.querySelector<HTMLSelectElement>('select[name="code"]')!.addEventListener("change", (e) => ((e.target as HTMLElement).dataset.touched = "1"));
   dlg.querySelector("[data-cm-close]")!.addEventListener("click", () => dlg.close());
   dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   form.addEventListener("submit", async (e) => {
@@ -149,9 +153,9 @@ import Units from "./Units.astro";
     if (!fd.get("name") || !fd.get("phone") || !fd.get("agree")) { err.hidden = false; return; }
     err.hidden = true;
     const phone = `${fd.get("code")} ${fd.get("phone")}`.trim();
-    const how = await sendLead({ form: "calculator", name: fd.get("name"), email: fd.get("email"), city: fd.get("city"), phone,
-                                 calc: last },
-      `Franchise request from the calculator: ${last.market}, ${last.area_m2} m², ${last.levels} level(s), earns $${last.earns_now_usd} → $${last.income_usd} a month. ${fd.get("name")}, ${phone}, ${fd.get("city") || ""}`);
+    const city = fd.get("city");
+    const how = await sendLead({ form: "calculator", name: fd.get("name"), email: fd.get("email"), city, phone, calc: last },
+      `Franchise request from the calculator: ${last.market}, ${last.area_m2} m², ${last.levels} level(s), earns $${last.earns_now_usd} → $${last.income_usd} a month. ${fd.get("name")}, ${phone}, ${city || ""}`);
     (window as any).dataLayer?.push({ event: "franchise_callback_form_sent", form_location: "calculator", site_variant: location.pathname, delivery: how });
     form.querySelector<HTMLElement>("[data-cm-ok]")!.hidden = false;
   });
@@ -175,7 +179,6 @@ import Units from "./Units.astro";
   .cm__x:hover { background: var(--gray-100); }
   .cm h3 { font-weight: 700; font-size: 24px; line-height: 28px; padding-right: 30px; }
   .cm__lead { margin-top: -10px; font-size: 15px; line-height: 21px; color: var(--gray-600); }
-  .cm__sum { padding: 10px 14px; border-radius: 12px; background: #fff4ee; color: var(--gray-900); font-weight: 600; font-size: 14px; }
   .cm .cf__f { position: relative; display: flex; align-items: center; gap: 10px; height: 52px; border: 1px solid var(--gray-300); border-radius: 12px; padding: 0 14px; }
   .cm .cf__f:focus-within { border-color: var(--gray-900); }
   .cm .cf__f > span { position: absolute; left: 10px; top: -9px; padding: 0 4px; background: var(--white); font-weight: 500; font-size: 13px; color: var(--gray-500); }
