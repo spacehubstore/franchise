@@ -132,8 +132,12 @@ import Units from "./Units.astro";
   inp.area.addEventListener("input", () => { tidy(inp.area, 100000 * f()); st.area = num(inp.area.value) / f(); if (!st.incSet) { st.inc = Math.round((st.area * MARKETS[st.c].rent) / 10) * 10; inp.rent.value = show(st.inc); } calc(); });
   inp.rent.addEventListener("input", () => { tidy(inp.rent, 1e7); st.inc = num(inp.rent.value); st.incSet = true; calc(); });
   [inp.area, inp.rent].forEach((e) => e.addEventListener("blur", () => { fill(); (window as any).dataLayer?.push({ event: "calc_change" }); }));
+  // квиз берёт площадь и уровни только если калькулятор трогали руками (CMO 22.11.2026)
+  const touched = () => { try { sessionStorage.setItem("sh_calc", JSON.stringify({ area_m2: Math.round(st.area), levels: st.lv, country: st.c })); } catch { /* нет хранилища */ } };
+  [inp.area, inp.rent].forEach((e) => e.addEventListener("input", touched));
+  inp.country.addEventListener("change", touched);
   root.querySelectorAll<HTMLButtonElement>("[data-lv]").forEach((b) => b.addEventListener("click", () => {
-    st.lv = +b.dataset.lv!; root.querySelectorAll("[data-lv]").forEach((x) => x.classList.toggle("on", x === b)); calc(); }));
+    st.lv = +b.dataset.lv!; root.querySelectorAll("[data-lv]").forEach((x) => x.classList.toggle("on", x === b)); calc(); touched(); }));
   setMarket("ae");
   // окно заявки
   const dlg = document.querySelector<HTMLDialogElement>("[data-calc-modal]")!, form = dlg.querySelector<HTMLFormElement>("[data-cm-form]")!;

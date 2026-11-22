@@ -2,6 +2,8 @@
 // Квиз «Tell us about your space» по Figma (набор 1766:1794, шаги Step=1…P7 и Final): две ветки по 7 шагов,
 // у вариантов – 3D-иллюстрации из Figma. Площадь вводится в м² или sq ft, высота в м или ft (lib/units.ts);
 // в заявку уходит в м² и м. Отправка – lib/lead.ts.
+// CMO 22.11.2026: площадь и высота – кнопками в одно касание (площадь можно ввести точно), «24/7» одной формулировкой в обеих ветках,
+// подвал или верхний этаж – уточнение про лифт, «Step N of 7», фиксированная высота, площадь из калькулятора – только если там вводили.
 import Units from "./Units.astro";
 type Opt = { v: string; img: string };
 type Step = { k: string; q: string; hint?: string; area?: string; height?: string; opts?: Opt[] };
@@ -11,7 +13,7 @@ const STEPS: Record<string, Step[]> = {
     { k: "area", q: "Floor area", area: I("b-area") },
     { k: "height", q: "Ceiling height", hint: "From about 4.8 m we can add a second level", height: I("b-height") },
     { k: "climate", q: "Climate inside", opts: [{ v: "Heated", img: "climate-heated" }, { v: "Air-conditioned", img: "climate-ac" }, { v: "No climate control", img: "climate-none" }] },
-    { k: "hours", q: "Working hours", opts: [{ v: "24/7", img: "hours-247" }, { v: "Limited hours", img: "hours-limited" }, { v: "Not sure", img: "hours-unknown" }] },
+    { k: "hours", q: "Can customers get in 24/7?", opts: [{ v: "Yes", img: "hours-247" }, { v: "No, limited hours", img: "hours-limited" }, { v: "Not sure", img: "hours-unknown" }] },
     { k: "parking", q: "Parking right at the entrance?", opts: [{ v: "With parking", img: "parking-yes" }, { v: "No parking", img: "parking-no" }, { v: "Not sure", img: "parking-unsure" }] },
     { k: "floor", q: "Which floor?", opts: [{ v: "Basement", img: "floor-basement" }, { v: "Ground floor", img: "floor-ground" }, { v: "Upper floor", img: "floor-upper" }] },
   ],
@@ -29,9 +31,10 @@ const STEPS: Record<string, Step[]> = {
   <div class="qz__in wrap">
     <div class="qz__head">
       <h2>Tell us about your space</h2>
-      <p>A few quick questions.<br />We call back with follow-up questions and a free assessment</p>
+      <p>7 quick questions, about a minute.<br />We call back with a free assessment</p>
     </div>
     <div class="qz__body">
+      <p class="stepno" data-stepno>Step 1 of 7</p>
       <ol class="stepper" data-stepper aria-hidden="true">{[1,2,3,4,5,6,7].map((n) => <li data-dot={n}><span>{n}</span></li>)}</ol>
 
       <div class="step is-on" data-step="1">
@@ -56,13 +59,21 @@ const STEPS: Record<string, Step[]> = {
           {s.area && (
             <div class="num">
               <img src={s.area} width="330" height="240" alt="" loading="lazy" />
-              <label class="num__f"><span data-lbl>Floor area</span><input type="number" min="1" inputmode="decimal" placeholder="250" data-area /><Units /></label>
+              <div class="num__u"><Units /></div>
+              <div class="chips" data-area-chips>
+                {[[0, 100], [100, 300], [300, 1000], [1000, 0]].map(([a, b]) => <button type="button" class="chip" data-a={a} data-b={b}></button>)}
+              </div>
+              <button type="button" class="num__exact" data-exact-btn>Enter exact area</button>
+              <label class="num__f" data-exact hidden><span>Floor area</span><input inputmode="numeric" autocomplete="off" placeholder="250" data-area /><em data-au>m²</em></label>
+              <p class="num__from" data-from hidden>From your calculation</p>
             </div>
           )}
           {s.height && (
             <div class="num">
               <img src={s.height} width="330" height="240" alt="" loading="lazy" />
-              <label class="num__f"><span>Ceiling height</span><input type="number" min="1" step="0.1" inputmode="decimal" placeholder="5" data-height /><em data-len>m</em></label>
+              <div class="chips" data-height-chips>
+                {["lt3", "3to48", "ge48", "unsure"].map((v) => <button type="button" class="chip" data-h={v}></button>)}
+              </div>
               <p class="num__hint" data-hint>{s.hint}</p>
             </div>
           )}
@@ -73,12 +84,18 @@ const STEPS: Record<string, Step[]> = {
               </button>
             ))}</div>
           )}
+          {s.k === "floor" && (
+            <div class="lift" data-lift hidden>
+              <b>Is there a lift or a hoist?</b>
+              <div class="chips chips--2"><button type="button" class="chip" data-lift-v="Yes">Yes</button><button type="button" class="chip" data-lift-v="No">No</button></div>
+            </div>
+          )}
         </div>
       )))}
 
       <form class="step fin" data-step="8" novalidate>
-        <h3>Thank you!<br />Where should we call you?</h3>
-        <p class="fin__lead">We look at your answers, call back with a few follow-up questions and come back with a free assessment. No obligation</p>
+        <h3>Almost done.<br />Where should we send your assessment?</h3>
+        <p class="fin__lead">We call back within 1 working hour with a few follow-up questions</p>
         <label class="in"><span>Name</span><input name="name" autocomplete="name" placeholder="Your name" /></label>
         <label class="in"><span>City of the space</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
         <div class="in in--ph"><span>Phone number</span>
@@ -109,11 +126,11 @@ const STEPS: Record<string, Step[]> = {
 <script>
   import { sendLead } from "../lib/lead";
   import { initForm, checkForm, refillForm } from "../lib/forms";
-  import { onUnit, getUnit, SQFT, FT, lenLabel } from "../lib/units";
+  import { onUnit, getUnit, SQFT } from "../lib/units";
   const root = document.querySelector<HTMLElement>("[data-quiz]")!;
   const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
   const $$ = <T extends Element>(s: string) => Array.from(root.querySelectorAll<T>(s));
-  const st = { step: 1, branch: "", ans: {} as Record<string, string>, area_m2: 0, height_m: 0 };
+  const st = { step: 1, branch: "", ans: {} as Record<string, string>, area_m2: 0, started: false };
   const dl = (o: object) => (window as any).dataLayer?.push(o);
   const cur = () => (st.step === 1 || st.step >= 8 ? $<HTMLElement>(`[data-step="${st.step}"]`) : $<HTMLElement>(`[data-step="${st.step}"][data-br="${st.branch}"]`));
   const show = (dir = 1) => {
@@ -121,6 +138,8 @@ const STEPS: Record<string, Step[]> = {
     const c = cur(); c.classList.add("is-on"); if (dir < 0) c.classList.add("from-left");
     $$<HTMLElement>("[data-dot]").forEach((d) => { const n = +d.dataset.dot!; d.classList.toggle("done", n < st.step); d.classList.toggle("now", n === st.step); });
     $<HTMLElement>("[data-stepper]").hidden = st.step >= 8;
+    $<HTMLElement>("[data-stepno]").hidden = st.step >= 8;
+    $<HTMLElement>("[data-stepno]").textContent = `Step ${Math.min(st.step, 7)} of 7`;
     $<HTMLElement>("[data-nav]").hidden = st.step >= 8;
     $<HTMLElement>("[data-back]").style.visibility = st.step === 1 ? "hidden" : "visible";
     $<HTMLButtonElement>("[data-next]").disabled = !ok();
@@ -129,30 +148,75 @@ const STEPS: Record<string, Step[]> = {
     if (st.step === 1) return !!st.branch;
     if (st.step >= 8) return true;
     const k = cur().dataset.k!;
-    if (k === "area") return st.area_m2 > 0;
-    if (k === "height") return st.height_m > 0;
+    if (k === "area") return st.area_m2 > 0 || !!st.ans.area;
+    if (k === "floor" && /Basement|Upper/.test(st.ans.floor || "")) return !!st.ans.lift;
     return !!st.ans[k];
   };
-  const next = () => { if (!ok()) return; dl({ event: "quiz_step", step: st.step, branch: st.branch }); st.step++; show(); if (st.step === 8) refillForm(form); };
+  // аналитика: номер шага, вопрос и ответ – видно, на каком шаге и после какого ответа уходят
+  const next = () => {
+    if (!ok()) return;
+    const k = st.step === 1 ? "branch" : cur().dataset.k!;
+    dl({ event: "quiz_step", step: st.step, branch: st.branch, question: k,
+         answer: k === "branch" ? st.branch : k === "area" ? (st.ans.area || `${Math.round(st.area_m2)} m²`) : st.ans[k] + (k === "floor" && st.ans.lift ? `, lift: ${st.ans.lift}` : "") });
+    st.step++; show(); if (st.step === 8) refillForm(form);
+  };
   const back = () => { if (st.step > 1) { st.step--; show(-1); } };
 
   $$<HTMLButtonElement>("[data-branch]").forEach((b) => b.addEventListener("click", () => {
-    st.branch = b.dataset.branch!; $$("[data-branch]").forEach((x) => x.classList.toggle("on", x === b)); setTimeout(next, 220); }));
+    if (!st.started) { st.started = true; dl({ event: "quiz_started", branch: b.dataset.branch }); }
+    st.branch = b.dataset.branch!; $$("[data-branch]").forEach((x) => x.classList.toggle("on", x === b)); prefill(); setTimeout(next, 220); }));
   $$<HTMLButtonElement>(".opt").forEach((b) => b.addEventListener("click", () => {
     const s = b.closest<HTMLElement>("[data-k]")!; st.ans[s.dataset.k!] = b.dataset.v!;
-    s.querySelectorAll(".opt").forEach((x) => x.classList.toggle("on", x === b)); setTimeout(next, 260); }));
-  // площадь и высота: храним в м² и м, показываем в выбранных единицах
-  const areas = $$<HTMLInputElement>("[data-area]"), heights = $$<HTMLInputElement>("[data-height]");
-  areas.forEach((a) => a.addEventListener("input", () => { st.area_m2 = (+a.value || 0) / (getUnit() === "ft" ? SQFT : 1); areas.forEach((x) => x !== a && (x.value = a.value)); $<HTMLButtonElement>("[data-next]").disabled = !ok(); }));
-  heights.forEach((h) => h.addEventListener("input", () => { st.height_m = (+h.value || 0) / (getUnit() === "ft" ? FT : 1); $<HTMLButtonElement>("[data-next]").disabled = !ok(); }));
-  [...areas, ...heights].forEach((i) => i.addEventListener("keydown", (e) => e.key === "Enter" && (e.preventDefault(), next())));
-  onUnit((u) => {
-    const r = (n: number, d = 0) => (n ? String(+n.toFixed(d)) : "");
-    areas.forEach((a) => { a.value = r(st.area_m2 * (u === "ft" ? SQFT : 1)); a.placeholder = u === "ft" ? "2,700" : "250"; });
-    heights.forEach((h) => { h.value = r(st.height_m * (u === "ft" ? FT : 1), 1); h.placeholder = u === "ft" ? "16" : "5"; });
-    $$("[data-len]").forEach((e) => (e.textContent = lenLabel(u)));
+    s.querySelectorAll(".opt").forEach((x) => x.classList.toggle("on", x === b));
+    // подвал или верхний этаж – сначала уточнение про лифт
+    const lift = s.querySelector<HTMLElement>("[data-lift]");
+    if (lift) { const need = /Basement|Upper/.test(b.dataset.v!); lift.hidden = !need; if (!need) delete st.ans.lift; else { $<HTMLButtonElement>("[data-next]").disabled = !ok(); return; } }
+    setTimeout(next, 260); }));
+  $$<HTMLButtonElement>("[data-lift-v]").forEach((b) => b.addEventListener("click", () => {
+    st.ans.lift = b.dataset.liftV!; b.parentElement!.querySelectorAll(".chip").forEach((x) => x.classList.toggle("on", x === b)); setTimeout(next, 260); }));
+  // площадь: кнопки диапазонов в выбранных единицах или точное число; в заявку – м²
+  const AREA_FT: Record<string, string> = { "0-100": "Under 1,000 sq ft", "100-300": "1,000–3,000 sq ft", "300-1000": "3,000–10,000 sq ft", "1000-0": "10,000+ sq ft" };
+  const AREA_M2: Record<string, string> = { "0-100": "Under 100 m²", "100-300": "100–300 m²", "300-1000": "300–1,000 m²", "1000-0": "1,000+ m²" };
+  const HEIGHT: Record<string, [string, string]> = { lt3: ["Under 3 m", "Under 10 ft"], "3to48": ["3–4.8 m", "10–16 ft"], ge48: ["4.8 m or more", "16 ft or more"], unsure: ["Not sure", "Not sure"] };
+  const areas = $$<HTMLInputElement>("[data-area]");
+  const label = () => { const u = getUnit();
+    $$<HTMLButtonElement>("[data-a]").forEach((c) => (c.textContent = (u === "ft" ? AREA_FT : AREA_M2)[`${c.dataset.a}-${c.dataset.b}`]));
+    $$<HTMLButtonElement>("[data-h]").forEach((c) => (c.textContent = HEIGHT[c.dataset.h!][u === "ft" ? 1 : 0]));
+    $$("[data-au]").forEach((e) => (e.textContent = u === "ft" ? "sq ft" : "m²"));
     $$("[data-hint]").forEach((e) => (e.textContent = `From about ${u === "ft" ? "16 ft" : "4.8 m"} we can add a second level`));
-  });
+    areas.forEach((a) => (a.value = st.area_m2 ? Math.round(st.area_m2 * (u === "ft" ? SQFT : 1)).toLocaleString("en-US") : ""));
+  };
+  $$<HTMLButtonElement>("[data-a]").forEach((c) => c.addEventListener("click", () => {
+    st.ans.area = AREA_M2[`${c.dataset.a}-${c.dataset.b}`]; st.area_m2 = 0;
+    $$("[data-a]").forEach((x) => x.classList.toggle("on", x.dataset.a === c.dataset.a)); setTimeout(next, 220); }));
+  $$<HTMLButtonElement>("[data-exact-btn]").forEach((b) => b.addEventListener("click", () => {
+    const f = b.nextElementSibling as HTMLElement; f.hidden = false; b.hidden = true; f.querySelector("input")!.focus(); }));
+  areas.forEach((a) => a.addEventListener("input", () => {
+    const n = Math.min(+a.value.replace(/[^\d]/g, "") || 0, 100000 * (getUnit() === "ft" ? SQFT : 1));
+    a.value = n ? n.toLocaleString("en-US") : "";
+    st.area_m2 = n / (getUnit() === "ft" ? SQFT : 1); delete st.ans.area;
+    hl(st.area_m2);
+    $<HTMLButtonElement>("[data-next]").disabled = !ok(); }));
+  // точное число подсвечивает свой диапазон
+  const hl = (m2: number) => $$<HTMLElement>("[data-a]").forEach((x) => x.classList.toggle("on", m2 > 0 && m2 >= +x.dataset.a! && (!+x.dataset.b! || m2 < +x.dataset.b!)));
+  areas.forEach((i) => i.addEventListener("keydown", (e) => e.key === "Enter" && (e.preventDefault(), next())));
+  $$<HTMLButtonElement>("[data-h]").forEach((c) => c.addEventListener("click", () => {
+    st.ans.height = HEIGHT[c.dataset.h!][0]; $$("[data-h]").forEach((x) => x.classList.toggle("on", x === c)); setTimeout(next, 220); }));
+  onUnit(label);
+
+  // площадь и высота из калькулятора – только если там действительно вводили данные (sh_calc, Calculator.astro)
+  function prefill() {
+    let c: { area_m2?: number; levels?: number } = {};
+    try { c = JSON.parse(sessionStorage.getItem("sh_calc") || "{}"); } catch { /* нет */ }
+    if (st.branch !== "space" || !c.area_m2 || st.area_m2 || st.ans.area) return;
+    st.area_m2 = c.area_m2;
+    const step = $<HTMLElement>('[data-step="2"][data-br="space"]');
+    (step.querySelector("[data-exact]") as HTMLElement).hidden = false; (step.querySelector("[data-exact-btn]") as HTMLElement).hidden = true;
+    (step.querySelector("[data-from]") as HTMLElement).hidden = false;
+    hl(st.area_m2);
+    if (c.levels === 2 && !st.ans.height) { st.ans.height = HEIGHT.ge48[0]; $$('[data-h="ge48"]').forEach((x) => x.classList.add("on")); }
+    label();
+  }
   $("[data-next]").addEventListener("click", next);
   $("[data-back]").addEventListener("click", back);
   $("[data-back2]").addEventListener("click", back);
@@ -164,7 +228,7 @@ const STEPS: Record<string, Step[]> = {
     const f = new FormData(form);
     const { ok, phone } = checkForm(form, "quiz");
     if (!ok) return;
-    const ans = { ...st.ans, area_m2: Math.round(st.area_m2), ...(st.height_m ? { height_m: +st.height_m.toFixed(1) } : {}) };
+    const ans = { ...st.ans, ...(st.area_m2 ? { area_m2: Math.round(st.area_m2) } : {}) };
     const txt = `Franchise request: ${st.branch === "land" ? "plot of land" : "space in a building"}, ${Object.entries(ans).map(([k, v]) => `${k}: ${v}`).join(", ")}. ` +
                 `${f.get("name")}, ${phone}, ${f.get("city") || ""}`;
     const how = await sendLead({ form: "quiz", branch: st.branch, answers: ans, area_unit_shown: getUnit(),
@@ -181,8 +245,11 @@ const STEPS: Record<string, Step[]> = {
   .qz__head { max-width: 768px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
   .qz__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
   .qz__head p { font-weight: 500; font-size: 20px; line-height: 28px; }
-  .qz__body { width: 100%; max-width: 820px; display: flex; flex-direction: column; align-items: center; gap: 28px; min-height: 560px; }
+  /* фиксированная высота: шаги разной высоты не двигают страницу, кнопки навигации внизу */
+  .qz__body { width: 100%; max-width: 820px; display: flex; flex-direction: column; align-items: center; gap: 28px; min-height: 640px; }
+  .nav { margin-top: auto; }
 
+  .stepno { margin-bottom: -16px; font-weight: 600; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--gray-500); }
   .stepper { display: flex; align-items: center; list-style: none; }
   .stepper li { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--gray-300); display: grid; place-items: center; font-weight: 500; font-size: 15px; color: var(--gray-400); position: relative; background: var(--white); transition: .3s; }
   .stepper li + li { margin-left: 37px; }
@@ -225,6 +292,17 @@ const STEPS: Record<string, Step[]> = {
   .num__f input { flex: 1; min-width: 0; border: 0; outline: 0; font: 600 18px "Manrope", sans-serif; background: none; }
   .num__f em { font-style: normal; font-weight: 600; color: var(--gray-500); padding-right: 8px; }
   .num__hint { color: var(--gray-500); font-size: 14px; }
+  .num__u { margin-top: -8px; }
+  .chips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+  .chip { height: 48px; border: 1px solid var(--gray-300); border-radius: 12px; background: var(--white); font-weight: 600; font-size: 15px; transition: border-color .2s, color .2s; }
+  .chip:hover { border-color: var(--gray-500); }
+  .chip.on { border-color: var(--brand); color: var(--brand); }
+  .num__exact { font-weight: 600; font-size: 14px; color: var(--gray-600); text-decoration: underline; text-underline-offset: 3px; }
+  .num__f[hidden], .num__exact[hidden] { display: none; }
+  .num__from { margin-top: -10px; font-size: 13px; color: var(--brand); }
+  .lift { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 470px; animation: slide .3s ease-out; }
+  .lift[hidden] { display: none; }
+  .lift b { font-size: 16px; }
 
   .fin { max-width: 470px; background: var(--white); border-radius: 24px; padding: 32px; box-shadow: 0 24px 60px rgba(24,24,27,.08); gap: 18px; align-items: stretch; }
   .fin__lead { text-align: center; color: var(--gray-600); font-size: 15px; line-height: 22px; margin-top: -6px; }
@@ -250,7 +328,8 @@ const STEPS: Record<string, Step[]> = {
     .qz__in { gap: 28px; }
     .qz__head h2 { font-size: 32px; line-height: 38px; }
     .qz__head p { font-size: 17px; line-height: 24px; }
-    .qz__body { min-height: 0; }
+    .qz__body { min-height: 600px; }
+    .chip { font-size: 14px; }
     .stepper li + li { margin-left: 12px; }
     .stepper li + li::before { width: 12px; }
     .step h3 { font-size: 22px; line-height: 28px; }
