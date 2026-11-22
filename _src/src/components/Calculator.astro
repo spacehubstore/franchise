@@ -26,12 +26,12 @@ import Units from "./Units.astro";
         </label>
         <label class="fld">
           <span class="fld__lb">Floor area</span>
-          <input data-k="area" inputmode="decimal" />
+          <input data-k="area" inputmode="numeric" autocomplete="off" />
           <Units />
         </label>
         <label class="fld">
           <span class="fld__lb">Earns now <img src="/assets/figma/info.svg" width="16" height="16" alt="" title="Rent you receive for the whole space a month" /></span>
-          <input data-k="rent" inputmode="decimal" />
+          <input data-k="rent" inputmode="numeric" autocomplete="off" />
           <span class="fld__sfx">$ a month</span>
         </label>
         <div class="ceil">
@@ -76,14 +76,13 @@ import Units from "./Units.astro";
     <label class="cf__f"><span>Email</span><input name="email" type="email" autocomplete="email" placeholder="Your email" /></label>
     <label class="cf__f"><span>City</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
     <div class="cf__f cf__ph"><span>Phone number</span>
-      <select name="code" aria-label="Country code">{["+66", "+971", "+966", "+63", "+372", "+90", "+7", "+44", "+1"].map((c) => <option>{c}</option>)}</select><i></i>
+      <select name="code" aria-label="Country code"></select><i></i>
       <input name="phone" type="tel" autocomplete="tel-national" placeholder="81 234 5678" />
     </div>
     <div class="cf__checks">
       <label><input type="checkbox" name="agree" /> <span>I agree to the processing of my data under the <a href="https://spacehubstore.com/thailand/en/privacy" target="_blank" rel="noopener">privacy policy</a></span></label>
     </div>
     <button class="btn btn--or" type="submit">Send</button>
-    <p class="cf__err" hidden data-cm-err>Please add your name, phone and consent</p>
     <div class="cm__ok" hidden data-cm-ok><b>Thank you</b><span>Alexey will contact you within 1 working hour</span></div>
   </form>
 </dialog>
@@ -91,6 +90,7 @@ import Units from "./Units.astro";
 <script>
   import { onUnit } from "../lib/units";
   import { sendLead } from "../lib/lead";
+  import { initForm, checkForm, setPhoneCountry, refillForm } from "../lib/forms";
   const MARKETS: Record<string, { name: string; area: number; rent: number; ss: number; cap: number; now?: number }> = {
     ae: { name: "UAE · Sharjah", area: 238, rent: 12, ss: 46, cap: 8.5, now: 2220 },
     th: { name: "Thailand · Bangkok", area: 200, rent: 5, ss: 20, cap: 8 },
@@ -105,6 +105,8 @@ import Units from "./Units.astro";
   const st = { c: "ae", unit: "m2", lv: 2, area: 0, inc: 0, incSet: false };
   Object.entries(MARKETS).forEach(([k, m]) => inp.country.add(new Option(m.name, k)));
   const num = (v: string) => { const n = parseFloat(String(v).replace(/[^\d.]/g, "")); return isFinite(n) ? n : 0; };
+  // ввод чисел: только цифры, разделители тысяч сразу, потолок значения (площадь до 100 000 м², доход до $10 млн)
+  const tidy = (e: HTMLInputElement, max: number) => { const n = Math.min(num(e.value), max); e.value = n ? Math.round(n).toLocaleString("en-US") : ""; };
   const show = (n: number) => Math.round(n).toLocaleString("en-US");
   const usd = (n: number) => (n < 0 ? "−$" : "$") + Math.round(Math.abs(n)).toLocaleString("en-US");
   const usdR = (n: number) => usd(Math.round(n / 1000) * 1000);
@@ -127,32 +129,31 @@ import Units from "./Units.astro";
   };
   const setMarket = (k: string) => { const m = MARKETS[k]; st.c = k; st.area = m.area; if (!st.incSet) st.inc = m.now ?? Math.round((st.area * m.rent) / 10) * 10; fill(); calc(); };
   inp.country.addEventListener("change", () => { setMarket(inp.country.value); (window as any).dataLayer?.push({ event: "calc_country", country: st.c }); });
-  inp.area.addEventListener("input", () => { st.area = num(inp.area.value) / f(); if (!st.incSet) { st.inc = Math.round((st.area * MARKETS[st.c].rent) / 10) * 10; inp.rent.value = show(st.inc); } calc(); });
-  inp.rent.addEventListener("input", () => { st.inc = num(inp.rent.value); st.incSet = true; calc(); });
+  inp.area.addEventListener("input", () => { tidy(inp.area, 100000 * f()); st.area = num(inp.area.value) / f(); if (!st.incSet) { st.inc = Math.round((st.area * MARKETS[st.c].rent) / 10) * 10; inp.rent.value = show(st.inc); } calc(); });
+  inp.rent.addEventListener("input", () => { tidy(inp.rent, 1e7); st.inc = num(inp.rent.value); st.incSet = true; calc(); });
   [inp.area, inp.rent].forEach((e) => e.addEventListener("blur", () => { fill(); (window as any).dataLayer?.push({ event: "calc_change" }); }));
   root.querySelectorAll<HTMLButtonElement>("[data-lv]").forEach((b) => b.addEventListener("click", () => {
     st.lv = +b.dataset.lv!; root.querySelectorAll("[data-lv]").forEach((x) => x.classList.toggle("on", x === b)); calc(); }));
   setMarket("ae");
   // окно заявки
   const dlg = document.querySelector<HTMLDialogElement>("[data-calc-modal]")!, form = dlg.querySelector<HTMLFormElement>("[data-cm-form]")!;
+  initForm(form);
   // город подставляется из калькулятора, его можно исправить; расчёт уходит в заявку без показа (CMO 22.11.2026)
   const cityIn = dlg.querySelector<HTMLInputElement>('input[name="city"]')!;
   root.querySelector("[data-open-calc]")!.addEventListener("click", () => {
+    refillForm(form);
     if (!cityIn.dataset.touched) cityIn.value = st.c === "xx" ? "" : String(last.market).split(" · ").pop()!;
-    const code = { ae: "+971", th: "+66", ee: "+372" }[st.c]; const sel = dlg.querySelector<HTMLSelectElement>('select[name="code"]')!;
-    if (code && !sel.dataset.touched) sel.value = code;
+    setPhoneCountry(form, { ae: "AE", th: "TH", ee: "EE" }[st.c] || "");
     dlg.showModal();
   });
   cityIn.addEventListener("input", () => (cityIn.dataset.touched = "1"));
-  dlg.querySelector<HTMLSelectElement>('select[name="code"]')!.addEventListener("change", (e) => ((e.target as HTMLElement).dataset.touched = "1"));
   dlg.querySelector("[data-cm-close]")!.addEventListener("click", () => dlg.close());
   dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const fd = new FormData(form), err = form.querySelector<HTMLElement>("[data-cm-err]")!;
-    if (!fd.get("name") || !fd.get("phone") || !fd.get("agree")) { err.hidden = false; return; }
-    err.hidden = true;
-    const phone = `${fd.get("code")} ${fd.get("phone")}`.trim();
+    const fd = new FormData(form);
+    const { ok, phone } = checkForm(form, "calculator");
+    if (!ok) return;
     const city = fd.get("city");
     const how = await sendLead({ form: "calculator", name: fd.get("name"), email: fd.get("email"), city, phone, calc: last },
       `Franchise request from the calculator: ${last.market}, ${last.area_m2} m², ${last.levels} level(s), earns $${last.earns_now_usd} → $${last.income_usd} a month. ${fd.get("name")}, ${phone}, ${city || ""}`);

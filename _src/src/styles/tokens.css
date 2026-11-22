@@ -61,3 +61,11 @@ button { font: inherit; cursor: pointer; border: 0; background: none; color: inh
 /* появление при прокрутке: класс .rv, скрипт в pages/index.astro */
 .rv { opacity: 0; transform: translateY(24px); transition: opacity .6s ease-out var(--d, 0s), transform .6s cubic-bezier(.2,.8,.2,1) var(--d, 0s); }
 .rv.in { opacity: 1; transform: none; }
+
+/* поля форм (lib/forms.ts): код страны с флагом поверх невидимого select, подсказка об ошибке под полем */
+.ph__cc { position: relative; flex: none; display: inline-flex; align-items: center; gap: 4px; font: 500 15px "Manrope", sans-serif; color: var(--gray-900); cursor: pointer; }
+.ph__cc::after { content: ""; width: 7px; height: 7px; margin: -3px 0 0 4px; border: solid var(--gray-500); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
+.ph__cc select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+.is-err { border-color: var(--brand) !important; }
+.ferr { display: block; margin-top: -14px; font-size: 13px; line-height: 18px; color: var(--brand); }
+label.is-err { color: var(--brand); }

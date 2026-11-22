@@ -13,7 +13,8 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "astro": "^7.4.13"
+    "astro": "^7.4.13",
+    "libphonenumber-js": "^1.13.17"
   },
   "private": true
 }

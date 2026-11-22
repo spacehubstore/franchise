@@ -24,7 +24,6 @@ const STEPS: Record<string, Step[]> = {
     { k: "parking", q: "Room to park next to the containers?", opts: [{ v: "Yes", img: "parking-yes" }, { v: "No", img: "parking-no" }, { v: "Not sure", img: "parking-unsure" }] },
   ],
 };
-const CODES = ["+66", "+971", "+966", "+63", "+372", "+90", "+7", "+44", "+1"];
 ---
 <section class="qz" id="check" data-quiz>
   <div class="qz__in wrap">
@@ -83,11 +82,10 @@ const CODES = ["+66", "+971", "+966", "+63", "+372", "+90", "+7", "+44", "+1"];
         <label class="in"><span>Name</span><input name="name" autocomplete="name" placeholder="Your name" /></label>
         <label class="in"><span>City of the space</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
         <div class="in in--ph"><span>Phone number</span>
-          <select name="code" aria-label="Country code">{CODES.map((c) => <option>{c}</option>)}</select><i></i>
+          <select name="code" aria-label="Country code"></select><i></i>
           <input name="phone" type="tel" autocomplete="tel-national" placeholder="81 234 5678" />
         </div>
         <label class="chk"><input type="checkbox" name="agree" /> <span>I agree to the processing of my data under the <a href="https://spacehubstore.com/thailand/en/privacy" target="_blank" rel="noopener">privacy policy</a></span></label>
-        <p class="err" hidden data-err>Please add your name, phone and consent</p>
         <div class="fin__btns">
           <button type="button" class="btn btn--light" data-back2><img src="/assets/figma/arrow-left.svg" width="20" height="20" alt="" />Back</button>
           <button class="btn btn--or" type="submit">Send</button>
@@ -110,6 +108,7 @@ const CODES = ["+66", "+971", "+966", "+63", "+372", "+90", "+7", "+44", "+1"];
 
 <script>
   import { sendLead } from "../lib/lead";
+  import { initForm, checkForm, refillForm } from "../lib/forms";
   import { onUnit, getUnit, SQFT, FT, lenLabel } from "../lib/units";
   const root = document.querySelector<HTMLElement>("[data-quiz]")!;
   const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
@@ -134,7 +133,7 @@ const CODES = ["+66", "+971", "+966", "+63", "+372", "+90", "+7", "+44", "+1"];
     if (k === "height") return st.height_m > 0;
     return !!st.ans[k];
   };
-  const next = () => { if (!ok()) return; dl({ event: "quiz_step", step: st.step, branch: st.branch }); st.step++; show(); };
+  const next = () => { if (!ok()) return; dl({ event: "quiz_step", step: st.step, branch: st.branch }); st.step++; show(); if (st.step === 8) refillForm(form); };
   const back = () => { if (st.step > 1) { st.step--; show(-1); } };
 
   $$<HTMLButtonElement>("[data-branch]").forEach((b) => b.addEventListener("click", () => {
@@ -159,11 +158,12 @@ const CODES = ["+66", "+971", "+966", "+63", "+372", "+90", "+7", "+44", "+1"];
   $("[data-back2]").addEventListener("click", back);
 
   const form = $<HTMLFormElement>("form.fin");
+  initForm(form);
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-    if (!f.get("name") || !f.get("phone") || !f.get("agree")) { $<HTMLElement>("[data-err]").hidden = false; return; }
-    const phone = `${f.get("code")} ${f.get("phone")}`;
+    const { ok, phone } = checkForm(form, "quiz");
+    if (!ok) return;
     const ans = { ...st.ans, area_m2: Math.round(st.area_m2), ...(st.height_m ? { height_m: +st.height_m.toFixed(1) } : {}) };
     const txt = `Franchise request: ${st.branch === "land" ? "plot of land" : "space in a building"}, ${Object.entries(ans).map(([k, v]) => `${k}: ${v}`).join(", ")}. ` +
                 `${f.get("name")}, ${phone}, ${f.get("city") || ""}`;

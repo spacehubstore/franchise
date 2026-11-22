@@ -2,7 +2,6 @@
 // «Let's discuss your project» (Figma 1448:2383) + что будет после заявки (сроки из макета v7: звонок в течение рабочего часа,
 // оценка 48 ч, исследование 2 недели) и мессенджеры – блок был пустоватым (CMO 22.11.2026). Отправка – lib/lead.ts.
 import { CONTACTS } from "../data/site";
-const CODES = ["+66", "+971", "+966", "+63", "+372", "+90", "+7", "+44", "+1"];
 const next = [
   { t: "We call you back", d: "Within 1 working hour" },
   { t: "Free assessment", d: "Whether your space fits, in 48 hours" },
@@ -32,7 +31,7 @@ const next = [
       <label class="cf__f"><span>City</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
       <div class="cf__f cf__ph">
         <span>Phone number</span>
-        <select name="code" aria-label="Country code">{CODES.map((c) => <option>{c}</option>)}</select>
+        <select name="code" aria-label="Country code"></select>
         <i></i>
         <input name="phone" type="tel" autocomplete="tel-national" placeholder="81 234 5678" />
       </div>
@@ -41,7 +40,6 @@ const next = [
       </div>
       <button class="btn btn--or" type="submit">Send</button>
       <p class="cf__note">Free and with no obligation</p>
-      <p class="cf__err" hidden data-cf-err>Please add your name, phone and consent</p>
       <div class="cf__ok" hidden data-cf-ok><b>Thank you</b><span>Alexey will contact you within 1 working hour</span></div>
     </form>
   </div>
@@ -49,14 +47,14 @@ const next = [
 
 <script>
   import { sendLead } from "../lib/lead";
+  import { initForm, checkForm } from "../lib/forms";
   const form = document.querySelector<HTMLFormElement>("[data-cf]")!;
+  initForm(form);
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-    const phone = `${f.get("code")} ${f.get("phone") || ""}`.trim();
-    const err = form.querySelector<HTMLElement>("[data-cf-err]")!;
-    if (!f.get("name") || !f.get("phone") || !f.get("agree")) { err.hidden = false; return; }
-    err.hidden = true;
+    const { ok, phone } = checkForm(form, "contact");
+    if (!ok) return;
     const how = await sendLead({ form: "contact", name: f.get("name"), email: f.get("email"), city: f.get("city"), phone },
                                `Franchise request. ${f.get("name")}, ${phone}, ${f.get("city") || ""}`);
     (window as any).dataLayer?.push({ event: "franchise_callback_form_sent", form_location: "contact", site_variant: location.pathname, delivery: how });
