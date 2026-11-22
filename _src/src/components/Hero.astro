@@ -87,8 +87,9 @@ const facts = ["Free assessment of your space in 48 hours", "10–13 weeks from 
   .tab--on { background: var(--white); color: var(--gray-900); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
   .tab--on img { opacity: 1; filter: none; }
 
-  .ba { position: relative; height: clamp(440px, calc(100svh - var(--hdr-h) - 150px), 700px); border-radius: 28px; overflow: hidden; background: var(--gray-100); }
-  .ba__img { position: absolute; inset: 0; background-size: cover; background-position: center; transition: opacity .2s; }
+  /* кейс ниже (CMO 23.11.2026): меньше потолка, высота ближе к левой колонке; кадр смещён к полу */
+  .ba { position: relative; height: clamp(380px, calc(100svh - var(--hdr-h) - 330px), 540px); border-radius: 28px; overflow: hidden; background: var(--gray-100); }
+  .ba__img { position: absolute; inset: 0; background-size: cover; background-position: center 72%; transition: opacity .2s; }
   .ba__img.is-swap { opacity: .2; }
   .ba__handle { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: var(--white); pointer-events: none; box-shadow: 0 0 12px rgba(0,0,0,.2); z-index: 1; }
   .ba__handle span { position: absolute; top: 50%; left: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: var(--white); box-shadow: 0 4px 14px rgba(0,0,0,.2); display: grid; place-items: center; }
