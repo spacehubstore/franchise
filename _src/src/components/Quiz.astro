@@ -86,7 +86,6 @@ const CODES = ["+66", "+971", "+966", "+63", "+372", "+90", "+7", "+44", "+1"];
           <select name="code" aria-label="Country code">{CODES.map((c) => <option>{c}</option>)}</select><i></i>
           <input name="phone" type="tel" autocomplete="tel-national" placeholder="81 234 5678" />
         </div>
-        <label class="chk"><input type="checkbox" name="wa" checked /> Message me on WhatsApp</label>
         <label class="chk"><input type="checkbox" name="agree" /> <span>I agree to the processing of my data under the <a href="https://spacehubstore.com/thailand/en/privacy" target="_blank" rel="noopener">privacy policy</a></span></label>
         <p class="err" hidden data-err>Please add your name, phone and consent</p>
         <div class="fin__btns">
@@ -168,7 +167,7 @@ const CODES = ["+66", "+971", "+966", "+63", "+372", "+90", "+7", "+44", "+1"];
     const ans = { ...st.ans, area_m2: Math.round(st.area_m2), ...(st.height_m ? { height_m: +st.height_m.toFixed(1) } : {}) };
     const txt = `Franchise request: ${st.branch === "land" ? "plot of land" : "space in a building"}, ${Object.entries(ans).map(([k, v]) => `${k}: ${v}`).join(", ")}. ` +
                 `${f.get("name")}, ${phone}, ${f.get("city") || ""}`;
-    const how = await sendLead({ form: "quiz", branch: st.branch, answers: ans, area_unit_shown: getUnit(), messenger: f.get("wa") ? "whatsapp" : "call",
+    const how = await sendLead({ form: "quiz", branch: st.branch, answers: ans, area_unit_shown: getUnit(),
                                  name: f.get("name"), phone, city: f.get("city") }, txt);
     dl({ event: "franchise_callback_form_sent", form_location: "quiz", branch: st.branch, site_variant: location.pathname, delivery: how });
     st.step = 9; show();
