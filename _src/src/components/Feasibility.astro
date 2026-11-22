@@ -131,7 +131,8 @@ const phases: [string, number, number][] = [["Fit-out", 0, 4], ["Filling up", 4,
     return blobs.get(v)!;
   };
   // итог: картинка с готовым состоянием поверх ролика
-  const fin = (v: HTMLVideoElement) => { const img = v.parentElement!.querySelector<HTMLElement>("[data-final]")!; img.classList.remove("is-wait"); v.hidden = true; };
+  // итог проявляется поверх последнего кадра ролика, видео убирается только после – без пустого кадра между ними
+  const fin = (v: HTMLVideoElement) => { const img = v.parentElement!.querySelector<HTMLElement>("[data-final]")!; img.classList.remove("is-wait"); setTimeout(() => (v.hidden = true), 450); };
   const drops = Array.from(root.querySelectorAll<HTMLVideoElement>("[data-drop]"));
   if (!still) drops.forEach((v) => { v.hidden = false; v.parentElement!.querySelector<HTMLElement>("[data-final]")!.classList.add("is-wait"); });
   const drop = (v: HTMLVideoElement) => {
@@ -211,7 +212,7 @@ const phases: [string, number, number][] = [["Fit-out", 0, 4], ["Filling up", 4,
   .mk--me { background: var(--brand); color: var(--white); padding: 5px 12px; }
   .mk--me::after { border-top-color: var(--brand); }
   .dim { transform: translate(-50%, -50%) rotate(var(--r)); padding: 1px 6px; background: var(--white); color: var(--gray-700); font-weight: 700; font-size: 12px; }
-  .fc__img [data-final] { transition: opacity .25s; }
+  .fc__img [data-final] { position: relative; z-index: 1; transition: opacity .35s; }
   .fc__img [data-final].is-wait { opacity: 0; }
   .fc.instant * { animation-duration: 0s !important; animation-delay: 0s !important; transition-duration: 0s !important; transition-delay: 0s !important; }
   .fc__vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--white); }
