@@ -1,13 +1,52 @@
 ---
-// «One floor, dozens of tenants» (Figma 1819:1403). На десктопе блок «прилипает», пункты переключаются прокруткой,
-// у каждого своя анимированная графика (CMO 22.11.2026: под каждый пункт скролл и анимация). На мобильном – подряд.
+// «One floor, dozens of tenants» (Figma 1819:1403). На десктопе блок «прилипает», пункты переключаются прокруткой.
+// Под каждым пунктом – объясняющая изометрическая анимация в стиле лендинга (белые боксы, оранжевые рамки дверей,
+// как 3D-иконки Figma): CMO 22.11.2026. Сцены собираются при сборке (lib/iso.ts), анимация – CSS по классу .is-on.
 // Тексты пунктов – макет v7 и решения CMO (второй уровень «до 80 %», 20.10.2026); 2,5–3× – макет v7.
+import { box, grid, slab, pt, type Iso } from "../lib/iso";
 const items = [
   { t: "Small units rent for more", d: "The same m² earns 2.5–3× more in small units than leased whole" },
   { t: "A second level adds area", d: "Where the ceiling allows, a second level adds up to 80% more rentable area" },
   { t: "No staff on site", d: "Customers book, pay and open their unit in the app 24/7. Our dispatch centre watches every facility on CCTV" },
   { t: "Dozens of tenants, steady revenue", d: "If one tenant leaves, income dips by a few percent" },
 ];
+
+// 1. одно помещение целиком → 12 боксов
+const v1: Iso = { s: 37, ox: 236, oy: 96 };
+const s1 = slab(v1, 0, 0, 10, 6) +
+  box(v1, 0.15, 0.15, 0, 9.7, 5.7, 1.8, { cls: "whole", door: "grey" }) +
+  grid(v1, { x0: 0.2, y0: 0.2, cols: 4, rows: 3, w: 2.3, d: 1.75, h: 1.8, gap: 0.15 });
+
+// 2. второй уровень: нижний ярус, оранжевый настил, верхний ярус падает сверху
+const v2: Iso = { s: 44, ox: 183, oy: 150 };
+const s2 = slab(v2, 0, 0, 9.7, 3.55) +
+  grid(v2, { x0: 0.1, y0: 0.1, cols: 5, rows: 2, w: 1.8, d: 1.6, h: 1.5, gap: 0.12 }) +
+  box(v2, 0.05, 0.05, 1.5, 9.55, 3.4, 0.12, { door: "none", cls: "mez" }) +
+  grid(v2, { x0: 0.1, y0: 0.1, z: 1.62, cols: 5, rows: 2, w: 1.8, d: 1.6, h: 0.9, gap: 0.12, cls: () => "up" });
+
+// 3. бокс открывается из приложения
+const v3: Iso = { s: 64, ox: 410, oy: 222 };
+const P3 = (x: number, y: number, z: number) => pt(v3, x, y, z);
+const q = (ps: [number, number][]) => ps.map((p) => p.map((n) => n.toFixed(1)).join(",")).join(" ");
+const Y = 2.6, dx0 = 0.4, dx1 = 2.8, dz = 2.55, fr = 0.09;
+const doorFrame = q([P3(dx0, Y, 0), P3(dx1, Y, 0), P3(dx1, Y, dz), P3(dx0, Y, dz)]);
+const doorIn = q([P3(dx0 + fr, Y, 0), P3(dx1 - fr, Y, 0), P3(dx1 - fr, Y, dz - fr), P3(dx0 + fr, Y, dz - fr)]);
+const hinge = P3(dx0 + fr, Y, 0);
+const lock = P3(dx1 - 0.3, Y, 1.2);
+const s3 = box(v3, 0, 0, 0, 3.2, Y, 3, { door: "none" }) +
+  `<polygon class="d-or" points="${doorFrame}"/><polygon class="dark" points="${doorIn}"/>` +
+  box(v3, 0.75, 2.0, 0, 0.9, 0.55, 0.75, { door: "none", cls: "cargo" }) +
+  box(v3, 1.75, 2.1, 0, 0.6, 0.45, 0.5, { door: "none", cls: "cargo" }) +
+  `<g class="swing" style="transform-origin:${hinge[0].toFixed(1)}px ${hinge[1].toFixed(1)}px"><polygon class="d-panel" points="${doorIn}"/>` +
+  `<circle class="lock" cx="${lock[0].toFixed(1)}" cy="${lock[1].toFixed(1)}" r="7"/></g>`;
+const lockXY = lock;
+
+// 4. один арендатор против 16 боксов
+const vL: Iso = { s: 40, ox: 150, oy: 120 }, vR: Iso = { s: 40, ox: 450, oy: 120 };
+const GONE = 13;   // передний ряд, дверь видна
+const s4 = slab(vL, -0.1, -0.1, 3.7, 3.7) + box(vL, 0, 0, 0, 3.5, 3.5, 2, { cls: "big" }) +
+  slab(vR, -0.1, -0.1, 3.7, 3.7) +
+  grid(vR, { x0: 0, y0: 0, cols: 4, rows: 4, w: 0.8, d: 0.8, h: 0.95, gap: 0.1, cls: (i) => (i === GONE ? "gone" : "") });
 ---
 <section class="fl" data-floor style={`--n:${items.length}`}>
   <div class="fl__stick">
@@ -36,39 +75,38 @@ const items = [
         </div>
 
         <div class="stage" aria-hidden="true">
-          <!-- 1. ставка за м²: аренда целиком против маленьких боксов -->
-          <div class="vis v1 is-on" data-vis="0">
-            <img class="v1__floor" src="/assets/figma/floor.webp" width="860" height="624" alt="" loading="lazy" />
-            <div class="v1__chart">
-              <div class="v1__col"><i style="--h:30%"></i><span>Leased whole</span><em>1×</em></div>
-              <div class="v1__col v1__col--or"><i style="--h:84%"></i><span>Small units</span><em>2.5–3×</em></div>
-              <small>Rent per m² a month</small>
-            </div>
+          <div class="vis sc s1 is-on" data-vis="0">
+            <svg viewBox="0 0 600 420"><Fragment set:html={s1} /></svg>
+            <div class="chip chip--a"><b>1 tenant</b><span>the whole floor at one rent</span></div>
+            <div class="chip chip--b"><b>12 units</b><span>2.5–3× more per m²</span></div>
           </div>
-          <!-- 2. второй уровень -->
-          <div class="vis v2" data-vis="1">
-            <img class="v2__img" src="/assets/quiz/b-height.webp" width="660" height="480" alt="" loading="lazy" />
-            <div class="v2__badge"><b>+80%</b><span>rentable area with a second level</span></div>
+
+          <div class="vis sc s2" data-vis="1">
+            <svg viewBox="0 0 600 440"><Fragment set:html={s2} /></svg>
+            <div class="chip chip--top"><b>+80%</b><span>rentable area</span></div>
           </div>
-          <!-- 3. без персонала -->
-          <div class="vis v3" data-vis="2">
-            <div class="v3__ring"></div>
-            <img class="v3__img" src="/assets/figma/inc-phone.webp" width="520" height="560" alt="" loading="lazy" />
-            <span class="v3__chip v3__chip--a">Booked online</span>
-            <span class="v3__chip v3__chip--b">Unit opened by app</span>
-            <span class="v3__chip v3__chip--c">CCTV 24/7</span>
-          </div>
-          <!-- 4. доход: один арендатор против десятков -->
-          <div class="vis v4" data-vis="3">
-            <svg viewBox="0 0 520 290" class="v4__svg">
-              <g class="v4__grid"><line x1="40" y1="40" x2="500" y2="40"/><line x1="40" y1="140" x2="500" y2="140"/><line x1="40" y1="240" x2="500" y2="240"/></g>
-              <text x="30" y="44" class="v4__ax">100%</text><text x="30" y="244" class="v4__ax">0</text>
-              <path class="v4__one" d="M40 40 H220 V240 H330 V40 H500" />
-              <path class="v4__many" d="M40 52 L100 46 L160 54 L220 49 L270 58 L330 50 L390 47 L440 55 L500 48" />
-              <text x="275" y="275" class="v4__lbl" text-anchor="middle">One tenant leaves: 3 months empty</text>
+
+          <div class="vis sc s3" data-vis="2">
+            <svg viewBox="0 0 600 440">
+              <image href="/assets/figma/inc-phone.webp" x="0" y="40" width="230" height="360" preserveAspectRatio="xMidYMid meet" />
+              <circle class="tap" cx="118" cy="300" r="10" />
+              <path class="sig" d={`M150 250 C 230 160, 300 170, ${lockXY[0].toFixed(0)} ${lockXY[1].toFixed(0)}`} />
+              <Fragment set:html={s3} />
             </svg>
-            <div class="v4__legend"><span class="k1">One tenant</span><span class="k2">Dozens of tenants</span></div>
-            <small>Illustration: monthly income of the same floor</small>
+            <ol class="steps3"><li>Booked online</li><li>Paid in the app</li><li>Unit opened</li></ol>
+          </div>
+
+          <div class="vis sc s4" data-vis="3">
+            <svg viewBox="0 0 600 400">
+              <Fragment set:html={s4} />
+              <text x="150" y="300" class="t4">1 tenant</text>
+              <text x="450" y="300" class="t4">16 tenants</text>
+              <rect x="50" y="318" width="200" height="12" rx="6" class="track" /><rect x="50" y="318" width="200" height="12" rx="6" class="bar bar--l" />
+              <rect x="350" y="318" width="200" height="12" rx="6" class="track" /><rect x="350" y="318" width="200" height="12" rx="6" class="bar bar--r" />
+              <text x="150" y="356" class="v4 v4--a">Income 100%</text><text x="150" y="356" class="v4 v4--b v4--bad">Income 0%</text>
+              <text x="450" y="356" class="v4 v4--a">Income 100%</text><text x="450" y="356" class="v4 v4--b">Income 94%</text>
+              <text x="300" y="392" class="cap4">One tenant leaves</text>
+            </svg>
           </div>
         </div>
       </div>
@@ -82,8 +120,8 @@ const items = [
   const vis = Array.from(sec.querySelectorAll<HTMLElement>(".stage .vis"));
   const n = items.length;
   const desk = matchMedia("(min-width: 1101px)");
-  // на мобильном графика встраивается под каждый пункт
-  items.forEach((it, i) => { const slot = it.querySelector(".vis--inline")!; slot.replaceWith(vis[i].cloneNode(true)); });
+  // на мобильном сцена встраивается под каждый пункт
+  items.forEach((it, i) => { const c = vis[i].cloneNode(true) as HTMLElement; c.classList.remove("is-on"); it.querySelector(".vis--inline")!.replaceWith(c); });
   let active = -1;
   const show = (i: number) => {
     if (i === active) return; active = i;
@@ -100,15 +138,14 @@ const items = [
   addEventListener("scroll", onScroll, { passive: true }); addEventListener("resize", onScroll); onScroll();
   items.forEach((it, i) => it.querySelector("button")!.addEventListener("click", () => {
     if (desk.matches) { const top = sec.getBoundingClientRect().top + scrollY + (sec.offsetHeight - innerHeight) * (i + 0.15) / n; scrollTo({ top, behavior: "smooth" }); }
-    else items.forEach((x) => x.classList.toggle("is-on", x === it));
   }));
-  // мобильный: анимация запускается, когда графика попадает в экран
-  const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && e.target.classList.add("is-on")), { threshold: .4 });
+  // мобильный: сцена запускается, когда попадает в экран
+  const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && e.target.classList.add("is-on")), { threshold: .45 });
   items.forEach((it) => io.observe(it.querySelector(".vis")!));
 </script>
 
 <style>
-  .fl { position: relative; height: calc(100svh * (var(--n) * 0.7 + 0.6)); }
+  .fl { position: relative; height: calc(100svh * (var(--n) * 0.75 + 0.6)); }
   .fl__stick { position: sticky; top: var(--hdr-h); min-height: calc(100svh - var(--hdr-h)); display: flex; align-items: center; padding-block: 32px; }
   .fl__in { width: 100%; display: flex; flex-direction: column; gap: 40px; }
   .fl__head { max-width: 768px; margin: 0 auto; text-align: center; display: flex; flex-direction: column; gap: 16px; }
@@ -132,50 +169,89 @@ const items = [
   .stat b { position: relative; font-weight: 700; font-size: 44px; line-height: 1; color: var(--brand); }
   .stat span { position: relative; font-weight: 500; font-size: 15px; line-height: 22px; }
 
-  .stage { position: relative; flex: 1; min-width: 0; min-height: 520px; border-radius: var(--radius-l); background: var(--white); border: 1px solid var(--gray-200); overflow: hidden; }
-  .vis { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(.97); transition: opacity .5s, transform .6s; pointer-events: none; }
-  .vis.is-on { opacity: 1; transform: none; }
+  .stage { position: relative; flex: 1; min-width: 0; min-height: 540px; border-radius: var(--radius-l); background: radial-gradient(120% 90% at 70% 20%, #fff 0%, #fff 45%, #fdf1ea 100%); border: 1px solid var(--gray-200); overflow: hidden; }
+  .vis { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .45s; pointer-events: none; }
+  .vis.is-on { opacity: 1; }
+  .sc svg { width: 92%; max-height: 92%; overflow: visible; }
 
-  .v1__floor { width: 78%; max-width: 640px; transform: translateX(-12%); }
-  .v1__chart { position: absolute; right: 6%; bottom: 10%; width: 210px; height: 230px; background: var(--white); border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,.08); padding: 18px 18px 40px; display: flex; gap: 18px; align-items: flex-end; }
-  .v1__col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; position: relative; }
-  .v1__col i { width: 100%; height: 0; border-radius: 8px; background: var(--gray-300); transition: height .9s cubic-bezier(.2,.8,.2,1) .2s; }
-  .v1__col--or i { background: var(--brand); transition-delay: .45s; }
-  .is-on .v1__col i { height: var(--h); }
-  .v1__col span { position: absolute; bottom: -30px; font-size: 11px; line-height: 13px; text-align: center; color: var(--gray-500); }
-  .v1__col em { font-style: normal; font-weight: 700; font-size: 16px; order: -1; }
-  .v1__col--or em { color: var(--brand); }
-  .v1__chart small { position: absolute; top: 12px; left: 18px; font-size: 11px; color: var(--gray-400); }
+  /* грани боксов */
+  .sc :global(.f-top) { fill: #fff; }
+  .sc :global(.f-l) { fill: #f4f4f5; }
+  .sc :global(.f-r) { fill: #e4e4e7; }
+  .sc :global(.f-floor) { fill: #f4f4f5; }
+  .sc :global(polygon) { stroke: #d1d1d6; stroke-width: .8; stroke-linejoin: round; }
+  .sc :global(.d-or) { fill: var(--brand); stroke: none; }
+  .sc :global(.d-grey) { fill: var(--gray-400); stroke: none; }
+  .sc :global(.d-panel) { fill: #fff; stroke: none; }
+  .sc :global(.u), .sc :global(.whole), .sc :global(.mez), .sc :global(.swing) { transform-box: view-box; }
 
-  .v2__img { width: 70%; max-width: 520px; transform: translateY(20px); transition: transform .8s .1s; }
-  .is-on .v2__img { transform: none; }
-  .v2__badge { position: absolute; right: 7%; top: 12%; background: var(--brand); color: var(--white); border-radius: 20px; padding: 18px 22px; width: 200px; box-shadow: 0 18px 40px rgba(255,79,0,.28); transform: translateY(30px) scale(.9); opacity: 0; transition: .6s cubic-bezier(.2,1.3,.4,1) .35s; }
-  .is-on .v2__badge { transform: none; opacity: 1; }
-  .v2__badge b { display: block; font-size: 40px; line-height: 1; }
-  .v2__badge span { font-weight: 500; font-size: 14px; line-height: 18px; }
+  /* 1: целиком → боксы */
+  .s1 :global(.u) { opacity: 0; transform: translateY(-34px); }
+  .s1.is-on :global(.whole) { animation: out .45s 1.3s forwards; }
+  .s1.is-on :global(.u) { animation: drop .5s cubic-bezier(.2,1.25,.4,1) calc(1.5s + var(--i) * .09s) forwards; }
+  .chip { position: absolute; display: flex; flex-direction: column; background: var(--white); border-radius: 16px; padding: 12px 16px; box-shadow: 0 12px 30px rgba(0,0,0,.08); }
+  .chip b { font-weight: 700; font-size: 22px; line-height: 26px; }
+  .chip span { font-size: 13px; line-height: 18px; color: var(--gray-500); }
+  .chip--a { left: 6%; top: 8%; }
+  .chip--b { right: 6%; top: 8%; background: var(--brand); color: var(--white); opacity: 0; transform: translateY(10px); }
+  .chip--b span { color: rgba(255,255,255,.85); }
+  .s1.is-on .chip--a { animation: out .4s 1.3s forwards; }
+  .s1.is-on .chip--b { animation: in .5s 2.2s forwards; }
 
-  .v3__img { position: relative; height: 82%; width: auto; }
-  .v3__ring { position: absolute; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(255,79,0,.18), rgba(255,79,0,0) 70%); animation: pulse 2.4s ease-out infinite; }
-  @keyframes pulse { 0% { transform: scale(.6); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
-  .v3__chip { position: absolute; background: var(--white); border-radius: 100px; padding: 10px 16px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.08); opacity: 0; transform: translateY(12px); transition: .5s; }
-  .v3__chip::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--brand); vertical-align: 1px; }
-  .v3__chip--a { left: 8%; top: 22%; } .v3__chip--b { right: 7%; top: 44%; } .v3__chip--c { left: 12%; bottom: 18%; }
-  .is-on .v3__chip { opacity: 1; transform: none; }
-  .is-on .v3__chip--a { transition-delay: .3s; } .is-on .v3__chip--b { transition-delay: .6s; } .is-on .v3__chip--c { transition-delay: .9s; }
+  /* 2: второй уровень */
+  .s2 :global(.mez) { opacity: 0; }
+  .s2 :global(.mez polygon) { fill: var(--brand); stroke: #e04400; }
+  .s2 :global(.up) { opacity: 0; transform: translateY(-60px); }
+  .s2.is-on :global(.mez) { animation: in .4s .5s forwards; }
+  .s2.is-on :global(.up) { animation: drop .55s cubic-bezier(.2,1.25,.4,1) calc(.9s + var(--i) * .1s) forwards; }
+  .chip--top { right: 6%; top: 7%; background: var(--brand); color: var(--white); opacity: 0; transform: translateY(10px); }
+  .chip--top b { font-size: 34px; line-height: 36px; }
+  .chip--top span { color: rgba(255,255,255,.85); }
+  .s2.is-on .chip--top { animation: in .5s 1.9s forwards; }
 
-  .v4 { flex-direction: column; gap: 12px; padding: 32px; }
-  .v4__svg { width: 100%; max-width: 560px; overflow: visible; }
-  .v4__grid line { stroke: var(--gray-300); stroke-dasharray: 3 5; }
-  .v4__ax { font: 500 12px "Manrope", sans-serif; fill: var(--gray-400); text-anchor: end; }
-  .v4__lbl { font: 600 13px "Manrope", sans-serif; fill: var(--gray-500); }
-  .v4__one, .v4__many { fill: none; stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1200; stroke-dashoffset: 1200; transition: stroke-dashoffset 1.6s ease-out .2s; }
-  .v4__one { stroke: var(--gray-400); }
-  .v4__many { stroke: var(--brand); transition-delay: .6s; }
-  .is-on .v4__one, .is-on .v4__many { stroke-dashoffset: 0; }
-  .v4__legend { display: flex; gap: 24px; font-weight: 600; font-size: 14px; }
-  .v4__legend span::before { content: ""; display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 8px; vertical-align: 3px; }
-  .k1::before { background: var(--gray-400); } .k2::before { background: var(--brand); }
-  .v4 small { font-size: 12px; color: var(--gray-400); }
+  /* 3: приложение открывает бокс */
+  .s3 :global(.dark) { fill: #3f3f46; stroke: none; }
+  .s3 :global(.cargo polygon) { fill: #e8c9a8; stroke: #c9a27c; }
+  .s3 :global(.cargo .f-top) { fill: #f3dcc2; }
+  .s3 :global(.lock) { fill: var(--brand); }
+  .s3.is-on :global(.swing) { animation: swing .8s cubic-bezier(.5,0,.3,1) 1.7s forwards; }
+  .tap { fill: none; stroke: var(--brand); stroke-width: 3; opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .s3.is-on .tap { animation: tap .9s .4s 2 ease-out; }
+  .sig { fill: none; stroke: var(--brand); stroke-width: 3; stroke-dasharray: 6 8; stroke-dashoffset: 0; opacity: 0; }
+  .s3.is-on .sig { animation: in .3s .9s forwards, flow 1s linear .9s 3; }
+  .steps3 { position: absolute; right: 5%; top: 6%; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .steps3 li { background: var(--white); border-radius: 100px; padding: 8px 14px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 22px rgba(0,0,0,.08); opacity: 0; transform: translateX(10px); }
+  .steps3 li::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--brand); vertical-align: 1px; }
+  .s3.is-on .steps3 li { animation: in .4s forwards; }
+  .s3.is-on .steps3 li:nth-child(1) { animation-delay: .3s; }
+  .s3.is-on .steps3 li:nth-child(2) { animation-delay: 1s; }
+  .s3.is-on .steps3 li:nth-child(3) { animation-delay: 1.8s; }
+
+  /* 4: уход одного арендатора */
+  .t4 { font: 700 22px "Manrope", sans-serif; fill: var(--gray-900); text-anchor: middle; }
+  .track { fill: var(--gray-100); }
+  .bar { fill: var(--brand); transform-box: fill-box; transform-origin: left; }
+  .v4 { font: 600 18px "Manrope", sans-serif; fill: var(--gray-500); text-anchor: middle; }
+  .v4--b { opacity: 0; }
+  .v4--bad { fill: var(--gray-900); }
+  .cap4 { font: 500 16px "Manrope", sans-serif; fill: var(--gray-400); text-anchor: middle; opacity: 0; }
+  .s4.is-on .bar--l { animation: shrink0 .8s 1.4s forwards; }
+  .s4.is-on .bar--r { animation: shrink94 .8s 1.4s forwards; }
+  .s4.is-on .v4--a { animation: out .3s 1.4s forwards; }
+  .s4.is-on .v4--b, .s4.is-on .cap4 { animation: in .3s 1.5s forwards; }
+  .s4.is-on :global(.big .d-or), .s4.is-on :global(.gone .d-or) { animation: grey .4s 1.1s forwards; }
+  .s4.is-on :global(.gone) { animation: lift .5s 1.1s forwards; }
+
+  @keyframes drop { from { opacity: 0; transform: translateY(-34px); } to { opacity: 1; transform: none; } }
+  @keyframes in { to { opacity: 1; transform: none; } }
+  @keyframes out { to { opacity: 0; } }
+  @keyframes swing { to { transform: scaleX(.14); } }
+  @keyframes tap { 0% { opacity: .9; transform: scale(.6); } 100% { opacity: 0; transform: scale(3); } }
+  @keyframes flow { to { stroke-dashoffset: -28; } }
+  @keyframes grey { to { fill: var(--gray-400); } }
+  @keyframes lift { 50% { transform: translateY(-8px); } to { transform: none; } }
+  @keyframes shrink0 { to { transform: scaleX(0); } }
+  @keyframes shrink94 { to { transform: scaleX(.94); } }
 
   @media (max-width: 1100px) {
     .fl { height: auto; }
@@ -189,11 +265,9 @@ const items = [
     .acc__t { font-size: 20px; line-height: 24px; color: var(--gray-900); }
     .acc__d { max-height: none; opacity: 1; margin-top: 8px; }
     .acc__bar { display: none; }
-    .acc__it > .vis { display: flex; position: relative; height: 300px; margin-top: 16px; border-radius: 20px; background: var(--white); border: 1px solid var(--gray-200); overflow: hidden; }
-    .v1__floor { width: 88%; transform: translateX(-14%); }
-    .v1__chart { width: 150px; height: 180px; padding: 14px 12px 34px; gap: 10px; right: 4%; }
-    .v2__badge { width: 150px; padding: 12px 14px; } .v2__badge b { font-size: 28px; }
-    .v3__img { height: 92%; } .v3__chip { font-size: 12px; padding: 8px 12px; }
-    .v4 { padding: 16px; }
+    .acc__it > .vis { display: flex; position: relative; opacity: 1; height: 320px; margin-top: 16px; border-radius: 20px; border: 1px solid var(--gray-200); background: radial-gradient(120% 90% at 70% 20%, #fff 0%, #fff 45%, #fdf1ea 100%); overflow: hidden; }
+    .chip { padding: 8px 12px; } .chip b { font-size: 17px; line-height: 20px; } .chip span { font-size: 11px; line-height: 14px; }
+    .chip--top b { font-size: 24px; line-height: 26px; }
+    .steps3 li { font-size: 11px; padding: 6px 10px; }
   }
 </style>

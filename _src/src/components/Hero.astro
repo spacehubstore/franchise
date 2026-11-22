@@ -1,155 +1,131 @@
 ---
-// Первый экран (Figma 1531:5963): заголовок, кнопки, переключатель кейсов по городам и слайдер «до/после».
-// Высота слайдера считается от высоты окна, чтобы кейс целиком помещался в первый экран (CMO 22.11.2026).
-// Цифры – доход за м² или sq ft в месяц, единицы общие на страницу (lib/units.ts).
+// Первый экран (Figma 1531:5963), раскладка в две колонки (CMO 22.11.2026: фото кейса не сжимать по высоте, кейс читается
+// целиком в первом экране). Слева – оффер, переключатель городов и доход до/после за всё помещение; справа – высокое фото
+// со слайдером «до/после». На мобильном – одна колонка, фото 4:5.
 import { CITIES, CONTACTS } from "../data/site";
-import Units from "./Units.astro";
 const first = CITIES[0];
 ---
-<section class="hero">
-  <div class="wrap hero__top">
-    <h1 class="hero__h">Turn your space into<br />a self&#8209;storage business</h1>
-    <p class="hero__lead">We design, equip, open and run the facility</p>
-    <div class="hero__btns">
-      <a class="btn btn--dark" href="#check" data-ev="check_your_space_clicked" data-loc="hero">Check your space</a>
-      <a class="btn btn--light" href={CONTACTS.whatsapp.url} target="_blank" rel="noopener"
-         data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="hero">
-        <img src="/assets/figma/whatsapp-24.svg" width="24" height="24" alt="" />WhatsApp
-      </a>
-    </div>
-  </div>
+<section class="hero" data-cases data-cities={JSON.stringify(CITIES)}>
+  <div class="hero__in wrap">
+    <div class="hero__txt">
+      <h1 class="hero__h">Turn your space into a self&#8209;storage business</h1>
+      <p class="hero__lead">We design, equip, open and run the facility</p>
+      <div class="hero__btns">
+        <a class="btn btn--dark" href="#check" data-ev="check_your_space_clicked" data-loc="hero">Check your space</a>
+        <a class="btn btn--light" href={CONTACTS.whatsapp.url} target="_blank" rel="noopener"
+           data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="hero">
+          <img src="/assets/figma/whatsapp-24.svg" width="24" height="24" alt="" />WhatsApp
+        </a>
+      </div>
 
-  <div class="hero__cases" data-cases data-cities={JSON.stringify(CITIES)}>
-    <div class="tabs" role="tablist" aria-label="Cases by city">
-      {CITIES.map((c, i) => (
-        <button type="button" class={`tab ${i === 0 ? "tab--on" : ""}`} role="tab" aria-selected={i === 0 ? "true" : "false"} data-city={c.id}>
-          <img class="tab__pin" src="/assets/figma/pin-active.svg" width="24" height="24" alt="" />
-          <img class="tab__dot" src="/assets/figma/pin-dot.svg" width="7" height="7" alt="" />
-          <span class="tab__name">{c.name}</span>
-          <span class="tab__reg">{c.region}</span>
-        </button>
-      ))}
+      <div class="case">
+        <div class="tabs" role="tablist" aria-label="Cases by city">
+          {CITIES.map((c, i) => (
+            <button type="button" class={`tab ${i === 0 ? "tab--on" : ""}`} role="tab" aria-selected={i === 0 ? "true" : "false"} data-city={c.id}>
+              <b>{c.name}</b><span>{c.region}</span>
+            </button>
+          ))}
+        </div>
+        <p class="case__space" data-v="space">{first.space}</p>
+        <div class="case__nums">
+          <div class="num num--before"><small>Leased whole</small><b data-v="before">{first.before}</b><span>a month</span></div>
+          <svg class="case__arrow" viewBox="0 0 48 24" aria-hidden="true"><path d="M2 12h40m-8-8 8 8-8 8" /></svg>
+          <div class="num num--after"><small>Self-storage</small><b data-v="after">{first.after}</b><span>a month</span></div>
+        </div>
+        <p class="case__note" data-v="note">{first.note}</p>
+      </div>
     </div>
 
     <div class="ba" data-ba>
       <div class="ba__img" data-img="before" style={`background-image:url(${first.photos.before})`}></div>
       <div class="ba__img" data-img="after" style={`background-image:url(${first.photos.after})`} data-ba-after></div>
-      <div class="ba__handle" data-ba-handle aria-hidden="true"><span><img src="/assets/figma/slider-handle.svg" width="32" height="32" alt="" /></span></div>
+      <span class="ba__tag ba__tag--b">Before</span>
+      <span class="ba__tag ba__tag--a">After</span>
+      <div class="ba__handle" data-ba-handle aria-hidden="true"><span><svg viewBox="0 0 24 24"><path d="M9 6 3 12l6 6M15 6l6 6-6 6" /></svg></span></div>
       <input class="ba__range" type="range" min="0" max="100" value="50" aria-label="Before and after" data-ba-range />
-      <div class="card card--before"><b data-v="before"></b><small data-v="unit"></small></div>
-      <div class="card card--after"><b data-v="after"></b><small data-v="unit"></small></div>
     </div>
-
-    <div class="ba__labels">
-      <div><span>Before</span><em class="pill pill--grey">Leased</em></div>
-      <Units />
-      <div><span>After</span><em class="pill pill--or">Self-storage <img src="/assets/figma/check.svg" width="20" height="20" alt="" /></em></div>
-    </div>
-    <p class="hero__note" data-v="note"></p>
   </div>
 </section>
 
 <script>
-  import { onUnit, getUnit, areaLabel, SQFT, type Unit } from "../lib/units";
   const box = document.querySelector<HTMLElement>("[data-cases]")!;
   const cities = JSON.parse(box.dataset.cities!);
   const range = box.querySelector<HTMLInputElement>("[data-ba-range]")!;
   const after = box.querySelector<HTMLElement>("[data-ba-after]")!;
   const handle = box.querySelector<HTMLElement>("[data-ba-handle]")!;
-  let cur = cities[0];
-  const money = (c: any, v: number, u: Unit) => {
-    const n = u === "ft" ? v / SQFT : v;
-    return c.cur + (n < 10 ? n.toFixed(1).replace(/\.0$/, "") : Math.round(n).toLocaleString("en-US"));
-  };
-  const paint = () => {
-    const u = getUnit();
-    box.querySelector("[data-v=before]")!.textContent = money(cur, cur.before, u);
-    box.querySelector("[data-v=after]")!.textContent = money(cur, cur.after, u);
-    box.querySelectorAll("[data-v=unit]").forEach((e) => (e.textContent = `per ${areaLabel(u)} a month`));
-    box.querySelector("[data-v=note]")!.textContent = cur.total ? `${cur.total}. ${cur.photos.caption}` : cur.photos.caption;
-  };
   const set = (v: number) => { after.style.clipPath = `inset(0 0 0 ${v}%)`; handle.style.left = `${v}%`; };
   range.addEventListener("input", () => set(+range.value));
   box.querySelectorAll<HTMLButtonElement>("[data-city]").forEach((t) => t.addEventListener("click", () => {
-    cur = cities.find((c: any) => c.id === t.dataset.city);
+    const c = cities.find((x: any) => x.id === t.dataset.city);
     box.querySelectorAll("[data-city]").forEach((x) => { x.classList.toggle("tab--on", x === t); x.setAttribute("aria-selected", String(x === t)); });
     box.querySelectorAll<HTMLElement>("[data-img]").forEach((e) => {
       e.classList.add("is-swap");
-      setTimeout(() => { e.style.backgroundImage = `url(${cur.photos[e.dataset.img!]})`; e.classList.remove("is-swap"); }, 180);
+      setTimeout(() => { e.style.backgroundImage = `url(${c.photos[e.dataset.img!]})`; e.classList.remove("is-swap"); }, 200);
     });
-    box.classList.remove("is-pop"); void box.offsetWidth; box.classList.add("is-pop");
-    paint();
-    (window as any).dataLayer?.push({ event: "hero_case_switched", case_city: cur.id });
+    (["before", "after", "space", "note"] as const).forEach((k) => (box.querySelector(`[data-v=${k}]`)!.textContent = c[k]));
+    const nums = box.querySelector(".case__nums")!; nums.classList.remove("is-pop"); void (nums as HTMLElement).offsetWidth; nums.classList.add("is-pop");
+    (window as any).dataLayer?.push({ event: "hero_case_switched", case_city: c.id });
   }));
   // подсказка, что слайдер двигается: короткий проход ручки при первом показе
-  const hint = () => { let t = 0; const id = setInterval(() => { t += 1; set(50 + Math.sin(t / 6) * 12 * Math.max(0, 1 - t / 40)); if (t > 40) { clearInterval(id); set(50); } }, 30); };
-  new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { hint(); o.disconnect(); } }, { threshold: .6 }).observe(box);
-  onUnit(paint);
+  const hint = () => { let t = 0; const id = setInterval(() => { t += 1; set(50 + Math.sin(t / 6) * 14 * Math.max(0, 1 - t / 45)); if (t > 45) { clearInterval(id); set(50); } }, 30); };
+  setTimeout(hint, 700);
   set(50);
 </script>
 
 <style>
-  .hero { padding: 16px 0 72px; }
-  .hero__top { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
-  .hero__h { font-weight: 700; font-size: clamp(40px, 5.4vh + 1vw, 66px); line-height: 1.08; letter-spacing: -2px; text-wrap: balance; }
+  .hero { padding-block: 24px 72px; }
+  .hero__in { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: center; max-width: 1440px; }
+  .hero__txt { display: flex; flex-direction: column; gap: 22px; }
+  .hero__h { font-weight: 700; font-size: clamp(44px, 4.3vw, 64px); line-height: 1.06; letter-spacing: -1.9px; text-wrap: balance; }
   .hero__lead { font-weight: 500; font-size: 20px; line-height: 28px; color: var(--gray-600); }
-  .hero__btns { display: flex; gap: 16px; }
+  .hero__btns { display: flex; gap: 12px; }
 
-  .hero__cases { max-width: 1287px; margin: 22px auto 0; padding: 0 24px; }
-  .tabs { display: flex; justify-content: center; gap: 48px; }
-  .tab { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--gray-400); padding: 26px 8px 0; transition: color .2s; }
-  .tab:hover { color: var(--gray-600); }
-  .tab__pin { position: absolute; top: 0; opacity: 0; transform: translateY(6px); transition: .25s; }
-  .tab__dot { position: absolute; top: 10px; transition: .25s; }
-  .tab__name { font-weight: 700; font-size: 22px; line-height: 26px; letter-spacing: -0.44px; }
-  .tab__reg { font-weight: 500; font-size: 14px; line-height: 20px; }
-  .tab--on .tab__name { color: var(--brand); }
-  .tab--on .tab__reg { color: var(--gray-500); }
-  .tab--on .tab__pin { opacity: 1; transform: none; }
-  .tab--on .tab__dot { opacity: 0; }
+  .case { margin-top: 18px; padding-top: 24px; border-top: 1px solid var(--gray-200); display: flex; flex-direction: column; gap: 14px; }
+  .tabs { display: flex; gap: 6px; padding: 4px; background: var(--gray-100); border-radius: 100px; width: fit-content; }
+  .tab { display: flex; flex-direction: column; align-items: flex-start; padding: 6px 18px; border-radius: 100px; text-align: left; transition: background .2s, box-shadow .2s; }
+  .tab b { font-weight: 700; font-size: 16px; line-height: 20px; color: var(--gray-500); }
+  .tab span { font-size: 12px; line-height: 16px; color: var(--gray-400); }
+  .tab--on { background: var(--white); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .tab--on b { color: var(--brand); }
+  .case__space { font-weight: 600; font-size: 16px; color: var(--gray-600); }
+  .case__nums { display: flex; align-items: center; gap: 14px; }
+  .num { display: flex; flex-direction: column; padding: 14px 20px; border-radius: 20px; min-width: 0; }
+  .num small { font-weight: 500; font-size: 13px; line-height: 18px; }
+  .num b { font-weight: 700; font-size: clamp(30px, 2.8vw, 42px); line-height: 1.05; letter-spacing: -1px; white-space: nowrap; }
+  .num span { font-size: 14px; line-height: 18px; }
+  .num--before { background: var(--gray-100); color: var(--gray-900); }
+  .num--before small, .num--before span { color: var(--gray-500); }
+  .num--after { background: var(--brand); color: var(--white); box-shadow: 0 16px 36px rgba(255,79,0,.28); }
+  .case__arrow { width: 40px; flex: none; fill: none; stroke: var(--gray-400); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .is-pop .num { animation: pop .45s cubic-bezier(.2,1.4,.4,1); }
+  .is-pop .num--after { animation-delay: .08s; }
+  @keyframes pop { from { transform: scale(.9); opacity: .4; } }
+  .case__note { font-size: 13px; line-height: 18px; color: var(--gray-400); }
 
-  .ba { position: relative; height: clamp(240px, calc(100svh - 530px), 470px); margin: 16px 56px 0; border-radius: var(--radius-l); }
-  .ba__img { position: absolute; inset: 0; border-radius: var(--radius-l); background-size: cover; background-position: center 55%; transition: opacity .18s; }
-  .ba__img.is-swap { opacity: .15; }
-  .ba__handle { position: absolute; top: 0; bottom: 0; width: 4px; margin-left: -2px; background: var(--white); pointer-events: none; }
-  .ba__handle span { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; background: var(--white); box-shadow: 0 2px 10px rgba(0,0,0,.15); display: grid; place-items: center; }
+  .ba { position: relative; height: clamp(480px, calc(100svh - var(--hdr-h) - 72px), 760px); border-radius: 28px; overflow: hidden; background: var(--gray-100); }
+  .ba__img { position: absolute; inset: 0; background-size: cover; background-position: center; transition: opacity .2s; }
+  .ba__img.is-swap { opacity: .2; }
+  .ba__tag { position: absolute; top: 18px; padding: 6px 14px; border-radius: 100px; font-weight: 600; font-size: 14px; pointer-events: none; z-index: 1; }
+  .ba__tag--b { left: 18px; background: rgba(255,255,255,.92); color: var(--gray-900); }
+  .ba__tag--a { right: 18px; background: var(--brand); color: var(--white); }
+  .ba__handle { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: var(--white); pointer-events: none; box-shadow: 0 0 12px rgba(0,0,0,.2); }
+  .ba__handle span { position: absolute; top: 50%; left: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: var(--white); box-shadow: 0 4px 14px rgba(0,0,0,.2); display: grid; place-items: center; }
+  .ba__handle svg { width: 22px; fill: none; stroke: var(--gray-900); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .ba__range { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
 
-  .card { position: absolute; width: 150px; aspect-ratio: 1; border-radius: var(--radius-l); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; pointer-events: none; }
-  .card b { font-weight: 700; font-size: 40px; line-height: 40px; letter-spacing: -1px; }
-  .card small { font-weight: 500; font-size: 14px; line-height: 18px; padding: 0 12px; }
-  .card--before { left: -56px; top: 52%; background: var(--gray-100); color: var(--gray-900); box-shadow: 0 16px 32px rgba(0,0,0,.10); }
-  .card--after { right: -56px; top: 18%; background: var(--brand); color: var(--white); box-shadow: 0 18px 40px rgba(255,79,0,.28); }
-  .is-pop .card { animation: pop .45s cubic-bezier(.2,1.4,.4,1); }
-  @keyframes pop { from { transform: scale(.85); opacity: .4; } }
-
-  .ba__labels { display: flex; justify-content: space-between; align-items: center; margin: 16px 56px 0; }
-  .ba__labels div { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 17px; line-height: 24px; }
-  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 4px 16px; border-radius: 100px; font-style: normal; font-weight: 500; font-size: 16px; line-height: 24px; }
-  .pill--grey { background: var(--gray-100); color: var(--gray-500); }
-  .pill--or { background: var(--brand-tint); color: var(--brand); }
-  .hero__note { margin: 10px 56px 0; font-size: 13px; line-height: 18px; color: var(--gray-400); text-align: center; }
-
-  @media (max-width: 900px) {
-    .hero { padding-bottom: 56px; }
-    .hero__h { font-size: 36px; letter-spacing: -1px; }
-    .hero__lead { font-size: 16px; line-height: 22px; }
-    .hero__btns { width: 100%; gap: 10px; }
+  @media (max-width: 1000px) {
+    .hero { padding-block: 16px 56px; }
+    .hero__in { grid-template-columns: 1fr; gap: 20px; }
+    .hero__txt { display: contents; }
+    .hero__h { font-size: 36px; letter-spacing: -1px; order: 1; }
+    .hero__lead { font-size: 16px; line-height: 22px; order: 2; margin-top: -8px; }
+    .hero__btns { order: 3; }
     .hero__btns .btn { flex: 1; min-width: 0; }
-    .hero__cases { margin-top: 20px; padding: 0 16px; }
-    .tabs { gap: 8px; }
-    .tab__name { font-size: 17px; line-height: 22px; }
-    .tab__reg { font-size: 12px; line-height: 16px; }
-    .ba { margin: 12px 0 0; height: clamp(240px, 52svh, 360px); }
-    .card { width: 108px; }
-    .card b { font-size: 26px; line-height: 28px; }
-    .card small { font-size: 11px; line-height: 14px; padding: 0 6px; }
-    .card--before { left: 10px; top: auto; bottom: 12px; }
-    .card--after { right: 10px; top: 12px; }
-    .ba__labels { margin: 12px 0 0; flex-wrap: wrap; gap: 8px; }
-    .ba__labels div { gap: 6px; font-size: 14px; }
-    .ba__labels :global(.units) { order: 3; margin: 0 auto; }
-    .pill { padding: 2px 10px; font-size: 14px; }
-    .hero__note { margin: 10px 0 0; }
+    .case { order: 4; margin-top: 0; padding-top: 0; border-top: 0; }
+    .ba { order: 5; height: auto; aspect-ratio: 4 / 5; max-height: 68svh; max-width: 100%; }
+    .tabs { width: 100%; }
+    .tab { flex: 1; padding: 6px 10px; }
+    .num { padding: 12px 14px; flex: 1; }
+    .case__arrow { width: 24px; }
   }
 </style>
