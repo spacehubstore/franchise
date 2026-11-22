@@ -1,74 +1,199 @@
 ---
-// Блок «One floor, dozens of tenants» (Figma 1819:1403): аккордеон аргументов, 3D-план этажа, карточка роста рынка.
-// Тексты закрытых пунктов в Figma не заданы – из макета v7 и решений CMO (второй уровень «до 80 %», 20.10.2026).
+// «One floor, dozens of tenants» (Figma 1819:1403). На десктопе блок «прилипает», пункты переключаются прокруткой,
+// у каждого своя анимированная графика (CMO 22.11.2026: под каждый пункт скролл и анимация). На мобильном – подряд.
+// Тексты пунктов – макет v7 и решения CMO (второй уровень «до 80 %», 20.10.2026); 2,5–3× – макет v7.
 const items = [
   { t: "Small units rent for more", d: "The same m² earns 2.5–3× more in small units than leased whole" },
   { t: "A second level adds area", d: "Where the ceiling allows, a second level adds up to 80% more rentable area" },
   { t: "No staff on site", d: "Customers book, pay and open their unit in the app 24/7. Our dispatch centre watches every facility on CCTV" },
-  { t: "Dozens of tenants, steady revenue", d: "If one tenant leaves, you lose a few percent of income, not all of it" },
+  { t: "Dozens of tenants, steady revenue", d: "If one tenant leaves, income dips by a few percent" },
 ];
 ---
-<section class="fl wrap">
-  <div class="fl__head">
-    <h2>One floor, dozens of tenants</h2>
-    <p>Four teams work on your facility from day one.<br />Live from our network today</p>
-  </div>
-  <div class="fl__body">
-    <div class="fl__left">
-      <div class="acc" data-acc>
-        {items.map((it, i) => (
-          <button class={`acc__it ${i === 0 ? "is-open" : ""}`} type="button" data-acc-item>
-            <span class="acc__t">{it.t}</span>
-            <span class="acc__d">{it.d}</span>
-          </button>
-        ))}
+<section class="fl" data-floor style={`--n:${items.length}`}>
+  <div class="fl__stick">
+    <div class="fl__in wrap">
+      <div class="fl__head">
+        <h2>One floor, dozens of tenants</h2>
+        <p>Self-storage splits a space into lockable units that people and small businesses rent by the month</p>
       </div>
-      <div class="stat">
-        <img class="stat__glow" src="/assets/figma/glow-49.svg" alt="" aria-hidden="true" />
-        <b>+7–8%</b>
-        <span>a year: self-storage market growth in the Middle East, Africa and Asia Pacific</span>
+      <div class="fl__body">
+        <div class="fl__left">
+          <ol class="acc">
+            {items.map((it, i) => (
+              <li class={`acc__it ${i === 0 ? "is-on" : ""}`} data-i={i}>
+                <button type="button" class="acc__t">{it.t}</button>
+                <p class="acc__d">{it.d}</p>
+                <i class="acc__bar"><b></b></i>
+                <div class="vis vis--inline" data-vis={i}></div>
+              </li>
+            ))}
+          </ol>
+          <div class="stat">
+            <img class="stat__glow" src="/assets/figma/glow-49.svg" alt="" aria-hidden="true" />
+            <b>+7–8%</b>
+            <span>a year: self-storage market growth in the Middle East, Africa and Asia Pacific</span>
+          </div>
+        </div>
+
+        <div class="stage" aria-hidden="true">
+          <!-- 1. ставка за м²: аренда целиком против маленьких боксов -->
+          <div class="vis v1 is-on" data-vis="0">
+            <img class="v1__floor" src="/assets/figma/floor.webp" width="860" height="624" alt="" loading="lazy" />
+            <div class="v1__chart">
+              <div class="v1__col"><i style="--h:30%"></i><span>Leased whole</span><em>1×</em></div>
+              <div class="v1__col v1__col--or"><i style="--h:84%"></i><span>Small units</span><em>2.5–3×</em></div>
+              <small>Rent per m² a month</small>
+            </div>
+          </div>
+          <!-- 2. второй уровень -->
+          <div class="vis v2" data-vis="1">
+            <img class="v2__img" src="/assets/quiz/b-height.webp" width="660" height="480" alt="" loading="lazy" />
+            <div class="v2__badge"><b>+80%</b><span>rentable area with a second level</span></div>
+          </div>
+          <!-- 3. без персонала -->
+          <div class="vis v3" data-vis="2">
+            <div class="v3__ring"></div>
+            <img class="v3__img" src="/assets/figma/inc-phone.webp" width="520" height="560" alt="" loading="lazy" />
+            <span class="v3__chip v3__chip--a">Booked online</span>
+            <span class="v3__chip v3__chip--b">Unit opened by app</span>
+            <span class="v3__chip v3__chip--c">CCTV 24/7</span>
+          </div>
+          <!-- 4. доход: один арендатор против десятков -->
+          <div class="vis v4" data-vis="3">
+            <svg viewBox="0 0 520 290" class="v4__svg">
+              <g class="v4__grid"><line x1="40" y1="40" x2="500" y2="40"/><line x1="40" y1="140" x2="500" y2="140"/><line x1="40" y1="240" x2="500" y2="240"/></g>
+              <text x="30" y="44" class="v4__ax">100%</text><text x="30" y="244" class="v4__ax">0</text>
+              <path class="v4__one" d="M40 40 H220 V240 H330 V40 H500" />
+              <path class="v4__many" d="M40 52 L100 46 L160 54 L220 49 L270 58 L330 50 L390 47 L440 55 L500 48" />
+              <text x="275" y="275" class="v4__lbl" text-anchor="middle">One tenant leaves: 3 months empty</text>
+            </svg>
+            <div class="v4__legend"><span class="k1">One tenant</span><span class="k2">Dozens of tenants</span></div>
+            <small>Illustration: monthly income of the same floor</small>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="fl__pic"><img src="/assets/figma/floor.webp" width="860" height="624" alt="Empty floor ready for storage units" loading="lazy" /></div>
   </div>
 </section>
 
 <script>
-  document.querySelectorAll<HTMLElement>("[data-acc]").forEach((acc) => {
-    acc.querySelectorAll<HTMLElement>("[data-acc-item]").forEach((it) => {
-      it.addEventListener("click", () => {
-        acc.querySelectorAll(".is-open").forEach((x) => x.classList.remove("is-open"));
-        it.classList.add("is-open");
-      });
-    });
-  });
+  const sec = document.querySelector<HTMLElement>("[data-floor]")!;
+  const items = Array.from(sec.querySelectorAll<HTMLElement>(".acc__it"));
+  const vis = Array.from(sec.querySelectorAll<HTMLElement>(".stage .vis"));
+  const n = items.length;
+  const desk = matchMedia("(min-width: 1101px)");
+  // на мобильном графика встраивается под каждый пункт
+  items.forEach((it, i) => { const slot = it.querySelector(".vis--inline")!; slot.replaceWith(vis[i].cloneNode(true)); });
+  let active = -1;
+  const show = (i: number) => {
+    if (i === active) return; active = i;
+    items.forEach((it, k) => it.classList.toggle("is-on", k === i));
+    vis.forEach((v, k) => v.classList.toggle("is-on", k === i));
+  };
+  const onScroll = () => {
+    if (!desk.matches) return;
+    const r = sec.getBoundingClientRect(), span = sec.offsetHeight - innerHeight;
+    const p = Math.min(Math.max(-r.top / Math.max(span, 1), 0), 0.9999);
+    const i = Math.floor(p * n); show(i);
+    items.forEach((it, k) => it.style.setProperty("--p", String(k < i ? 1 : k > i ? 0 : p * n - i)));
+  };
+  addEventListener("scroll", onScroll, { passive: true }); addEventListener("resize", onScroll); onScroll();
+  items.forEach((it, i) => it.querySelector("button")!.addEventListener("click", () => {
+    if (desk.matches) { const top = sec.getBoundingClientRect().top + scrollY + (sec.offsetHeight - innerHeight) * (i + 0.15) / n; scrollTo({ top, behavior: "smooth" }); }
+    else items.forEach((x) => x.classList.toggle("is-on", x === it));
+  }));
+  // мобильный: анимация запускается, когда графика попадает в экран
+  const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && e.target.classList.add("is-on")), { threshold: .4 });
+  items.forEach((it) => io.observe(it.querySelector(".vis")!));
 </script>
 
 <style>
-  .fl { padding-block: 96px; display: flex; flex-direction: column; align-items: center; gap: 64px; }
-  .fl__head { max-width: 768px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
+  .fl { position: relative; height: calc(100svh * (var(--n) * 0.7 + 0.6)); }
+  .fl__stick { position: sticky; top: var(--hdr-h); min-height: calc(100svh - var(--hdr-h)); display: flex; align-items: center; padding-block: 32px; }
+  .fl__in { width: 100%; display: flex; flex-direction: column; gap: 40px; }
+  .fl__head { max-width: 768px; margin: 0 auto; text-align: center; display: flex; flex-direction: column; gap: 16px; }
   .fl__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
-  .fl__head p { font-weight: 500; font-size: 20px; line-height: 28px; }
-  .fl__body { display: flex; gap: 12px; width: 100%; max-width: 1296px; }
-  .fl__left { width: 424px; flex: none; display: flex; flex-direction: column; gap: 40px; }
-  .acc__it { display: flex; flex-direction: column; gap: 12px; width: 100%; text-align: left; padding: 32px 0; border-bottom: 1px solid var(--gray-300); }
-  .acc__t { font-weight: 700; font-size: 24px; line-height: 28px; letter-spacing: -0.48px; color: var(--gray-500); }
-  .acc__d { display: none; font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; }
-  .acc__it.is-open .acc__t { color: var(--gray-900); }
-  .acc__it.is-open .acc__d { display: block; }
-  .stat { position: relative; overflow: hidden; background: var(--gray-100); border-radius: var(--radius-l); padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+  .fl__head p { font-weight: 500; font-size: 20px; line-height: 28px; color: var(--gray-600); }
+  .fl__body { display: flex; gap: 40px; width: 100%; max-width: 1296px; margin: 0 auto; align-items: stretch; }
+  .fl__left { width: 424px; flex: none; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; }
+  .acc { list-style: none; }
+  .acc__it { padding: 20px 0; border-bottom: 1px solid var(--gray-200); }
+  .acc__t { font-weight: 700; font-size: 24px; line-height: 28px; letter-spacing: -0.48px; color: var(--gray-400); text-align: left; transition: color .3s; }
+  .acc__d { max-height: 0; overflow: hidden; opacity: 0; font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; transition: max-height .45s, opacity .35s, margin .35s; }
+  .acc__bar { display: block; height: 2px; margin-top: 16px; background: var(--gray-100); border-radius: 2px; overflow: hidden; opacity: 0; transition: opacity .3s; }
+  .acc__bar b { display: block; height: 100%; width: calc(var(--p, 0) * 100%); background: var(--brand); }
+  .acc__it.is-on .acc__t { color: var(--gray-900); }
+  .acc__it.is-on .acc__d { max-height: 120px; opacity: 1; margin-top: 10px; }
+  .acc__it.is-on .acc__bar { opacity: 1; }
+  .acc__it > .vis { display: none; }
+
+  .stat { position: relative; overflow: hidden; background: var(--gray-100); border-radius: var(--radius-l); padding: 24px; display: flex; flex-direction: column; gap: 10px; }
   .stat__glow { position: absolute; right: -100px; top: -63px; width: 418px; max-width: none; pointer-events: none; }
-  .stat b { position: relative; font-weight: 700; font-size: 48px; line-height: 1; color: var(--brand); }
-  .stat span { position: relative; font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; }
-  .fl__pic { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-l); overflow: hidden; }
-  .fl__pic img { width: 100%; max-width: 860px; }
-  @media (max-width: 900px) {
-    .fl { padding-block: 64px; gap: 32px; }
+  .stat b { position: relative; font-weight: 700; font-size: 44px; line-height: 1; color: var(--brand); }
+  .stat span { position: relative; font-weight: 500; font-size: 15px; line-height: 22px; }
+
+  .stage { position: relative; flex: 1; min-width: 0; min-height: 520px; border-radius: var(--radius-l); background: var(--white); border: 1px solid var(--gray-200); overflow: hidden; }
+  .vis { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(.97); transition: opacity .5s, transform .6s; pointer-events: none; }
+  .vis.is-on { opacity: 1; transform: none; }
+
+  .v1__floor { width: 78%; max-width: 640px; transform: translateX(-12%); }
+  .v1__chart { position: absolute; right: 6%; bottom: 10%; width: 210px; height: 230px; background: var(--white); border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,.08); padding: 18px 18px 40px; display: flex; gap: 18px; align-items: flex-end; }
+  .v1__col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; position: relative; }
+  .v1__col i { width: 100%; height: 0; border-radius: 8px; background: var(--gray-300); transition: height .9s cubic-bezier(.2,.8,.2,1) .2s; }
+  .v1__col--or i { background: var(--brand); transition-delay: .45s; }
+  .is-on .v1__col i { height: var(--h); }
+  .v1__col span { position: absolute; bottom: -30px; font-size: 11px; line-height: 13px; text-align: center; color: var(--gray-500); }
+  .v1__col em { font-style: normal; font-weight: 700; font-size: 16px; order: -1; }
+  .v1__col--or em { color: var(--brand); }
+  .v1__chart small { position: absolute; top: 12px; left: 18px; font-size: 11px; color: var(--gray-400); }
+
+  .v2__img { width: 70%; max-width: 520px; transform: translateY(20px); transition: transform .8s .1s; }
+  .is-on .v2__img { transform: none; }
+  .v2__badge { position: absolute; right: 7%; top: 12%; background: var(--brand); color: var(--white); border-radius: 20px; padding: 18px 22px; width: 200px; box-shadow: 0 18px 40px rgba(255,79,0,.28); transform: translateY(30px) scale(.9); opacity: 0; transition: .6s cubic-bezier(.2,1.3,.4,1) .35s; }
+  .is-on .v2__badge { transform: none; opacity: 1; }
+  .v2__badge b { display: block; font-size: 40px; line-height: 1; }
+  .v2__badge span { font-weight: 500; font-size: 14px; line-height: 18px; }
+
+  .v3__img { position: relative; height: 82%; width: auto; }
+  .v3__ring { position: absolute; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(255,79,0,.18), rgba(255,79,0,0) 70%); animation: pulse 2.4s ease-out infinite; }
+  @keyframes pulse { 0% { transform: scale(.6); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
+  .v3__chip { position: absolute; background: var(--white); border-radius: 100px; padding: 10px 16px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.08); opacity: 0; transform: translateY(12px); transition: .5s; }
+  .v3__chip::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--brand); vertical-align: 1px; }
+  .v3__chip--a { left: 8%; top: 22%; } .v3__chip--b { right: 7%; top: 44%; } .v3__chip--c { left: 12%; bottom: 18%; }
+  .is-on .v3__chip { opacity: 1; transform: none; }
+  .is-on .v3__chip--a { transition-delay: .3s; } .is-on .v3__chip--b { transition-delay: .6s; } .is-on .v3__chip--c { transition-delay: .9s; }
+
+  .v4 { flex-direction: column; gap: 12px; padding: 32px; }
+  .v4__svg { width: 100%; max-width: 560px; overflow: visible; }
+  .v4__grid line { stroke: var(--gray-300); stroke-dasharray: 3 5; }
+  .v4__ax { font: 500 12px "Manrope", sans-serif; fill: var(--gray-400); text-anchor: end; }
+  .v4__lbl { font: 600 13px "Manrope", sans-serif; fill: var(--gray-500); }
+  .v4__one, .v4__many { fill: none; stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1200; stroke-dashoffset: 1200; transition: stroke-dashoffset 1.6s ease-out .2s; }
+  .v4__one { stroke: var(--gray-400); }
+  .v4__many { stroke: var(--brand); transition-delay: .6s; }
+  .is-on .v4__one, .is-on .v4__many { stroke-dashoffset: 0; }
+  .v4__legend { display: flex; gap: 24px; font-weight: 600; font-size: 14px; }
+  .v4__legend span::before { content: ""; display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 8px; vertical-align: 3px; }
+  .k1::before { background: var(--gray-400); } .k2::before { background: var(--brand); }
+  .v4 small { font-size: 12px; color: var(--gray-400); }
+
+  @media (max-width: 1100px) {
+    .fl { height: auto; }
+    .fl__stick { position: static; min-height: 0; padding-block: 64px; }
+    .fl__in { gap: 28px; }
     .fl__head h2 { font-size: 32px; line-height: 38px; }
     .fl__head p { font-size: 17px; line-height: 24px; }
-    .fl__body { flex-direction: column-reverse; }
-    .fl__left { width: 100%; gap: 24px; }
-    .acc__it { padding: 20px 0; }
-    .acc__t { font-size: 20px; line-height: 24px; }
+    .fl__body { flex-direction: column; }
+    .fl__left { width: 100%; }
+    .stage { display: none; }
+    .acc__t { font-size: 20px; line-height: 24px; color: var(--gray-900); }
+    .acc__d { max-height: none; opacity: 1; margin-top: 8px; }
+    .acc__bar { display: none; }
+    .acc__it > .vis { display: flex; position: relative; height: 300px; margin-top: 16px; border-radius: 20px; background: var(--white); border: 1px solid var(--gray-200); overflow: hidden; }
+    .v1__floor { width: 88%; transform: translateX(-14%); }
+    .v1__chart { width: 150px; height: 180px; padding: 14px 12px 34px; gap: 10px; right: 4%; }
+    .v2__badge { width: 150px; padding: 12px 14px; } .v2__badge b { font-size: 28px; }
+    .v3__img { height: 92%; } .v3__chip { font-size: 12px; padding: 8px 12px; }
+    .v4 { padding: 16px; }
   }
 </style>

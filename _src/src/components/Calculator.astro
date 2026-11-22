@@ -3,6 +3,7 @@
 // встреча 15.10, CMO 19.10): арендопригодно = площадь × 70 % (× 1,8 при двух уровнях); выручка = арендопригодно × ставка × 85 %;
 // доход = выручка − роялти 20 % − операционные 10 % − расходы собственника; стоимость = доход × 12 / cap rate, осторожно +1 п.п.
 // Ставки по рынкам – значения по умолчанию из макета (ресерч 19.10, «сверить»); Таиланд – ставка кейса Бангкока (финмодель, ~$20/м²).
+import Units from "./Units.astro";
 ---
 <section class="calc" id="calc" data-calc>
   <img class="calc__g1" src="/assets/figma/glow-c1.svg" alt="" aria-hidden="true" />
@@ -23,9 +24,7 @@
         <label class="fld">
           <span class="fld__lb">Floor area</span>
           <input data-k="area" inputmode="decimal" />
-          <span class="units" role="group" aria-label="Units">
-            <button type="button" class="on" data-unit="m2">m²</button><button type="button" data-unit="ft">ft²</button>
-          </span>
+          <Units />
         </label>
         <label class="fld">
           <span class="fld__lb">What it earns now <img src="/assets/figma/info.svg" width="16" height="16" alt="" title="Rent you receive for the whole space a month" /></span>
@@ -40,8 +39,8 @@
         <div class="ceil">
           <span class="fld__lb fld__lb--static">Ceiling height</span>
           <div class="ceil__opts">
-            <button type="button" class="opt" data-lv="1"><span><b>Under 4.8 m</b><small>1 level</small></span><i></i></button>
-            <button type="button" class="opt on" data-lv="2"><span><b>4.8 m or more</b><small>2 levels</small></span><i></i></button>
+            <button type="button" class="opt" data-lv="1"><span><b data-hl="1">Under 4.8 m</b><small>1 level</small></span><i></i></button>
+            <button type="button" class="opt on" data-lv="2"><span><b data-hl="2">4.8 m or more</b><small>2 levels</small></span><i></i></button>
           </div>
         </div>
       </div>
@@ -64,12 +63,13 @@
         <small data-o="cau"></small>
       </div>
       <a class="btn btn--or" href="#check" data-ev="calc_cta" data-loc="calculator">Get an assessment of your space</a>
-      <small class="res__note">Estimate with default market rates, not a guarantee</small>
+      <small class="res__note">Estimate at default market rates</small>
     </div>
   </div>
 </section>
 
 <script>
+  import { onUnit } from "../lib/units";
   const MARKETS: Record<string, { name: string; area: number; rent: number; ss: number; cap: number }> = {
     ae: { name: "UAE · Sharjah", area: 250, rent: 12, ss: 50, cap: 8.5 },
     th: { name: "Thailand · Bangkok", area: 200, rent: 5, ss: 20, cap: 8 },
@@ -95,7 +95,7 @@
     const units = st.area * NET * (st.lv === 2 ? 1 + LV2 : 1);
     const rev = units * m.ss * OCC, roy = rev * ROY, run = rev * RUN;
     const now = st.inc - st.own, ss = rev - roy - run - st.own, cap = m.cap / 100;
-    out("units", `${show(units * f())} ${st.unit === "ft" ? "ft²" : "m²"}`);
+    out("units", `${show(units * f())} ${st.unit === "ft" ? "sq ft" : "m²"}`);
     out("rev", `${usd(rev)} a month`); out("roy", `−${usd(roy)}`); out("run", `−${usd(run)}`);
     out("incNow", usd(now)); out("incSS", usd(ss));
     out("valNow", usdR((now * 12) / cap)); out("valSS", usdR((ss * 12) / cap));
@@ -107,11 +107,14 @@
   inp.rent.addEventListener("input", () => { st.inc = num(inp.rent.value); st.incSet = true; calc(); });
   inp.own.addEventListener("input", () => { st.own = num(inp.own.value); calc(); });
   [inp.area, inp.rent, inp.own].forEach((e) => e.addEventListener("blur", () => { fill(); (window as any).dataLayer?.push({ event: "calc_change" }); }));
-  root.querySelectorAll<HTMLButtonElement>("[data-unit]").forEach((b) => b.addEventListener("click", (e) => {
-    e.preventDefault(); st.unit = b.dataset.unit!; root.querySelectorAll("[data-unit]").forEach((x) => x.classList.toggle("on", x === b)); fill(); calc(); }));
   root.querySelectorAll<HTMLButtonElement>("[data-lv]").forEach((b) => b.addEventListener("click", () => {
     st.lv = +b.dataset.lv!; root.querySelectorAll("[data-lv]").forEach((x) => x.classList.toggle("on", x === b)); calc(); }));
   setMarket("ae");
+  onUnit((u) => {
+    st.unit = u; fill(); calc();
+    const h = u === "ft" ? "16 ft" : "4.8 m";
+    root.querySelector("[data-hl='1']")!.textContent = `Under ${h}`; root.querySelector("[data-hl='2']")!.textContent = `${h} or more`;
+  });
 </script>
 
 <style>
@@ -132,9 +135,6 @@
   .fld input, .fld select { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: 500 15px/22px "Manrope", sans-serif; color: var(--gray-900); appearance: none; }
   .fld__caret { pointer-events: none; }
   .fld__sfx { font-weight: 500; font-size: 14px; color: var(--gray-500); white-space: nowrap; }
-  .units { display: flex; gap: 8px; }
-  .units button { width: 40px; height: 28px; border-radius: 100px; font-weight: 500; font-size: 14px; }
-  .units button.on { background: var(--gray-100); }
   .ceil { display: flex; flex-direction: column; gap: 12px; }
   .ceil__opts { display: flex; gap: 24px; }
   .opt { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px; text-align: left; }

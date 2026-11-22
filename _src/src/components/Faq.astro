@@ -8,7 +8,7 @@ const qa = [
   { q: "How is the facility secured?", a: ["Our own dispatch centre watches every facility on CCTV 24/7, with alarm monitoring", "Customers open their units from the app"] },
 ];
 ---
-<section class="faq wrap">
+<section class="faq wrap" id="faq">
   <div class="faq__head">
     <h2>Before you ask</h2>
     <p>Questions owners ask us on the first call</p>
@@ -17,9 +17,9 @@ const qa = [
     <img class="chat__glow" src="/assets/figma/faq-glow.svg" alt="" aria-hidden="true" />
     {qa.map((x) => (
       <div class="turn">
-        <p class="msg msg--q">{x.q}</p>
+        <p class="msg msg--q rv">{x.q}</p>
         <div class="ans">
-          {x.a.map((t, i) => <p class={`msg msg--a ${i === x.a.length - 1 && x.r ? "has-r" : ""}`}>{t}{i === x.a.length - 1 && x.r && <span class="react">{x.r}</span>}</p>)}
+          {x.a.map((t, i) => <p class={`rv msg msg--a ${i === x.a.length - 1 && x.r ? "has-r" : ""}`}>{t}{i === x.a.length - 1 && x.r && <span class="react">{x.r}</span>}</p>)}
         </div>
       </div>
     ))}

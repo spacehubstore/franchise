@@ -1,32 +1,49 @@
 ---
-// Подвал SpaceHub (в Figma стоит подвал Кладовкина – не используем: публичные материалы SpaceHub без связи с Кладовкиным).
+// Подвал SpaceHub (в Figma подвал Кладовкина – не используем: материалы SpaceHub без связи с Кладовкиным).
+// Цифры сети – только SpaceHub: 17 складов в 4 странах.
 import { CONTACTS } from "../data/site";
+const nav = [["Calculator", "#calc"], ["Check your space", "#check"], ["Feasibility study", "#study"], ["Questions", "#faq"], ["Timeline", "#timeline"]];
 ---
 <footer class="ft">
   <div class="ft__in wrap">
-    <div class="ft__brand">
-      <img src="/assets/figma/logo-icon.svg" width="36" height="32" alt="" />
-      <img class="ft__wm" src="/assets/figma/logo-wordmark.svg" width="97" height="20" alt="SpaceHub" />
-      <p>Self-storage franchise. 17 facilities in 4 countries</p>
+    <div class="ft__top">
+      <div class="ft__brand">
+        <div class="ft__logo"><img src="/assets/figma/logo-icon.svg" width="36" height="32" alt="" /><img class="ft__wm" src="/assets/figma/logo-wordmark.svg" width="97" height="20" alt="SpaceHub" /><span>franchise</span></div>
+        <p>Self-storage franchise. 17 facilities in 4 countries</p>
+        <a class="btn btn--or" href="#check" data-ev="check_your_space_clicked" data-loc="footer">Check your space</a>
+      </div>
+      <nav class="ft__col"><h4>Franchise</h4>{nav.map(([t, h]) => <a href={h}>{t}</a>)}</nav>
+      <div class="ft__col"><h4>Contact</h4>
+        <a href={CONTACTS.whatsapp.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="footer">WhatsApp {CONTACTS.whatsapp.label}</a>
+        <a href={CONTACTS.line.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="line" data-loc="footer">LINE</a>
+        <a href="https://spacehubstore.com" target="_blank" rel="noopener">spacehubstore.com</a>
+      </div>
     </div>
-    <nav class="ft__nav">
-      <a href="https://spacehubstore.com" target="_blank" rel="noopener">spacehubstore.com</a>
-      <a href={CONTACTS.whatsapp.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="footer">WhatsApp {CONTACTS.whatsapp.label}</a>
-      <a href={CONTACTS.line.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="line" data-loc="footer">LINE</a>
-      <a href="https://spacehubstore.com/thailand/en/privacy" target="_blank" rel="noopener">Privacy policy</a>
-    </nav>
-    <small>© 2026 SpaceHub</small>
+    <div class="ft__word" aria-hidden="true">SpaceHub</div>
+    <div class="ft__bot"><small>© 2026 SpaceHub</small><a href="https://spacehubstore.com/thailand/en/privacy" target="_blank" rel="noopener">Privacy policy</a></div>
   </div>
 </footer>
 
 <style>
-  .ft { background: var(--gray-900); color: var(--gray-400); padding-block: 56px; }
-  .ft__in { max-width: 1296px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 32px 48px; align-items: start; }
-  .ft__brand { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+  .ft { background: var(--gray-900); color: var(--gray-400); padding-block: 72px 32px; overflow: hidden; }
+  .ft__in { max-width: 1440px; margin: 0 auto; }
+  .ft__top { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 48px; }
+  .ft__brand { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; max-width: 420px; }
+  .ft__logo { display: flex; align-items: center; gap: 10px; }
+  .ft__logo span { padding-left: 10px; border-left: 1.5px solid var(--gray-700); font-weight: 600; font-size: 18px; color: var(--gray-400); }
   .ft__wm { filter: invert(1) brightness(2); }
-  .ft__brand p { flex-basis: 100%; margin-top: 12px; font-size: 16px; }
-  .ft__nav { display: flex; flex-direction: column; gap: 12px; font-weight: 500; font-size: 16px; color: var(--white); }
-  .ft__nav a:hover { color: var(--brand); }
-  .ft small { grid-column: 1 / -1; font-size: 14px; }
-  @media (max-width: 900px) { .ft__in { grid-template-columns: 1fr; } }
+  .ft__brand p { font-size: 16px; line-height: 24px; }
+  .ft__col { display: flex; flex-direction: column; gap: 12px; font-weight: 500; font-size: 15px; }
+  .ft__col h4 { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--gray-500); margin-bottom: 4px; }
+  .ft__col a { color: var(--white); transition: color .2s; width: fit-content; }
+  .ft__col a:hover { color: var(--brand); }
+  .ft__word { margin: 56px 0 8px; font-weight: 800; font-size: clamp(64px, 16vw, 240px); line-height: .85; letter-spacing: -0.05em; color: var(--gray-800); white-space: nowrap; user-select: none; }
+  .ft__bot { display: flex; justify-content: space-between; gap: 16px; padding-top: 20px; border-top: 1px solid var(--gray-800); font-size: 14px; }
+  .ft__bot a:hover { color: var(--white); }
+  @media (max-width: 900px) {
+    .ft { padding-block: 48px 24px; }
+    .ft__top { grid-template-columns: 1fr 1fr; gap: 32px; }
+    .ft__brand { grid-column: 1 / -1; }
+    .ft__word { margin-top: 40px; }
+  }
 </style>

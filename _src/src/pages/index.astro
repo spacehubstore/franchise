@@ -27,6 +27,10 @@ import Footer from "../components/Footer.astro";
   </main>
   <Footer />
   <script>
+    // появление блоков при прокрутке (.rv)
+    const rvo = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); rvo.unobserve(e.target); } }),
+                                         { threshold: .15, rootMargin: "0px 0px -8% 0px" });
+    document.querySelectorAll(".rv").forEach((el) => rvo.observe(el));
     // события для GA4 и Метрики через GTM: имена как на основном сайте (franchise_messenger_clicked и др.)
     document.addEventListener("click", (e) => {
       const el = (e.target as HTMLElement).closest<HTMLElement>("[data-ev]");
