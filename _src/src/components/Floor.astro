@@ -43,17 +43,15 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
     <div class="stage" aria-hidden="true">
       <div class="vis sc s1 is-on" data-vis="0">
         <div class="fr"><video src={V("s1")} poster={F("s1").a} muted playsinline preload="metadata"></video></div>
-        <div class="cap">
-          <div class="cap__a"><small>Before</small><b>1 tenant</b><span>pays one rent for the whole floor</span></div>
-          <div class="cap__b"><small>After</small><b>25 small units</b><span>the same space earns up to 4–5× more</span></div>
+        <div class="cap cap--static">
+          <div class="cap__a"><small>Small units</small><b>4–5× the income</b><span>small units rent for more per m² than one big lease</span></div>
         </div>
       </div>
 
       <div class="vis sc s2" data-vis="1">
         <div class="fr"><video src={V("s2")} poster={F("s2").a} muted playsinline preload="metadata"></video></div>
-        <div class="cap">
-          <div class="cap__a"><small>Before</small><b>1 level</b><span>the height above the units stands empty</span></div>
-          <div class="cap__b"><small>After</small><b>+80% area</b><span>a loft tier above every unit</span></div>
+        <div class="cap cap--static">
+          <div class="cap__a"><small>Loft tier</small><b>+80% area</b><span>from the same space, above the units</span></div>
         </div>
       </div>
 
@@ -61,15 +59,14 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
         <div class="fr fr--s3"><video src={V("s3")} poster={F("s3").a} muted playsinline preload="metadata" data-pre="900"></video></div>
         <div class="phone"><img src="/assets/figma/inc-phone.webp" alt="" loading="lazy" /><div class="slide"><span class="slide__t slide__t--a">Open</span><span class="slide__t slide__t--b">Unlocked</span><i class="knob"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i></div></div>
         <svg class="sig" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M2 30 C 30 2, 70 2, 98 24" /></svg>
-        <div class="cap">
-          <div class="cap__a"><small>Self-service, 24/7</small><b>Booked and paid online</b><span>no office visit</span></div>
-          <div class="cap__b"><small>Self-service, 24/7</small><b>Opened from the phone</b><span>no keys, no staff on site</span></div>
+        <div class="cap cap--static">
+          <div class="cap__a"><small>Self-service, 24/7</small><b>Nobody to hire</b><span>customers book, pay and open units themselves</span></div>
         </div>
       </div>
 
       <div class="vis sc s4" data-vis="3" data-ms="3000" data-chart>
         <div class="cap cap--static">
-          <div class="cap__a"><small>Monthly income, 12 months</small><b>1 tenant vs 25 tenants</b><span>the same floor, month by month</span></div>
+          <div class="cap__a"><small>Monthly income, 12 months</small><b>No month at zero</b><span>one tenant leaving can't stop your income</span></div>
         </div>
         <div class="ln">
           <svg viewBox="0 0 560 230" aria-hidden="true">
@@ -261,7 +258,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
 
 <style>
   .fl { padding-block: 72px; }
-  .fl__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: center; max-width: 1296px; margin: 0 auto; }
+  .fl__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: start; max-width: 1296px; margin: 0 auto; }
   .fl__left { display: flex; flex-direction: column; gap: 24px; }
   .fl__head { display: flex; flex-direction: column; gap: 12px; }
   .fl__head h2 { font-weight: 700; font-size: clamp(34px, 3.2vw, 44px); line-height: 1.12; letter-spacing: -1px; text-wrap: balance; }
@@ -270,12 +267,13 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .acc__it { padding: 14px 0; border-bottom: 1px solid var(--gray-200); }
   .acc__t { display: flex; gap: 12px; align-items: baseline; font-weight: 700; font-size: 20px; line-height: 26px; letter-spacing: -0.3px; color: var(--gray-400); text-align: left; transition: color .3s; }
   .acc__n { font-size: 13px; font-weight: 600; color: var(--gray-300); font-variant-numeric: tabular-nums; transition: color .3s; }
-  .acc__d { max-height: 0; overflow: hidden; opacity: 0; padding-left: 31px; font-weight: 500; font-size: 15px; line-height: 22px; transition: max-height .45s, opacity .35s, margin .35s; }
+  .acc__d { height: 0; overflow: hidden; opacity: 0; padding-left: 31px; font-weight: 500; font-size: 15px; line-height: 22px;
+            transition: height .4s cubic-bezier(.4,0,.2,1), opacity .3s, margin-top .4s cubic-bezier(.4,0,.2,1); }
   .acc__bar { display: block; height: 2px; margin: 12px 0 0 31px; background: var(--gray-100); border-radius: 2px; overflow: hidden; opacity: 0; transition: opacity .3s; }
   .acc__bar b { display: block; height: 100%; width: calc(var(--p, 0) * 100%); background: var(--brand); }
   .acc__it.is-on .acc__t { color: var(--gray-900); }
   .acc__it.is-on .acc__n { color: var(--brand); }
-  .acc__it.is-on .acc__d { max-height: 100px; opacity: 1; margin-top: 6px; }
+  .acc__it.is-on .acc__d { height: 66px; opacity: 1; margin-top: 6px; }
   .acc__it.is-on .acc__bar { opacity: 1; }
   .acc__it > .vis { display: none; }
   /* карточка роста рынка (Figma 1819:1403): серый фон, оранжевое свечение, крупная цифра; цифра и текст в строку – экономит высоту */
@@ -286,8 +284,9 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
 
   .stage { position: relative; height: clamp(400px, calc(100svh - var(--hdr-h) - 140px), 600px); border-radius: var(--radius-l); background: #fff; border: 1px solid var(--gray-200); overflow: hidden; }
   .stage__n { position: absolute; right: 16px; bottom: 12px; font-size: 12px; font-weight: 600; color: var(--gray-400); font-variant-numeric: tabular-nums; }
-  .vis { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .35s; pointer-events: none; }
-  .vis.is-on { opacity: 1; }
+  .vis { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(.985);
+         transition: opacity .45s ease, transform .6s cubic-bezier(.2,.7,.2,1); pointer-events: none; }
+  .vis.is-on { opacity: 1; transform: none; }
 
   /* ролик сцены: белый фон кадра сливается с фоном сцены */
   .fr { position: relative; width: 100%; }
@@ -375,7 +374,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
     .stat { flex-direction: column; align-items: flex-start; gap: 10px; }
     .acc__t { font-size: 19px; line-height: 24px; color: var(--gray-900); }
     .acc__n { color: var(--brand); }
-    .acc__d { max-height: none; opacity: 1; margin-top: 6px; }
+    .acc__d { height: auto; opacity: 1; margin-top: 6px; }
     .acc__bar { display: none; }
     .acc__it > .vis { display: flex; position: relative; opacity: 1; min-height: 300px; padding: 84px 0 28px; margin-top: 16px; border-radius: 20px; border: 1px solid var(--gray-200); background: #fff; overflow: hidden; }
     .cap { top: 10px; left: 10px; min-width: 0; max-width: 70%; }
