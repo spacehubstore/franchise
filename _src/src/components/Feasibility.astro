@@ -2,30 +2,25 @@
 // Блок «What the feasibility study includes» (Figma 1913:1363), переработан (CMO 22.11.2026):
 // слева два этапа – бесплатная оценка и платное исследование (цена – в FAQ), справа четыре документа исследования.
 // Иллюстрации – Nano Banana Pro в стиле One floor, по реальным фото оснащения (landing-icons/gen_study*.py: market-4, layout-8,
-// budget-1; layout-9 и budget-0 – кадры для анимации). Надписи поверх – кодом, позиции в % от кадра 4:3. Планировка – цифры модели Шарджи (185 м² пола → 301 м² в аренду, F-1783).
+// budget-1; layout-0 и budget-0 – первые кадры роликов «падения»). Надписи поверх – кодом, позиции в % от кадра 4:3. Планировка – размеры модели Шарджи (14.8 × 12.5 м = 185 м², F-1783), статично на чертеже.
 // Финмодель – схема без сумм: стройка, рост заполнения, выход на целевую загрузку, 4–5× к текущей аренде (как на первом экране).
 // Анимация – одна карточка за раз: играет, когда карточка доходит до середины экрана, и останавливается в конечном виде.
 const stages = [
   { t: "Free assessment", w: "48 hours", d: "Send the address and a few photos. We tell you if the space fits" },
   { t: "Feasibility study", w: "2 weeks", d: "If it fits, we prepare four documents for your address", note: "Paid step, only after the assessment" },
 ];
-// пины конкурентов: x, y (% кадра, кончик пина) и цена за м² – условные, для образца
-const pins = [[14, 47, "$38/m²"], [81, 44, "$44/m²"], [56, 17, "$52/m²"], [47, 78, "$41/m²"]];
-const kit = ["Doors and frames", "Partitions", "Ladders", "Access and locks", "CCTV", "Delivery and installation"];
-// размерные линии планировки (координаты кадра 1200×896, вдоль контура помещения, снаружи): растут из середины к концам
-type P = [number, number];
-const dims: { a: P; b: P; to: number; d: number }[] = [
-  { a: [85, 538], b: [610, 883], to: 14.8, d: 0 },
-  { a: [666, 882], b: [1076, 587], to: 12.5, d: 150 },
+// пины: что анализ смотрит вокруг адреса – конкуренты и источники спроса (жильё, бизнес). Без цен: блок о составе исследования.
+// x, y – кончик пина в % кадра 4:3; порядок падения – ваш адрес, затем конкуренты, затем спрос
+const ICON: Record<string, string> = {
+  rival: "M3 10.5 12 4l9 6.5V20H3zM8 20v-6h8v6M8 17h8",
+  home: "M5 20V9l7-5 7 5v11zM9 12h2M13 12h2M9 16h2M13 16h2",
+  work: "M4 20V8h16v12zM9 8V5h6v3M4 13h16",
+};
+const pins: { x: number; y: number; t: string; i: string; c?: string }[] = [
+  { x: 14, y: 44, t: "Competitor", i: "rival", c: "dark" }, { x: 81, y: 42, t: "Competitor", i: "rival", c: "dark" },
+  { x: 30, y: 64, t: "Apartments", i: "home" }, { x: 66, y: 72, t: "Apartments", i: "home" }, { x: 69, y: 15, t: "Offices", i: "work" },
 ];
-const dimG = dims.map(({ a, b, to, d }) => {
-  const [dx, dy] = [b[0] - a[0], b[1] - a[1]], L = Math.hypot(dx, dy), u: P = [dx / L, dy / L], n: P = [-u[1], u[0]];
-  const m: P = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-  const head = (t: P, s: number) => `M${t[0] - s * 22 * u[0] + 9 * n[0]},${t[1] - s * 22 * u[1] + 9 * n[1]}L${t[0]},${t[1]}L${t[0] - s * 22 * u[0] - 9 * n[0]},${t[1] - s * 22 * u[1] - 9 * n[1]}`;
-  const tick = (t: P) => `M${t[0] - 16 * n[0]},${t[1] - 16 * n[1]}L${t[0] + 16 * n[0]},${t[1] + 16 * n[1]}`;
-  return { to, d, m, ang: (Math.atan2(dy, dx) * 180) / Math.PI, half1: `M${m[0]},${m[1]}L${a[0]},${a[1]}`, half2: `M${m[0]},${m[1]}L${b[0]},${b[1]}`,
-           heads: head(a, -1) + head(b, 1), ticks: tick(a) + tick(b) };
-});
+const kit = ["Doors and frames", "Partitions", "Ladders", "Access and locks", "CCTV", "Delivery and installation"];
 // схема дохода за первые 3 года: отделка (0–4 мес), заполнение (до 22 мес), полная загрузка; текущая аренда = 1/4.5 итогового дохода
 const W = 520, H = 150, M = 36, X = (m: number) => +(m * (W / M)).toFixed(1), Y = (k: number) => +(H - k * (H - 16)).toFixed(1);
 const k = (m: number) => (m < 4 ? 0 : 1 - (1 - Math.min(1, (m - 4) / 18)) ** 2);
@@ -55,11 +50,15 @@ const phases: [string, number, number][] = [["Fit-out", 0, 4], ["Filling up", 4,
 
     <div class="fs__cards">
       <div class="fc" data-play data-card="market">
-        <div class="fc__t"><h3>Market and competitors</h3><p>Competitors near you, their prices and the unit sizes the area is missing. We price every unit to win that demand</p></div>
+        <div class="fc__t"><h3>Market and competitors</h3><p>Who stores nearby: homes and offices around the address. Competitors, their prices and the unit sizes the area is missing</p></div>
         <div class="fc__img">
           <img src="/assets/study/market.webp" width="960" height="717" alt="" loading="lazy" />
-          <span class="mk mk--me" style="left:51%;top:40%;--d:0ms">You</span>
-          {pins.map(([x, y, p], i) => <span class="mk" style={`left:${x}%;top:${y}%;--d:${180 + i * 140}ms`}>{p}</span>)}
+          <span class="mk mk--me" style="left:51%;top:42.5%;--d:0ms">Your space</span>
+          {pins.map((p, i) => (
+            <span class={`mk ${p.c ? "mk--" + p.c : ""}`} style={`left:${p.x}%;top:${p.y}%;--d:${260 + i * 170}ms`}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={ICON[p.i]} /></svg>{p.t}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -67,23 +66,12 @@ const phases: [string, number, number][] = [["Fit-out", 0, 4], ["Filling up", 4,
         <div class="fc__t">
           <h3>Unit layout</h3>
           <p>The mix of unit sizes that earns the most from your floor, based on our rental data. A second level where the ceiling allows</p>
-          <div class="fc__stat"><b data-to="185" data-suf=" m²" data-d="900">185 m²</b><i>→</i><b class="o" data-to="301" data-suf=" m²" data-d="1100">301 m²</b><span>floor</span><span></span><span>to rent</span></div>
         </div>
         <div class="fc__img">
-          <img src="/assets/study/layout.webp" width="960" height="717" alt="" loading="lazy" />
-          <svg class="dims" viewBox="0 0 1200 896" aria-hidden="true">
-            {dimG.map((g) => (
-              <g style={`--d:${g.d}ms`}>
-                <path d={g.ticks} class="dims__tick" />
-                <path d={g.half1} class="dims__ln" pathLength="1" /><path d={g.half2} class="dims__ln" pathLength="1" />
-                <path d={g.heads} class="dims__head" />
-                <g transform={`translate(${g.m[0]} ${g.m[1]}) rotate(${g.ang})`} class="dims__v">
-                  <rect x="-84" y="-34" width="168" height="58" rx="10" />
-                  <text y="12" text-anchor="middle" data-to={g.to} data-dec="1" data-suf=" m" data-d={g.d + 250}>{g.to} m</text>
-                </g>
-              </g>
-            ))}
-          </svg>
+          <img src="/assets/study/layout.webp" width="960" height="717" alt="" loading="lazy" data-final />
+          <video class="fc__vid" muted playsinline preload="none" poster="/assets/study/layout-0.webp" data-drop data-src="/assets/study/layout.mp4" hidden></video>
+          <span class="dim" style="left:27%;top:79%;--r:34.7deg">14.8 m</span>
+          <span class="dim" style="left:73.5%;top:81%;--r:-33.6deg">12.5 m</span>
         </div>
       </div>
 
@@ -134,28 +122,19 @@ const phases: [string, number, number][] = [["Fit-out", 0, 4], ["Filling up", 4,
   }));
   // анимация по одной карточке: срабатывает в средней полосе экрана, играет один раз
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  // досчёт чисел: размеры после того, как выросли линии, площади – следом
-  const count = (el: HTMLElement) => {
-    const to = +el.dataset.to!, dec = +(el.dataset.dec || 0), suf = el.dataset.suf || "", d = +(el.dataset.d || 0);
-    const f = (n: number) => n.toFixed(dec) + suf;
-    el.textContent = f(0);
-    setTimeout(() => { const t0 = performance.now(); const tick = (t: number) => { const q = Math.min(1, (t - t0) / 700);
-      el.textContent = f(to * (1 - (1 - q) ** 3)); if (q < 1) requestAnimationFrame(tick); }; requestAnimationFrame(tick); }, d);
-  };
-  // бюджет: детали падают на паллет (ролик), останавливается на последнем кадре = итоговой картинке
-  const vid = root.querySelector<HTMLVideoElement>("[data-drop]");
-  const img = root.querySelector<HTMLImageElement>("[data-final]");
-  if (vid && img && !still) {
-    // пока карточка не доиграла – пустой паллет; ролик грузится заранее, когда блок близко
-    vid.hidden = false; img.style.visibility = "hidden";
-    new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { vid.src = vid.dataset.src!; vid.preload = "auto"; o.disconnect(); } }, { rootMargin: "600px 0px" }).observe(vid);
-    vid.addEventListener("ended", () => { img.style.visibility = ""; vid.hidden = true; });
-  }
-  function drop(v: HTMLVideoElement) { if (!v.src) v.src = v.dataset.src!; v.playbackRate = 1.6; v.play().catch(() => { img!.style.visibility = ""; v.hidden = true; }); }
+  // планировка и бюджет: боксы и детали падают на место (ролики), остановка на последнем кадре = итоговой картинке
+  const drops = root.querySelectorAll<HTMLVideoElement>("[data-drop]");
+  const fin = (v: HTMLVideoElement) => { v.parentElement!.querySelector<HTMLImageElement>("[data-final]")!.style.visibility = ""; v.hidden = true; };
+  if (!still) drops.forEach((v) => {
+    // пока карточка не доиграла – пустой кадр; ролик грузится заранее, когда блок близко
+    v.hidden = false; v.parentElement!.querySelector<HTMLImageElement>("[data-final]")!.style.visibility = "hidden";
+    new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { v.src = v.dataset.src!; v.preload = "auto"; o.disconnect(); } }, { rootMargin: "600px 0px" }).observe(v);
+    v.addEventListener("ended", () => fin(v));
+  });
+  function drop(v: HTMLVideoElement) { if (still) return; if (!v.src) v.src = v.dataset.src!; v.playbackRate = 1.6; v.play().catch(() => fin(v)); }
   const io = new IntersectionObserver((es) => es.forEach((e) => {
     if (!e.isIntersecting) return;
     const c = e.target as HTMLElement; c.classList.add("play"); io.unobserve(c);
-    c.querySelectorAll<HTMLElement | SVGElement>("[data-to]").forEach((el) => count(el as HTMLElement));
     const v = c.querySelector<HTMLVideoElement>("[data-drop]"); if (v) drop(v);
     (window as any).dataLayer?.push({ event: "study_card_viewed", card: c.dataset.card });
   }), { rootMargin: "-40% 0px -40% 0px" });
@@ -186,26 +165,20 @@ const phases: [string, number, number][] = [["Fit-out", 0, 4], ["Filling up", 4,
   .fc p { font-weight: 500; font-size: 15px; line-height: 22px; color: var(--gray-700); }
   .fc__img { position: relative; aspect-ratio: 960 / 717; border-radius: 16px; overflow: hidden; background: var(--white); }
   .fc__img img { width: 100%; height: 100%; display: block; }
-  .fc__stat { display: grid; grid-template-columns: auto auto auto; justify-content: start; column-gap: 10px; align-items: baseline; margin-top: 4px; }
-  .fc__stat b { font-weight: 800; font-size: 26px; line-height: 30px; font-variant-numeric: tabular-nums; }
-  .fc__stat b.o { color: var(--brand); }
-  .fc__stat i { font-style: normal; font-size: 20px; color: var(--gray-500); }
-  .fc__stat span { font-size: 13px; font-weight: 600; color: var(--gray-500); }
 
   /* надписи поверх иллюстраций */
   .mk { position: absolute; white-space: nowrap; font-weight: 700; font-size: 12px; line-height: 16px; }
-  .mk { transform: translate(-50%, -100%); padding: 5px 9px; border-radius: 99px; background: var(--gray-900); color: var(--white); box-shadow: 0 6px 14px rgba(0,0,0,.18); }
-  .mk::after { content: ""; position: absolute; left: 50%; top: 100%; margin-left: -5px; border: 5px solid transparent; border-top-color: var(--gray-900); }
-  .mk--me { background: var(--brand); padding: 6px 12px; }
+  .mk { display: inline-flex; align-items: center; gap: 4px; transform: translate(-50%, calc(-100% - 6px)); padding: 4px 9px 4px 6px; border-radius: 99px; background: var(--white); color: var(--gray-900); box-shadow: 0 6px 14px rgba(0,0,0,.16); }
+  .mk::after { content: ""; position: absolute; left: 50%; top: 100%; margin-left: -5px; border: 5px solid transparent; border-top-color: var(--white); }
+  .mk svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; color: var(--brand); }
+  .mk--dark { background: var(--gray-900); color: var(--white); }
+  .mk--dark::after { border-top-color: var(--gray-900); }
+  .mk--dark svg { color: var(--white); }
+  .mk--me { background: var(--brand); color: var(--white); padding: 5px 12px; }
   .mk--me::after { border-top-color: var(--brand); }
   .dim { transform: translate(-50%, -50%) rotate(var(--r)); padding: 1px 6px; background: var(--white); color: var(--gray-700); font-weight: 700; font-size: 12px; }
   .fc__vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--white); }
-  .dims { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .dims__ln { fill: none; stroke: var(--gray-900); stroke-width: 3.5; stroke-dasharray: 1; stroke-dashoffset: 0; }
-  .dims__tick { fill: none; stroke: var(--gray-700); stroke-width: 3; }
-  .dims__head { fill: none; stroke: var(--gray-900); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
-  .dims__v rect { fill: var(--white); }
-  .dims__v text { font: 800 46px "Manrope", sans-serif; fill: var(--gray-900); font-variant-numeric: tabular-nums; }
+  .dim { position: absolute; transform: translate(-50%, -50%) rotate(var(--r)); padding: 0 5px; background: var(--white); white-space: nowrap; font: 700 11px/14px "Manrope", sans-serif; color: var(--gray-600); }
   .kit { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; }
   .kit li { padding: 3px 9px; border-radius: 99px; background: var(--gray-100); font-size: 12px; font-weight: 700; color: var(--gray-700); }
 
@@ -230,13 +203,16 @@ const phases: [string, number, number][] = [["Fit-out", 0, 4], ["Filling up", 4,
   .fm__chips li { padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .45); font-size: 12px; font-weight: 700; }
 
   /* анимация: начальное состояние только до .play; без JS всё видно */
-  .fc[data-play]:not(.play) .mk { opacity: 0; transform: translate(-50%, -160%) scale(.6); }
-  .mk { transition: transform .45s cubic-bezier(.2, 1.5, .4, 1) var(--d), opacity .2s var(--d); }
-  .fc[data-play]:not(.play) .dims__ln { stroke-dashoffset: 1; }
-  .dims__ln { transition: stroke-dashoffset .5s cubic-bezier(.4, 0, .2, 1) var(--d); }
-  .fc[data-play]:not(.play) .dims__head, .fc[data-play]:not(.play) .dims__tick, .fc[data-play]:not(.play) .dims__v { opacity: 0; }
-  .dims__head, .dims__tick { transition: opacity .2s calc(var(--d) + .45s); }
-  .dims__v { transition: opacity .25s calc(var(--d) + .2s); }
+  .fc[data-play]:not(.play) .mk { opacity: 0; }
+  .fc.play .mk { animation: pinDrop .7s var(--d) both; }
+  @keyframes pinDrop {
+    0% { opacity: 0; transform: translate(-50%, calc(-100% - 90px)); animation-timing-function: cubic-bezier(.5, 0, 1, .6); }
+    55% { opacity: 1; transform: translate(-50%, calc(-100% - 6px)); animation-timing-function: cubic-bezier(0, .4, .5, 1); }
+    72% { transform: translate(-50%, calc(-100% - 16px)); animation-timing-function: cubic-bezier(.5, 0, 1, .6); }
+    86% { transform: translate(-50%, calc(-100% - 6px)); }
+    93% { transform: translate(-50%, calc(-100% - 9px)); }
+    100% { opacity: 1; transform: translate(-50%, calc(-100% - 6px)); }
+  }
   .fc[data-play]:not(.play) .kit li { opacity: 0; transform: translateY(4px); }
   .kit li { transition: opacity .25s var(--d), transform .25s ease-out var(--d); }
   .fc[data-play]:not(.play) .fm__line { stroke-dashoffset: 1; }
@@ -244,7 +220,7 @@ const phases: [string, number, number][] = [["Fit-out", 0, 4], ["Filling up", 4,
   .fc[data-play]:not(.play) .fm__area, .fc[data-play]:not(.play) .fm__note { opacity: 0; }
   .fm__area { transition: opacity .5s .8s; }
   .fm__note { transition: opacity .35s calc(var(--d) + .2s); }
-  @media (prefers-reduced-motion: reduce) { .mk, .dims__ln, .dims__head, .dims__tick, .dims__v, .kit li, .fm__line, .fm__area, .fm__note { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .fc.play .mk { animation: none; opacity: 1; } .kit li, .fm__line, .fm__area, .fm__note { transition: none; } }
 
   @media (max-width: 1100px) {
     .fs { flex-direction: column; padding: 40px 20px; gap: 32px; border-radius: 24px; }
