@@ -29,6 +29,15 @@ import LeadModal from "../components/LeadModal.astro";
   <Footer />
   <LeadModal />
   <script>
+    import { openLead } from "../lib/leadModal";
+    // «Get in touch» (первый экран и шапка): общее окно заявки
+    document.querySelectorAll<HTMLElement>("[data-open-lead]").forEach((b) => b.addEventListener("click", () => openLead({
+      form: b.dataset.loc || "get_in_touch", title: "Let’s discuss your project", lead: "We reply within 1 working hour",
+      text: (who) => `Franchise request (${b.dataset.loc}). ${who}`,
+    })));
+    // кнопки шапки скрыты, пока виден первый экран
+    const hero = document.querySelector(".hero");
+    if (hero) new IntersectionObserver(([e]) => document.documentElement.classList.toggle("hero-on", e.isIntersecting), { rootMargin: "-80px 0px 0px 0px" }).observe(hero);
     // появление блоков при прокрутке (.rv)
     const rvo = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); rvo.unobserve(e.target); } }),
                                          { threshold: .15, rootMargin: "0px 0px -8% 0px" });
