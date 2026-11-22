@@ -93,10 +93,13 @@
   };
   // прямая часть останавливается в середине (сборка закончена), обратная – в конце (исходное положение = кадр 0)
   document.querySelectorAll<HTMLVideoElement>(".ic--eq video").forEach((v) => {
-    v.addEventListener("timeupdate", () => {
+    // остановка в середине проверяется на каждом кадре (timeupdate приходит раз в ~250 мс и проскакивает середину)
+    const watch = () => {
       const mid = v.duration / 2;
-      if (v.dataset.dir === "fwd" && v.currentTime >= mid - .04) { v.pause(); v.currentTime = mid - .04; }
-    });
+      if (v.dataset.dir === "fwd" && v.currentTime >= mid - .06) { v.pause(); return; }
+      if (!v.paused) requestAnimationFrame(watch);
+    };
+    v.addEventListener("play", () => requestAnimationFrame(watch));
     v.addEventListener("ended", () => { v.currentTime = 0; v.dataset.dir = ""; });
   });
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
