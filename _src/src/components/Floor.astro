@@ -37,7 +37,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
         <img class="stat__glow" src="/assets/figma/glow-49.svg" alt="" aria-hidden="true" />
         <b>$62B</b>
         <!-- Grand View Research: мировой рынок self-storage $61,7 млрд (2025) → $104,8 млрд (2033), CAGR 7,1 % (2026–2033); проверено 22.11.2026 -->
-        <span>global self-storage market, growing 7% a year<small>Grand View Research: 2025 size, 2026–2033 forecast</small></span>
+        <span>global self-storage market, growing 7% a year<small>Source: <a href="https://www.grandviewresearch.com/industry-analysis/self-storage-market-report" target="_blank" rel="noopener nofollow">Grand View Research</a>, 2025 size, 2026–2033 forecast</small></span>
       </div>
     </div>
 
@@ -282,6 +282,8 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .stat__glow { position: absolute; right: -100px; top: -63px; width: 418px; max-width: none; pointer-events: none; }
   .stat b { position: relative; flex: none; font-weight: 700; font-size: 44px; line-height: 1; letter-spacing: -1px; color: var(--brand); }
   .stat span { position: relative; font-weight: 500; font-size: 15px; line-height: 21px; }
+  .stat small a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  .stat small a:hover { color: var(--brand); }
   .stat small { display: block; margin-top: 4px; font-size: 11px; line-height: 14px; color: var(--gray-500); }
 
   .stage { position: relative; height: clamp(400px, calc(100svh - var(--hdr-h) - 140px), 600px); border-radius: var(--radius-l); background: #fff; border: 1px solid var(--gray-200); overflow: hidden; }
