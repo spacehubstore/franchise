@@ -5,3 +5,8 @@ const { label = "Area units" } = Astro.props;
 <span class="units" data-units role="group" aria-label={label}>
   <button type="button" data-u="m2" class="on">m²</button><button type="button" data-u="ft">sq ft</button>
 </span>
+
+<script>
+  import { bindToggles } from "../lib/units";
+  bindToggles();
+</script>

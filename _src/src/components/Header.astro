@@ -1,7 +1,6 @@
 ---
 // Шапка (Figma 1531:5928): логотип, «franchise», кнопки «Check your space» и WhatsApp.
 import { CONTACTS } from "../data/site";
-import Units from "./Units.astro";
 ---
 <header class="hdr">
   <div class="hdr__in">
@@ -12,7 +11,6 @@ import Units from "./Units.astro";
       <span class="hdr__sub">franchise</span>
     </a>
     <nav class="hdr__cta">
-      <Units />
       <a class="btn btn--sm btn--dark" href="#check" data-ev="check_your_space_clicked" data-loc="header">Check your space</a>
       <a class="btn btn--sm btn--light" href={CONTACTS.whatsapp.url} target="_blank" rel="noopener"
          data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="header">
@@ -29,17 +27,12 @@ import Units from "./Units.astro";
   .hdr__sep { width: 1.5px; height: 20px; background: var(--gray-300); margin: 0 8px; }
   .hdr__sub { font-weight: 600; font-size: 18px; line-height: 26px; color: var(--gray-600); }
   .hdr__cta { display: flex; gap: 8px; align-items: center; }
-  .hdr__cta :global(.units) { margin-right: 8px; }
   @media (max-width: 900px) {
     .hdr { padding: 0 8px; }
     .hdr__in { padding: 8px; }
     .hdr__sub, .hdr__sep { display: none; }
     .hdr__cta .btn--dark { display: none; }
-    .hdr__cta :global(.units) { display: none; }
   }
 </style>
 
-<script>
-  import { bindToggles } from "../lib/units";
-  bindToggles();
-</script>
+
