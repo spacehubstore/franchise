@@ -13,9 +13,8 @@ const GTM = "GTM-TJVPKFZ";
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/assets/figma/logo-icon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- шрифт со своего сервера (CMO 23.11.2026): один вариативный файл Manrope, латиница, 24 КБ, без соединений с Google -->
+    <link rel="preload" href="/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin />
     <script is:inline define:vars={{ GTM }}>
       window.dataLayer = window.dataLayer || [];
       (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});

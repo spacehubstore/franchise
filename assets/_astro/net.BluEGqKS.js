@@ -1,0 +1,1 @@
+var e=navigator.connection,t=!!e&&(e.saveData===!0||/(^|-)(2g|3g)$/.test(e.effectiveType||``));export{t};

@@ -16,7 +16,7 @@ export type City = {
   before: string; after: string;            // доход за всё помещение в месяц
   space: string;                            // что за помещение
   note: string;                             // подпись: источник цифр и фото
-  photos: { before: string; after: string };
+  photos: { before: string; after: string };   // база пути: -640.webp и -1024.webp
 };
 
 // Порядок и состав – CMO 23.11.2026: Шарджа, Бангкок, Рига. Фото Шарджи и Риги – иллюстрации (генерация по типажу местных
@@ -25,13 +25,13 @@ export type City = {
 export const CITIES: City[] = [
   { id: "sharjah", name: "Sharjah", region: "Middle East", verified: false, before: "$2,220", after: "$9,700",
     space: "185 m²", note: "SpaceHub model, after management commission",
-    photos: { before: "/assets/case-shj-before.jpg", after: "/assets/case-shj-after.jpg" } },
+    photos: { before: "/assets/case-shj-before", after: "/assets/case-shj-after" } },
   { id: "bangkok", name: "Bangkok", region: "Southeast Asia", verified: true, before: "$150", after: "$690",
     space: "37 m²", note: "SpaceHub model, after management commission",
-    photos: { before: "/assets/case-bkk-before.jpg", after: "/assets/case-bkk-after.jpg" } },
+    photos: { before: "/assets/case-bkk-before", after: "/assets/case-bkk-after" } },
   { id: "riga", name: "Riga", region: "Europe", verified: false, before: "$970", after: "$2,970",
     space: "176 m²", note: "SpaceHub model, after management commission",
-    photos: { before: "/assets/case-rig-before.jpg", after: "/assets/case-rig-after.jpg" } },
+    photos: { before: "/assets/case-rig-before", after: "/assets/case-rig-after" } },
 ];
 
 // Приёмник заявок: сервис в Google Cloud → amoCRM (решение CMO 22.11.2026, вариант «а»). Пока адреса нет – заявка уходит

@@ -89,6 +89,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
 </section>
 
 <script>
+  import { slowNet } from "../lib/net";
   // холодный трафик (CMO 22.11.2026): пункт ~2,5–3 с, круг ~11 с; плашка «После» – на 2/3 ролика, пока картинка ещё движется
   const RATE = 2.2, HOLD = 800, CAP_AT = .66;
   const sec = document.querySelector<HTMLElement>("[data-floor]")!;
@@ -97,7 +98,8 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   const count = sec.querySelector<HTMLElement>("[data-count]")!;
   const n = items.length;
   const desk = matchMedia("(min-width: 1101px)");
-  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches || slowNet;
+  if (slowNet) sec.querySelectorAll<HTMLVideoElement>("video").forEach((v) => { v.preload = "none"; v.removeAttribute("src"); v.load(); });
   items.forEach((it, i) => { const c = vis[i].cloneNode(true) as HTMLElement; c.classList.remove("is-on"); it.querySelector(".vis--inline")!.replaceWith(c); });
 
   // сцена: «до» → свайп (сцена 3) → ролик ×2,2 → на 2/3 ролика плашка «после» (.is-cap) → конец ролика (.is-done)

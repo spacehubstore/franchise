@@ -132,6 +132,7 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
 </section>
 
 <script>
+  import { slowNet } from "../lib/net";
   import { openLead } from "../lib/leadModal";
   const root = document.querySelector<HTMLElement>("#study")!;
   root.querySelectorAll("[data-open-study]").forEach((b) => b.addEventListener("click", () => openLead({
@@ -142,6 +143,7 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
   // полосы: при быстрой прокрутке и переходе по якорю полоса проскакивалась, и карточка оставалась пустой. Ролики грузятся целиком
   // (fetch → blob), без частичных запросов, на которых Safari подвисал. Любой сбой или задержка – сразу итоговая картинка.
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const noVideo = still || slowNet;   // слабое соединение: карточки сразу в итоговом виде, ролики не грузим
   const cards = Array.from(root.querySelectorAll<HTMLElement>("[data-play]"));
   const blobs = new Map<HTMLVideoElement, Promise<string>>();
   const load = (v: HTMLVideoElement) => {
@@ -152,8 +154,9 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
   // итог проявляется поверх последнего кадра ролика, видео убирается только после – без пустого кадра между ними
   const fin = (v: HTMLVideoElement) => { const img = v.parentElement!.querySelector<HTMLElement>("[data-final]")!; img.classList.remove("is-wait"); setTimeout(() => (v.hidden = true), 450); };
   const drops = Array.from(root.querySelectorAll<HTMLVideoElement>("[data-drop]"));
-  if (!still) drops.forEach((v) => { v.hidden = false; v.parentElement!.querySelector<HTMLElement>("[data-final]")!.classList.add("is-wait"); });
+  if (!noVideo) drops.forEach((v) => { v.hidden = false; v.parentElement!.querySelector<HTMLElement>("[data-final]")!.classList.add("is-wait"); });
   const drop = (v: HTMLVideoElement) => {
+    if (noVideo) return fin(v);
     let done = false; const end = () => { if (!done) { done = true; fin(v); } };
     const guard = setTimeout(end, 1800);   // ролик не начал играть за 1.8 с – показываем итог
     load(v).then((url) => {
@@ -182,7 +185,7 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
         const r = c.getBoundingClientRect();
         if (r.bottom < 0) { start(c, false); continue; }            // уже проскочили – сразу итог, без анимации
         const v = c.querySelector<HTMLVideoElement>("[data-drop]");
-        if (v && r.top < h * 2) load(v).catch(() => {});             // ролик – заранее, за два экрана
+        if (v && !noVideo && r.top < h * 2) load(v).catch(() => {});             // ролик – заранее, за два экрана
         if (r.top < h * 0.62) {                                      // верх карточки прошёл 62 % экрана – играем, даже если она уже уходит вверх
           if (now - last < 700) { setTimeout(() => { if (!raf) raf = requestAnimationFrame(check); }, 700 - (now - last)); break; }
           last = now; start(c, true); setTimeout(kick, 720); break;   // по одной карточке за раз; следующую проверим сами, без новой прокрутки

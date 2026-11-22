@@ -40,15 +40,15 @@ import { CONTACTS } from "../data/site";
 
 <script>
   import { sendLead } from "../lib/lead";
-  import { initForm, checkForm } from "../lib/forms";
+  import { prepare, ready } from "../lib/formsLazy";
   // LINE – мессенджер Таиланда: показываем только при таиландском часовом поясе
   try { if (Intl.DateTimeFormat().resolvedOptions().timeZone === "Asia/Bangkok") document.querySelector<HTMLElement>("#contact [data-line]")!.hidden = false; } catch { /* нет часового пояса */ }
   const form = document.querySelector<HTMLFormElement>("[data-cf]")!;
-  initForm(form);
+  prepare(form);
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-    const { ok, phone } = checkForm(form, "contact");
+    const { ok, phone } = (await ready(form)).checkForm(form, "contact");
     if (!ok) return;
     const how = await sendLead({ form: "contact", name: f.get("name"), city: f.get("city"), phone },
                                `Franchise request. ${f.get("name")}, ${phone}, ${f.get("city") || ""}`);

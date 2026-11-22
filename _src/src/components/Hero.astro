@@ -31,8 +31,11 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
       </div>
 
       <div class="ba" data-ba>
-        <div class="ba__img" data-img="before" style={`background-image:url(${first.photos.before})`}></div>
-        <div class="ba__img" data-img="after" style={`background-image:url(${first.photos.after})`} data-ba-after></div>
+        {(["before", "after"] as const).map((k) => (
+          <img class="ba__img" data-img={k} {...(k === "after" ? { "data-ba-after": "" } : {})} src={`${first.photos[k]}-1024.webp`}
+               srcset={`${first.photos[k]}-640.webp 640w, ${first.photos[k]}-1024.webp 1024w`} sizes="(max-width: 1000px) 100vw, 56vw"
+               alt="" fetchpriority="high" decoding="async" />
+        ))}
         <div class="ba__handle" data-ba-handle aria-hidden="true"><span><svg viewBox="0 0 24 24"><path d="M9 6 3 12l6 6M15 6l6 6-6 6" /></svg></span></div>
         <input class="ba__range" type="range" min="0" max="100" value="50" aria-label="Before and after" data-ba-range />
         <div class="money money--b"><small>Before · leased</small><b data-v="before">{first.before}</b><span>a month</span></div>
@@ -45,6 +48,7 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
 </section>
 
 <script>
+  import { slowNet } from "../lib/net";
   const box = document.querySelector<HTMLElement>("[data-cases]")!;
   const cities = JSON.parse(box.dataset.cities!);
   const range = box.querySelector<HTMLInputElement>("[data-ba-range]")!;
@@ -58,11 +62,21 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
     box.querySelectorAll("[data-city]").forEach((x) => { x.classList.toggle("tab--on", x === t); x.setAttribute("aria-selected", String(x === t)); });
     box.querySelectorAll<HTMLElement>("[data-img]").forEach((e) => {
       e.classList.add("is-swap");
-      setTimeout(() => { e.style.backgroundImage = `url(${c.photos[e.dataset.img!]})`; e.classList.remove("is-swap"); }, 200);
+      const b = c.photos[e.dataset.img!];
+      setTimeout(() => { (e as HTMLImageElement).srcset = `${b}-640.webp 640w, ${b}-1024.webp 1024w`; (e as HTMLImageElement).src = `${b}-1024.webp`; e.classList.remove("is-swap"); }, 200);
     });
     (["before", "after", "name", "space", "note"] as const).forEach((k) => (box.querySelector(`[data-v=${k}]`)!.textContent = c[k]));
     const ba = box.querySelector<HTMLElement>(".ba")!; ba.classList.remove("is-pop"); void ba.offsetWidth; ba.classList.add("is-pop");
+    warm(tabs[(tabs.indexOf(t) + 1) % tabs.length]);
   };
+  // фото следующего кейса – заранее, чтобы при переключении не было пустого кадра; на слабом соединении не грузим
+  const size = () => (innerWidth <= 1000 ? 640 : 1024);
+  const warm = (t: HTMLButtonElement) => {
+    if (slowNet) return;
+    const c = cities.find((x: any) => x.id === t.dataset.city);
+    (['before', 'after'] as const).forEach((k) => { const i = new Image(); i.decoding = 'async'; i.src = `${c.photos[k]}-${size()}.webp`; });
+  };
+  addEventListener('load', () => setTimeout(() => warm(tabs[1]), 1500), { once: true });
   // автопереключение кейсов (CMO 23.11.2026): раз в 5 с, тонкая полоска прогресса под активной вкладкой;
   // клик по вкладке или движение слайдера останавливает автопоказ; пауза при наведении и когда первый экран не виден
   const STEP = 5000;
@@ -113,7 +127,7 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
 
   /* кейс ниже (CMO 23.11.2026): ~85 % прежней высоты (было до 700 px), кадр чуть смещён к полу */
   .ba { position: relative; height: clamp(400px, calc((100svh - var(--hdr-h) - 150px) * .85), 600px); border-radius: 28px; overflow: hidden; background: var(--gray-100); }
-  .ba__img { position: absolute; inset: 0; background-size: cover; background-position: center 60%; transition: opacity .2s; }
+  .ba__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 60%; transition: opacity .2s; }
   .ba__img.is-swap { opacity: .2; }
   .ba__handle { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: var(--white); pointer-events: none; box-shadow: 0 0 12px rgba(0,0,0,.2); z-index: 1; }
   .ba__handle span { position: absolute; top: 50%; left: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: var(--white); box-shadow: 0 4px 14px rgba(0,0,0,.2); display: grid; place-items: center; }
@@ -146,7 +160,7 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
     .tabs { width: 100%; }
     .tab { flex: 1; justify-content: center; padding: 0 8px; font-size: 14px; }
     .ba { height: auto; aspect-ratio: 1 / 1; max-height: 58svh; }
-    .ba__img { background-position: center 78%; }
+    .ba__img { object-position: center 78%; }
     /* мобилка (CMO 23.11.2026): кнопки после кейса */
     .hero__txt { display: contents; }
     .hero__h { order: 1; } .hero__lead { order: 2; } .case { order: 3; } .hero__btns { order: 4; }

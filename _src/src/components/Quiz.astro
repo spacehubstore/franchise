@@ -123,7 +123,7 @@ const STEPS: Record<string, Step[]> = {
 
 <script>
   import { sendLead } from "../lib/lead";
-  import { initForm, checkForm, refillForm } from "../lib/forms";
+  import { prepare, ready } from "../lib/formsLazy";
   import { onUnit, getUnit, SQFT } from "../lib/units";
   const root = document.querySelector<HTMLElement>("[data-quiz]")!;
   const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
@@ -160,7 +160,7 @@ const STEPS: Record<string, Step[]> = {
     const k = st.step === 1 ? "branch" : cur().dataset.k!;
     dl({ event: "quiz_step", step: st.step, branch: st.branch, question: k,
          answer: k === "branch" ? st.branch : k === "area" ? (st.ans.area || `${Math.round(st.area_m2)} m²`) : st.ans[k] + (k === "floor" && st.ans.lift ? `, lift: ${st.ans.lift}` : "") });
-    st.seen.add(st.step); st.step++; show(); if (st.step === 8) refillForm(form);
+    st.seen.add(st.step); st.step++; show(); if (st.step === 8) ready(form).then((m) => m.refillForm(form));
   };
   const back = () => { if (st.step > 1) { st.step--; show(-1); } };
 
@@ -224,11 +224,11 @@ const STEPS: Record<string, Step[]> = {
   $("[data-back2]").addEventListener("click", back);
 
   const form = $<HTMLFormElement>("form.fin");
-  initForm(form);
+  prepare(form);
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-    const { ok, phone } = checkForm(form, "quiz");
+    const { ok, phone } = (await ready(form)).checkForm(form, "quiz");
     if (!ok) return;
     const ans = { ...st.ans, ...(st.area_m2 ? { area_m2: Math.round(st.area_m2) } : {}) };
     const txt = `Franchise request: ${st.branch === "land" ? "plot of land" : "space in a building"}, ${Object.entries(ans).map(([k, v]) => `${k}: ${v}`).join(", ")}. ` +

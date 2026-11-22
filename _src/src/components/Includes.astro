@@ -47,6 +47,7 @@
 </section>
 
 <script>
+  import { slowNet } from "../lib/net";
   // Микроанимации (CMO 22.11.2026). Technology и Equipment – состояние: при наведении переходят в итог и держат его, без курсора откат.
   // Marketing и Operations – вспышка: значки всплывают и гаснут, карточка сама возвращается в исходный вид; заново – при новом наведении.
   // Без наведения (телефон) – один раз, когда карточка в экране.
@@ -102,6 +103,7 @@
     v.addEventListener("play", () => requestAnimationFrame(watch));
     v.addEventListener("ended", () => { v.currentTime = 0; v.dataset.dir = ""; });
   });
+  if (slowNet) document.querySelectorAll<HTMLVideoElement>(".ic--eq video").forEach((v) => { v.preload = "none"; v.removeAttribute("src"); v.load(); });
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
     if (matchMedia("(hover: hover)").matches) {
       cards.forEach((c) => {
