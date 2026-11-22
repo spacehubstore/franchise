@@ -1,0 +1,75 @@
+---
+// Блок «What the feasibility study includes» (Figma 1913:1363). В Figma у шага 02 скопирован текст шага 01 – текст шага 02 наш.
+const steps = [
+  { n: "01.", t: "From you", d: "Address, current floor plan, ceiling height and photos" },
+  { n: "02.", t: "Our work", d: "We study demand around the address, design the units and price the equipment" },
+  { n: "03.", t: "Your proposal", d: "Four results for your address, ready in about 2 weeks", on: true },
+];
+const cards = [
+  { t: "Market and competitor analysis", d: "Competitors near you, their prices and the unit sizes the area is missing. We price every unit to win that demand", img: "fs-market", c: "c1" },
+  { t: "Unit layout", d: "The mix of unit sizes that earns the most from your floor, based on our rental data. A second level where the ceiling allows", img: "fs-layout", c: "c2" },
+  { t: "Equipment budget", d: "Every item your layout needs, with delivery and installation, in one total price", img: "fs-budget", c: "c3" },
+  { t: "Financial model", d: "Occupancy, revenue, costs and your net income, month by month for 10 years. The calculator above, built for your address", img: "fs-model", c: "c4" },
+];
+---
+<section class="fs-wrap wrap">
+  <div class="fs">
+    <div class="fs__left">
+      <div class="fs__head">
+        <h2>What the feasibility study includes</h2>
+        <p>We check which units to build, at what price and whether there is demand around your address</p>
+      </div>
+      <ol class="fs__steps">
+        {steps.map((s) => (
+          <li class={s.on ? "on" : ""}><b><span>{s.n}</span>{s.t}</b><p>{s.d}</p></li>
+        ))}
+      </ol>
+    </div>
+    <div class="fs__cards">
+      {cards.map((c) => (
+        <div class={`fc fc--${c.c}`}>
+          <h3>{c.t}</h3><p>{c.d}</p>
+          <img src={`/assets/figma/${c.img}.webp`} width="280" height="280" alt="" loading="lazy" />
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .fs-wrap { padding-block: 24px 96px; }
+  .fs { background: var(--gray-900); color: var(--white); border-radius: 32px; padding: 72px; display: flex; gap: 64px; max-width: 1296px; margin: 0 auto; }
+  .fs__left { flex: none; width: 520px; display: flex; flex-direction: column; gap: 32px; position: sticky; top: 24px; align-self: flex-start; }
+  .fs__head { display: flex; flex-direction: column; gap: 20px; }
+  .fs__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
+  .fs__head p { font-weight: 500; font-size: 20px; line-height: 28px; }
+  .fs__steps { list-style: none; display: flex; flex-direction: column; gap: 20px; }
+  .fs__steps b { display: flex; gap: 31px; font-weight: 700; font-size: 26px; line-height: 30px; }
+  .fs__steps b span { width: 52px; }
+  .fs__steps p { padding-left: 83px; margin-top: 10px; font-weight: 500; font-size: 20px; line-height: 28px; }
+  .fs__steps .on b { color: var(--brand); }
+  .fs__cards { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .fc { position: relative; overflow: hidden; height: 284px; border: 2px solid var(--gray-900); border-radius: 24px; padding: 32px 24px; color: var(--gray-900); }
+  .fc h3 { position: relative; z-index: 1; font-weight: 700; font-size: 24px; line-height: 28px; letter-spacing: -0.48px; }
+  .fc p { position: relative; z-index: 1; width: 290px; margin-top: 16px; font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; }
+  .fc img { position: absolute; right: -20px; bottom: -30px; width: 280px; height: 280px; object-fit: contain; }
+  .fc--c1 { background: var(--gray-200); }
+  .fc--c2 { background: var(--gray-300); }
+  .fc--c3 { background: var(--gray-400); }
+  .fc--c4 { background: var(--brand); color: var(--white); }
+  @media (max-width: 1100px) {
+    .fs { flex-direction: column; padding: 40px 20px; gap: 32px; border-radius: 24px; }
+    .fs__left { width: 100%; position: static; }
+  }
+  @media (max-width: 900px) {
+    .fs-wrap { padding-block: 8px 64px; }
+    .fs__head h2 { font-size: 32px; line-height: 38px; }
+    .fs__head p, .fs__steps p { font-size: 17px; line-height: 24px; }
+    .fs__steps b { font-size: 22px; gap: 12px; }
+    .fs__steps b span { width: 40px; }
+    .fs__steps p { padding-left: 52px; }
+    .fc { height: auto; min-height: 260px; padding: 24px 20px 150px; }
+    .fc p { width: auto; }
+    .fc img { width: 180px; height: 180px; right: -10px; bottom: -20px; }
+  }
+</style>

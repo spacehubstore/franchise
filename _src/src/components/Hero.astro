@@ -1,0 +1,122 @@
+---
+// Первый экран (Figma 1531:5963): заголовок, оффер, кнопки, вкладки городов и слайдер «до/после» с карточками дохода.
+// Города без подтверждённого кейса показываются серыми и не переключаются (CMO 22.11.2026: прорабатываются).
+import { CITIES, CONTACTS } from "../data/site";
+const city = CITIES.find((c) => c.ready)!;
+---
+<section class="hero">
+  <div class="wrap hero__top">
+    <h1 class="hero__h">Turn your space<br />into a self&#8209;storage business</h1>
+    <p class="hero__lead">We design, equip, open and run the facility. You keep the income minus a 20% royalty</p>
+    <div class="hero__btns">
+      <a class="btn btn--dark" href="#check" data-ev="check_your_space_clicked" data-loc="hero">Check your space</a>
+      <a class="btn btn--light" href={CONTACTS.whatsapp.url} target="_blank" rel="noopener"
+         data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="hero">
+        <img src="/assets/figma/whatsapp-24.svg" width="24" height="24" alt="" />WhatsApp
+      </a>
+    </div>
+  </div>
+
+  <div class="hero__cases">
+    <div class="tabs" role="tablist">
+      {CITIES.map((c) => (
+        <div class={`tab ${c.id === city.id ? "tab--on" : ""}`} role="tab" aria-selected={c.id === city.id ? "true" : "false"}
+             title={c.ready ? "" : "Case coming soon"}>
+          {c.id === city.id ? <img class="tab__pin" src="/assets/figma/pin-active.svg" width="24" height="24" alt="" />
+                            : <img class="tab__dot" src="/assets/figma/pin-dot.svg" width="7" height="7" alt="" />}
+          <span class="tab__name">{c.name}</span>
+          <span class="tab__reg">{c.region}</span>
+        </div>
+      ))}
+    </div>
+
+    <div class="ba" data-ba>
+      <div class="ba__img" style={`background-image:url(${city.before!.img})`}></div>
+      <div class="ba__img ba__img--after" style={`background-image:url(${city.after!.img})`} data-ba-after></div>
+      <div class="ba__handle" data-ba-handle aria-hidden="true"><span></span></div>
+      <input class="ba__range" type="range" min="0" max="100" value="50" aria-label="Before and after" data-ba-range />
+      <div class="card card--before">
+        <b>{city.before!.value}</b><small>{city.before!.note}</small>
+      </div>
+      <div class="card card--after">
+        <b>{city.after!.value}</b><small>{city.after!.note}</small>
+      </div>
+    </div>
+
+    <div class="ba__labels">
+      <div><span>Before</span><em class="pill pill--grey">Leased</em></div>
+      <div><span>After</span><em class="pill pill--or">Self-storage <img src="/assets/figma/check.svg" width="20" height="20" alt="" /></em></div>
+    </div>
+    <p class="hero__note">SpaceHub forecast for a real property in Bangkok, after management commission</p>
+  </div>
+</section>
+
+<script>
+  // слайдер «до/после»: ползунок двигает границу кадра «после»
+  document.querySelectorAll<HTMLElement>("[data-ba]").forEach((box) => {
+    const range = box.querySelector<HTMLInputElement>("[data-ba-range]")!;
+    const after = box.querySelector<HTMLElement>("[data-ba-after]")!;
+    const handle = box.querySelector<HTMLElement>("[data-ba-handle]")!;
+    const set = (v: number) => { after.style.clipPath = `inset(0 0 0 ${v}%)`; handle.style.left = `${v}%`; };
+    range.addEventListener("input", () => set(+range.value));
+    set(+range.value);
+  });
+</script>
+
+<style>
+  .hero { padding: 24px 0 96px; }
+  .hero__top { display: flex; flex-direction: column; align-items: center; gap: 32px; text-align: center; }
+  .hero__h { font-weight: 700; font-size: 80px; line-height: 1.2; letter-spacing: -2.4px; }
+  .hero__lead { font-weight: 500; font-size: 20px; line-height: 28px; }
+  .hero__btns { display: flex; gap: 16px; }
+
+  .hero__cases { max-width: 1287px; margin: 64px auto 0; padding: 0 24px; }
+  .tabs { display: flex; justify-content: center; gap: 64px; align-items: flex-end; height: 86px; }
+  .tab { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--gray-300); padding-top: 30px; }
+  .tab__pin { position: absolute; top: 0; }
+  .tab__dot { position: absolute; top: 14px; }
+  .tab__name { font-weight: 700; font-size: 24px; line-height: 28px; letter-spacing: -0.48px; }
+  .tab__reg { font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; }
+  .tab--on .tab__name { color: var(--brand); }
+  .tab--on .tab__reg { color: var(--gray-500); }
+
+  .ba { position: relative; height: 429px; margin: 20px 56px 0; border-radius: var(--radius-l); }
+  .ba__img { position: absolute; inset: 0; border-radius: var(--radius-l); background-size: cover; background-position: center 55%; }
+  .ba__handle { position: absolute; top: 0; bottom: 0; width: 4px; margin-left: -2px; background: var(--white); pointer-events: none; }
+  .ba__handle span { position: absolute; top: 50%; left: 50%; width: 32px; height: 32px; margin: -16px 0 0 -16px; border-radius: 50%; background: var(--white); box-shadow: 0 2px 10px rgba(0,0,0,.15); }
+  .ba__range { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+
+  .card { position: absolute; width: 140px; aspect-ratio: 1; border-radius: var(--radius-l); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; pointer-events: none; }
+  .card b { font-weight: 700; font-size: 40px; line-height: 40px; }
+  .card small { font-weight: 500; font-size: 15px; line-height: 18px; padding: 0 10px; }
+  .card--before { left: -56px; top: 52%; background: var(--gray-100); color: var(--gray-900); box-shadow: 0 16px 32px rgba(0,0,0,.10); }
+  .card--after { right: -56px; top: 22%; background: var(--brand); color: var(--white); box-shadow: 0 18px 40px rgba(255,79,0,.28); }
+
+  .ba__labels { display: flex; justify-content: space-between; margin: 24px 56px 0; }
+  .ba__labels div { display: flex; align-items: center; gap: 16px; font-weight: 600; font-size: 18px; line-height: 26px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 20px; border-radius: 100px; font-style: normal; font-weight: 500; font-size: 18px; line-height: 26px; }
+  .pill--grey { background: var(--gray-100); color: var(--gray-500); }
+  .pill--or { background: var(--brand-tint); color: var(--brand); }
+  .hero__note { margin: 16px 56px 0; font-size: 14px; color: var(--gray-400); }
+
+  @media (max-width: 900px) {
+    .hero { padding-bottom: 64px; }
+    .hero__h { font-size: 40px; letter-spacing: -1.2px; }
+    .hero__lead { font-size: 17px; line-height: 24px; }
+    .hero__btns { flex-direction: column; width: 100%; gap: 10px; }
+    .hero__cases { margin-top: 40px; padding: 0 16px; }
+    .tabs { gap: 24px; height: 74px; }
+    .tab__name { font-size: 18px; line-height: 22px; }
+    .tab__reg { font-size: 13px; line-height: 18px; }
+    .ba { margin: 16px 0 0; height: 300px; }
+    .card { width: 104px; }
+    .card b { font-size: 28px; line-height: 30px; }
+    .card small { font-size: 12px; line-height: 14px; }
+    .card--before { left: 10px; top: auto; bottom: 12px; }
+    .card--after { right: 10px; top: 12px; }
+    .ba__labels { margin: 16px 0 0; }
+    .ba__labels div { gap: 8px; font-size: 15px; }
+    .pill { padding: 4px 12px; font-size: 15px; }
+    .hero__note { margin: 12px 0 0; }
+  }
+</style>

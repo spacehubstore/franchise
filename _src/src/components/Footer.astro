@@ -1,0 +1,32 @@
+---
+// Подвал SpaceHub (в Figma стоит подвал Кладовкина – не используем: публичные материалы SpaceHub без связи с Кладовкиным).
+import { CONTACTS } from "../data/site";
+---
+<footer class="ft">
+  <div class="ft__in wrap">
+    <div class="ft__brand">
+      <img src="/assets/figma/logo-icon.svg" width="36" height="32" alt="" />
+      <img class="ft__wm" src="/assets/figma/logo-wordmark.svg" width="97" height="20" alt="SpaceHub" />
+      <p>Self-storage franchise. 17 facilities in 4 countries</p>
+    </div>
+    <nav class="ft__nav">
+      <a href="https://spacehubstore.com" target="_blank" rel="noopener">spacehubstore.com</a>
+      <a href={CONTACTS.whatsapp.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="footer">WhatsApp {CONTACTS.whatsapp.label}</a>
+      <a href={CONTACTS.line.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="line" data-loc="footer">LINE</a>
+      <a href="https://spacehubstore.com/thailand/en/privacy" target="_blank" rel="noopener">Privacy policy</a>
+    </nav>
+    <small>© 2026 SpaceHub</small>
+  </div>
+</footer>
+
+<style>
+  .ft { background: var(--gray-900); color: var(--gray-400); padding-block: 56px; }
+  .ft__in { max-width: 1296px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 32px 48px; align-items: start; }
+  .ft__brand { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+  .ft__wm { filter: invert(1) brightness(2); }
+  .ft__brand p { flex-basis: 100%; margin-top: 12px; font-size: 16px; }
+  .ft__nav { display: flex; flex-direction: column; gap: 12px; font-weight: 500; font-size: 16px; color: var(--white); }
+  .ft__nav a:hover { color: var(--brand); }
+  .ft small { grid-column: 1 / -1; font-size: 14px; }
+  @media (max-width: 900px) { .ft__in { grid-template-columns: 1fr; } }
+</style>

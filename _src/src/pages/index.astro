@@ -1,0 +1,38 @@
+---
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Hero from "../components/Hero.astro";
+import Floor from "../components/Floor.astro";
+import Includes from "../components/Includes.astro";
+import Calculator from "../components/Calculator.astro";
+import Quiz from "../components/Quiz.astro";
+import Feasibility from "../components/Feasibility.astro";
+import Faq from "../components/Faq.astro";
+import Timeline from "../components/Timeline.astro";
+import Contact from "../components/Contact.astro";
+import Footer from "../components/Footer.astro";
+---
+<Base>
+  <Header />
+  <main>
+    <Hero />
+    <Floor />
+    <Includes />
+    <Calculator />
+    <Quiz />
+    <Feasibility />
+    <Faq />
+    <Timeline />
+    <Contact />
+  </main>
+  <Footer />
+  <script>
+    // события для GA4 и Метрики через GTM: имена как на основном сайте (franchise_messenger_clicked и др.)
+    document.addEventListener("click", (e) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>("[data-ev]");
+      if (!el) return;
+      (window as any).dataLayer?.push({ event: el.dataset.ev, messenger_name: el.dataset.messenger, event_location: el.dataset.loc,
+                                        site_variant: location.pathname });
+    });
+  </script>
+</Base>

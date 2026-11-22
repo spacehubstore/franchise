@@ -1,0 +1,74 @@
+---
+// Блок «One floor, dozens of tenants» (Figma 1819:1403): аккордеон аргументов, 3D-план этажа, карточка роста рынка.
+// Тексты закрытых пунктов в Figma не заданы – из макета v7 и решений CMO (второй уровень «до 80 %», 20.10.2026).
+const items = [
+  { t: "Small units rent for more", d: "The same m² earns 2.5–3× more in small units than leased whole" },
+  { t: "A second level adds area", d: "Where the ceiling allows, a second level adds up to 80% more rentable area" },
+  { t: "No staff on site", d: "Customers book, pay and open their unit in the app 24/7. Our dispatch centre watches every facility on CCTV" },
+  { t: "Dozens of tenants, steady revenue", d: "If one tenant leaves, you lose a few percent of income, not all of it" },
+];
+---
+<section class="fl wrap">
+  <div class="fl__head">
+    <h2>One floor, dozens of tenants</h2>
+    <p>Four teams work on your facility from day one.<br />Live from our network today</p>
+  </div>
+  <div class="fl__body">
+    <div class="fl__left">
+      <div class="acc" data-acc>
+        {items.map((it, i) => (
+          <button class={`acc__it ${i === 0 ? "is-open" : ""}`} type="button" data-acc-item>
+            <span class="acc__t">{it.t}</span>
+            <span class="acc__d">{it.d}</span>
+          </button>
+        ))}
+      </div>
+      <div class="stat">
+        <img class="stat__glow" src="/assets/figma/glow-49.svg" alt="" aria-hidden="true" />
+        <b>+7–8%</b>
+        <span>a year: self-storage market growth in the Middle East, Africa and Asia Pacific</span>
+      </div>
+    </div>
+    <div class="fl__pic"><img src="/assets/figma/floor.webp" width="860" height="624" alt="Empty floor ready for storage units" loading="lazy" /></div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-acc]").forEach((acc) => {
+    acc.querySelectorAll<HTMLElement>("[data-acc-item]").forEach((it) => {
+      it.addEventListener("click", () => {
+        acc.querySelectorAll(".is-open").forEach((x) => x.classList.remove("is-open"));
+        it.classList.add("is-open");
+      });
+    });
+  });
+</script>
+
+<style>
+  .fl { padding-block: 96px; display: flex; flex-direction: column; align-items: center; gap: 64px; }
+  .fl__head { max-width: 768px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
+  .fl__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
+  .fl__head p { font-weight: 500; font-size: 20px; line-height: 28px; }
+  .fl__body { display: flex; gap: 12px; width: 100%; max-width: 1296px; }
+  .fl__left { width: 424px; flex: none; display: flex; flex-direction: column; gap: 40px; }
+  .acc__it { display: flex; flex-direction: column; gap: 12px; width: 100%; text-align: left; padding: 32px 0; border-bottom: 1px solid var(--gray-300); }
+  .acc__t { font-weight: 700; font-size: 24px; line-height: 28px; letter-spacing: -0.48px; color: var(--gray-500); }
+  .acc__d { display: none; font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; }
+  .acc__it.is-open .acc__t { color: var(--gray-900); }
+  .acc__it.is-open .acc__d { display: block; }
+  .stat { position: relative; overflow: hidden; background: var(--gray-100); border-radius: var(--radius-l); padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+  .stat__glow { position: absolute; right: -100px; top: -63px; width: 418px; max-width: none; pointer-events: none; }
+  .stat b { position: relative; font-weight: 700; font-size: 48px; line-height: 1; color: var(--brand); }
+  .stat span { position: relative; font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; }
+  .fl__pic { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-l); overflow: hidden; }
+  .fl__pic img { width: 100%; max-width: 860px; }
+  @media (max-width: 900px) {
+    .fl { padding-block: 64px; gap: 32px; }
+    .fl__head h2 { font-size: 32px; line-height: 38px; }
+    .fl__head p { font-size: 17px; line-height: 24px; }
+    .fl__body { flex-direction: column-reverse; }
+    .fl__left { width: 100%; gap: 24px; }
+    .acc__it { padding: 20px 0; }
+    .acc__t { font-size: 20px; line-height: 24px; }
+  }
+</style>

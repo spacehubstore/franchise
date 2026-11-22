@@ -1,0 +1,197 @@
+---
+// Квиз «Tell us about your space» (Figma 1766:1910, дизайн шага 1). Вопросы – макет v7 (`mockups/franchise.html`):
+// ветка «помещение» и ветка «участок», по 7 шагов вместе с контактами. Отправка – FORM_ENDPOINT (сервис → amoCRM).
+const STEPS = {
+  space: [
+    { k: "area", q: "Floor area", input: "area" },
+    { k: "height", q: "Ceiling height", hint: "From about 4.8 m we can add a second level", opts: ["Under 4.8 m", "4.8 m or more", "Not sure"] },
+    { k: "climate", q: "Climate inside", opts: ["Heated", "Air-conditioned", "Neither"] },
+    { k: "access", q: "Can customers get in 24/7?", opts: ["Yes", "No, limited hours", "Not sure"] },
+    { k: "floor", q: "Which floor?", opts: ["Basement", "Ground floor", "Upper floor"] },
+  ],
+  land: [
+    { k: "plot", q: "Plot area", input: "area" },
+    { k: "surface", q: "Surface of the plot", opts: ["Concrete or asphalt", "Gravel", "Soil or grass"] },
+    { k: "power", q: "Electricity on the plot?", opts: ["Yes", "Can be connected", "No"] },
+    { k: "truck", q: "Can a truck drive onto the plot?", opts: ["Yes", "No", "Not sure"] },
+    { k: "access", q: "Can customers get in 24/7?", opts: ["Yes", "No, limited hours", "Not sure"] },
+  ],
+};
+---
+<section class="qz wrap" id="check" data-quiz>
+  <div class="qz__head">
+    <h2>Tell us about your space</h2>
+    <p>A few quick questions.<br />We call back with follow-up questions and a free assessment</p>
+  </div>
+  <div class="qz__body">
+    <ol class="stepper" aria-hidden="true">{[1,2,3,4,5,6,7].map((n) => <li data-dot={n}>{n}</li>)}</ol>
+
+    <div class="step is-on" data-step="1">
+      <h3>What do you have?</h3>
+      <div class="cards">
+        <button type="button" class="pick" data-branch="space">
+          <i class="radio"></i>
+          <img src="/assets/figma/quiz-building.webp" width="340" height="340" alt="" loading="lazy" />
+          <b>A space in a building</b><span>Warehouse, retail, basement, office</span>
+        </button>
+        <button type="button" class="pick" data-branch="land">
+          <i class="radio"></i>
+          <img src="/assets/figma/quiz-plot.webp" width="340" height="340" alt="" loading="lazy" />
+          <b>A plot of land</b><span>We place storage containers</span>
+        </button>
+      </div>
+    </div>
+
+    {Object.entries(STEPS).map(([br, list]) => list.map((s, i) => (
+      <div class="step" data-step={i + 2} data-br={br} data-k={s.k}>
+        <h3>{s.q}</h3>
+        {s.hint && <p class="step__hint">{s.hint}</p>}
+        {s.input === "area" ? (
+          <div class="area"><input type="number" min="1" inputmode="numeric" placeholder="e.g. 250" data-ans /><span>m²</span></div>
+        ) : (
+          <div class="opts">{s.opts!.map((o) => <button type="button" class="opt" data-v={o}>{o}</button>)}</div>
+        )}
+      </div>
+    )))}
+
+    <form class="step contact" data-step="7" novalidate>
+      <h3>Where should we send the assessment?</h3>
+      <div class="role opts">
+        <button type="button" class="opt on" data-role="owner">I own the space</button>
+        <button type="button" class="opt" data-role="lease">I lease it</button>
+        <button type="button" class="opt" data-role="investor">I want to invest</button>
+      </div>
+      <div class="grid">
+        <label class="in"><span>Name</span><input name="name" autocomplete="name" required /></label>
+        <label class="in"><span>Phone</span><input name="phone" type="tel" autocomplete="tel" required placeholder="+66 81 234 5678" /></label>
+        <label class="in"><span>City</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
+        <label class="in"><span>Email (optional)</span><input name="email" type="email" autocomplete="email" /></label>
+      </div>
+      <div class="opts msgr">
+        <span>Message me on</span>
+        <button type="button" class="opt on" data-msgr="whatsapp">WhatsApp</button>
+        <button type="button" class="opt" data-msgr="line">LINE</button>
+        <button type="button" class="opt" data-msgr="call">Phone call</button>
+      </div>
+      <label class="agree"><input type="checkbox" name="agree" required /> I agree to the processing of my data under the <a href="https://spacehubstore.com/thailand/en/privacy" target="_blank" rel="noopener">privacy policy</a></label>
+      <button class="btn btn--or send" type="submit">Get a free assessment</button>
+      <p class="err" hidden data-err>Please add your name, phone and consent</p>
+    </form>
+
+    <div class="step done" data-step="8">
+      <h3>Thank you</h3>
+      <p>Alexey, Head of partnerships, will contact you within 1 working hour</p>
+    </div>
+
+    <div class="nav" data-nav>
+      <button type="button" class="btn btn--sm btn--light" data-back><img src="/assets/figma/arrow-left.svg" width="20" height="20" alt="" />Back</button>
+      <button type="button" class="btn btn--sm btn--dark" data-next>Next<img src="/assets/figma/arrow-right-w.svg" width="20" height="20" alt="" /></button>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { sendLead } from "../lib/lead";
+  const root = document.querySelector<HTMLElement>("[data-quiz]")!;
+  const $ = <T extends Element>(s: string) => root.querySelector<T>(s);
+  const $$ = <T extends Element>(s: string) => Array.from(root.querySelectorAll<T>(s));
+  const st: { step: number; branch: string; ans: Record<string, string>; role: string; msgr: string } =
+    { step: 1, branch: "", ans: {}, role: "owner", msgr: "whatsapp" };
+  const dl = (o: object) => (window as any).dataLayer?.push(o);
+  const cur = () => (st.step === 1 ? $(`[data-step="1"]`) : st.step >= 7 ? $(`[data-step="${st.step}"]`) : $(`[data-step="${st.step}"][data-br="${st.branch}"]`))!;
+  const show = () => {
+    $$("[data-step]").forEach((e) => e.classList.remove("is-on"));
+    cur().classList.add("is-on");
+    $$("[data-dot]").forEach((d) => { const n = +d.getAttribute("data-dot")!; d.classList.toggle("done", n < st.step); d.classList.toggle("now", n === Math.min(st.step, 7)); });
+    $<HTMLElement>("[data-nav]")!.hidden = st.step >= 7 && st.step !== 7 ? true : false;
+    $<HTMLElement>("[data-next]")!.hidden = st.step >= 7;
+    $<HTMLElement>("[data-back]")!.style.visibility = st.step === 1 || st.step === 8 ? "hidden" : "visible";
+  };
+  const answered = () => {
+    if (st.step === 1) return !!st.branch;
+    const s = cur(); const k = s.dataset.k!;
+    const inp = s.querySelector<HTMLInputElement>("[data-ans]");
+    if (inp) { st.ans[k] = inp.value; return +inp.value > 0; }
+    return !!st.ans[k];
+  };
+  const next = () => { if (!answered()) return; dl({ event: "quiz_step", step: st.step, branch: st.branch }); st.step++; show(); };
+  $$<HTMLButtonElement>("[data-branch]").forEach((b) => b.addEventListener("click", () => {
+    st.branch = b.dataset.branch!; $$("[data-branch]").forEach((x) => x.classList.toggle("on", x === b)); setTimeout(next, 180); }));
+  $$<HTMLButtonElement>(".step:not(.contact) .opt").forEach((b) => b.addEventListener("click", () => {
+    const s = b.closest<HTMLElement>("[data-k]")!; st.ans[s.dataset.k!] = b.dataset.v!;
+    s.querySelectorAll(".opt").forEach((x) => x.classList.toggle("on", x === b)); setTimeout(next, 180); }));
+  $$<HTMLButtonElement>("[data-role]").forEach((b) => b.addEventListener("click", () => { st.role = b.dataset.role!; $$("[data-role]").forEach((x) => x.classList.toggle("on", x === b)); }));
+  $$<HTMLButtonElement>("[data-msgr]").forEach((b) => b.addEventListener("click", () => { st.msgr = b.dataset.msgr!; $$("[data-msgr]").forEach((x) => x.classList.toggle("on", x === b)); }));
+  $("[data-next]")!.addEventListener("click", next);
+  $("[data-back]")!.addEventListener("click", () => { if (st.step > 1) { st.step--; show(); } });
+
+  const form = $<HTMLFormElement>("form.contact")!;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = new FormData(form);
+    if (!f.get("name") || !f.get("phone") || !f.get("agree")) { $<HTMLElement>("[data-err]")!.hidden = false; return; }
+    const txt = `Franchise request: ${st.branch === "land" ? "plot of land" : "space in a building"}, ${Object.entries(st.ans).map(([k, v]) => `${k}: ${v}`).join(", ")}. ` +
+                `${f.get("name")}, ${f.get("phone")}, ${f.get("city") || ""}`;
+    const how = await sendLead({ form: "quiz", branch: st.branch, answers: st.ans, role: st.role, messenger: st.msgr,
+                                 name: f.get("name"), phone: f.get("phone"), city: f.get("city"), email: f.get("email") }, txt);
+    dl({ event: "franchise_callback_form_sent", form_location: "quiz", branch: st.branch, site_variant: location.pathname, delivery: how });
+    st.step = 8; show();
+  });
+  show();
+</script>
+
+<style>
+  .qz { padding-block: 96px; display: flex; flex-direction: column; align-items: center; gap: 64px; }
+  .qz__head { max-width: 768px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
+  .qz__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
+  .qz__head p { font-weight: 500; font-size: 20px; line-height: 28px; }
+  .qz__body { width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; gap: 32px; }
+  .stepper { display: flex; align-items: center; list-style: none; }
+  .stepper li { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--gray-300); display: flex; align-items: center; justify-content: center;
+                font-weight: 500; font-size: 16px; color: var(--gray-400); position: relative; }
+  .stepper li + li { margin-left: 37px; }
+  .stepper li + li::before { content: ""; position: absolute; right: 100%; width: 37px; height: 1px; background: var(--gray-300); }
+  .stepper li.now { border-color: var(--gray-900); color: var(--gray-900); }
+  .stepper li.done { border-color: var(--brand); background: var(--brand); color: var(--white); }
+  .step { display: none; flex-direction: column; align-items: center; gap: 24px; width: 100%; }
+  .step.is-on { display: flex; }
+  .step h3 { font-weight: 700; font-size: 26px; line-height: 30px; text-align: center; }
+  .step__hint { color: var(--gray-500); margin-top: -12px; }
+  .cards { display: flex; gap: 24px; justify-content: center; width: 100%; }
+  .pick { position: relative; width: 377px; border: 1px solid var(--gray-300); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 8px; text-align: left; color: #333; }
+  .pick img { width: 100%; height: 229px; object-fit: contain; margin-top: 10px; }
+  .pick b { font-weight: 700; font-size: 18px; line-height: 26px; }
+  .pick span { font-weight: 500; font-size: 16px; line-height: 24px; }
+  .radio { position: absolute; top: 24px; right: 24px; width: 20px; height: 20px; background: url(/assets/figma/radio-off.svg) center/contain no-repeat; }
+  .pick.on { border-color: var(--brand); }
+  .pick.on .radio { background-image: url(/assets/figma/radio-on.svg); }
+  .opts { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+  .opt { padding: 14px 22px; border: 1px solid var(--gray-300); border-radius: 12px; font-weight: 500; font-size: 16px; }
+  .opt.on { border-color: var(--brand); color: var(--brand); }
+  .area { display: flex; align-items: center; gap: 12px; border: 1px solid var(--gray-300); border-radius: 12px; padding: 0 16px; height: 54px; width: 260px; }
+  .area input { flex: 1; min-width: 0; border: 0; outline: 0; font: 500 18px "Manrope", sans-serif; }
+  .contact { max-width: 595px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+  .in { display: flex; flex-direction: column; gap: 6px; font-weight: 500; font-size: 13px; color: var(--gray-500); }
+  .in input { height: 48px; border: 1px solid var(--gray-300); border-radius: 12px; padding: 0 14px; font: 500 15px "Manrope", sans-serif; color: var(--gray-900); outline: 0; }
+  .in input:focus { border-color: var(--gray-900); }
+  .msgr span { align-self: center; color: var(--gray-500); font-weight: 500; }
+  .msgr .opt { padding: 10px 16px; font-size: 15px; }
+  .agree { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--gray-600); }
+  .agree a { text-decoration: underline; }
+  .send { width: 100%; }
+  .err { color: var(--brand); font-size: 14px; }
+  .done p { color: var(--gray-600); font-size: 18px; }
+  .nav { display: flex; gap: 16px; }
+  @media (max-width: 900px) {
+    .qz { padding-block: 64px; gap: 32px; }
+    .qz__head h2 { font-size: 32px; line-height: 38px; }
+    .qz__head p { font-size: 17px; line-height: 24px; }
+    .stepper li + li { margin-left: 14px; }
+    .stepper li + li::before { width: 14px; }
+    .cards { flex-direction: column; align-items: stretch; }
+    .pick { width: 100%; }
+    .pick img { height: 180px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>

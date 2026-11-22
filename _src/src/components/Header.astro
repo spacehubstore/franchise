@@ -1,0 +1,36 @@
+---
+// Шапка (Figma 1531:5928): логотип, «franchise», кнопки «Check your space» и WhatsApp.
+import { CONTACTS } from "../data/site";
+---
+<header class="hdr">
+  <div class="hdr__in">
+    <a class="hdr__brand" href="/" aria-label="SpaceHub franchise">
+      <img src="/assets/figma/logo-icon.svg" width="36" height="32" alt="" />
+      <img src="/assets/figma/logo-wordmark.svg" width="97" height="20" alt="SpaceHub" />
+      <span class="hdr__sep" aria-hidden="true"></span>
+      <span class="hdr__sub">franchise</span>
+    </a>
+    <nav class="hdr__cta">
+      <a class="btn btn--sm btn--dark" href="#check" data-ev="check_your_space_clicked" data-loc="header">Check your space</a>
+      <a class="btn btn--sm btn--light" href={CONTACTS.whatsapp.url} target="_blank" rel="noopener"
+         data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="header">
+        <img src="/assets/figma/whatsapp-20.svg" width="20" height="20" alt="" />WhatsApp
+      </a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .hdr { position: sticky; top: 0; z-index: 20; padding: 0 40px; background: rgba(255,255,255,.86); backdrop-filter: blur(22px); }
+  .hdr__in { max-width: 1360px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 8px 32px; }
+  .hdr__brand { display: flex; align-items: center; gap: 8px; }
+  .hdr__sep { width: 1.5px; height: 20px; background: var(--gray-300); margin: 0 8px; }
+  .hdr__sub { font-weight: 600; font-size: 18px; line-height: 26px; color: var(--gray-600); }
+  .hdr__cta { display: flex; gap: 8px; }
+  @media (max-width: 900px) {
+    .hdr { padding: 0 8px; }
+    .hdr__in { padding: 8px; }
+    .hdr__sub, .hdr__sep { display: none; }
+    .hdr__cta .btn--dark { display: none; }
+  }
+</style>

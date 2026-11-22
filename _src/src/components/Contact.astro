@@ -1,0 +1,106 @@
+---
+// «Let's discuss your project» (Figma 1448:2383): контакт Алексея и короткая форма. Отправка – lib/lead.ts.
+import { CONTACTS } from "../data/site";
+const CODES = [["th", "+66"], ["ae", "+971"], ["sa", "+966"], ["ph", "+63"], ["ee", "+372"], ["tr", "+90"], ["xx", "Other"]];
+---
+<section class="ct wrap" id="contact">
+  <div class="ct__box">
+    <div class="ct__left">
+      <h2>Let’s discuss<br />your project</h2>
+      <div class="who">
+        <img src="/assets/alexey.webp" width="100" height="100" alt="Alexey Romanenkov" loading="lazy" />
+        <div class="who__txt">
+          <div><b>Alexey Romanenkov</b><span>Head of partnerships</span></div>
+          <p>Will contact you within 1 working hour</p>
+          <div class="who__btns">
+            <a class="btn btn--dark" href="#check" data-ev="check_your_space_clicked" data-loc="contact">Check your space</a>
+            <a class="btn btn--light" href={CONTACTS.whatsapp.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="contact">
+              <img src="/assets/figma/whatsapp-24.svg" width="24" height="24" alt="" />WhatsApp
+            </a>
+            <a class="btn btn--light" href={CONTACTS.line.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="line" data-loc="contact">LINE</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <form class="cf" data-cf novalidate>
+      <label class="cf__f"><span>Name</span><input name="name" autocomplete="name" placeholder="Your name" /></label>
+      <label class="cf__f"><span>Email</span><input name="email" type="email" autocomplete="email" placeholder="Your email" /></label>
+      <label class="cf__f"><span>City</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
+      <div class="cf__f cf__ph">
+        <span>Phone number</span>
+        <select name="code" aria-label="Country code">{CODES.map(([k, c]) => <option value={c}>{c}</option>)}</select>
+        <i></i>
+        <input name="phone" type="tel" autocomplete="tel-national" placeholder="81 234 5678" />
+      </div>
+      <div class="cf__checks">
+        <label><input type="checkbox" name="wa" checked /> Message me on WhatsApp</label>
+        <label><input type="checkbox" name="agree" /> <span>I agree to the processing of my data under the <a href="https://spacehubstore.com/thailand/en/privacy" target="_blank" rel="noopener">privacy policy</a></span></label>
+      </div>
+      <button class="btn btn--or" type="submit">Send</button>
+      <p class="cf__err" hidden data-cf-err>Please add your name, phone and consent</p>
+      <p class="cf__ok" hidden data-cf-ok>Thank you. Alexey will contact you within 1 working hour</p>
+    </form>
+  </div>
+</section>
+
+<script>
+  import { sendLead } from "../lib/lead";
+  const form = document.querySelector<HTMLFormElement>("[data-cf]")!;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = new FormData(form);
+    const phone = `${f.get("code") === "Other" ? "" : f.get("code")} ${f.get("phone") || ""}`.trim();
+    const err = form.querySelector<HTMLElement>("[data-cf-err]")!;
+    if (!f.get("name") || !f.get("phone") || !f.get("agree")) { err.hidden = false; return; }
+    err.hidden = true;
+    const how = await sendLead({ form: "contact", name: f.get("name"), email: f.get("email"), city: f.get("city"), phone,
+                                 messenger: f.get("wa") ? "whatsapp" : "call" },
+                               `Franchise request. ${f.get("name")}, ${phone}, ${f.get("city") || ""}`);
+    (window as any).dataLayer?.push({ event: "franchise_callback_form_sent", form_location: "contact", site_variant: location.pathname, delivery: how });
+    form.querySelector<HTMLElement>("[data-cf-ok]")!.hidden = false;
+    form.querySelector<HTMLButtonElement>("button[type=submit]")!.disabled = true;
+  });
+</script>
+
+<style>
+  .ct { padding-block: 24px 96px; }
+  .ct__box { max-width: 1296px; margin: 0 auto; background: var(--brand); border-radius: 32px; padding: 96px; display: flex; justify-content: space-between; align-items: center; gap: 48px; }
+  .ct__left { width: 512px; display: flex; flex-direction: column; gap: 48px; color: var(--white); }
+  .ct__left h2 { font-weight: 700; font-size: 64px; line-height: 1.2; letter-spacing: -1.92px; }
+  .who { display: flex; gap: 24px; }
+  .who > img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; object-position: top; background: var(--white); flex: none; }
+  .who__txt { display: flex; flex-direction: column; gap: 16px; padding-top: 32px; }
+  .who__txt b { display: block; font-weight: 700; font-size: 18px; line-height: 26px; }
+  .who__txt span { font-weight: 500; font-size: 16px; line-height: 24px; }
+  .who__txt p { font-weight: 500; font-size: 18px; line-height: 26px; }
+  .who__btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+  .cf { width: 500px; flex: none; background: var(--white); border-radius: 25px; padding: 48px 32px 32px; display: flex; flex-direction: column; gap: 24px; }
+  .cf__f { position: relative; display: flex; align-items: center; gap: 10px; height: 56px; border: 1px solid var(--gray-300); border-radius: 12px; padding: 0 16px; }
+  .cf__f:focus-within { border-color: var(--gray-900); }
+  .cf__f > span { position: absolute; left: 12px; top: -9px; padding: 0 4px; background: var(--white); font-weight: 500; font-size: 13px; line-height: 16px; color: var(--gray-500); }
+  .cf__f input, .cf__f select { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: 500 15px/22px "Manrope", sans-serif; color: var(--gray-900); }
+  .cf__f input::placeholder { color: var(--gray-400); }
+  .cf__ph select { flex: none; width: auto; }
+  .cf__ph i { width: 1px; height: 22px; background: var(--gray-300); }
+  .cf__checks { display: flex; flex-direction: column; gap: 12px; font-weight: 500; font-size: 16px; line-height: 24px; color: #333; }
+  .cf__checks label { display: flex; gap: 12px; align-items: flex-start; }
+  .cf__checks input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--brand); flex: none; }
+  .cf__checks a { color: var(--gray-900); text-decoration: underline; }
+  .cf .btn--or { width: 100%; }
+  .cf__err { color: var(--brand); font-size: 14px; }
+  .cf__ok { color: var(--gray-900); font-weight: 600; }
+  @media (max-width: 1100px) {
+    .ct__box { flex-direction: column; align-items: stretch; padding: 48px 24px; }
+    .ct__left, .cf { width: 100%; }
+  }
+  @media (max-width: 900px) {
+    .ct { padding-block: 8px 64px; }
+    .ct__box { padding: 40px 16px; border-radius: 24px; gap: 32px; }
+    .ct__left { gap: 28px; }
+    .ct__left h2 { font-size: 40px; letter-spacing: -1.2px; }
+    .who { gap: 16px; }
+    .who > img { width: 72px; height: 72px; }
+    .who__txt { padding-top: 8px; }
+    .cf { padding: 32px 16px 20px; }
+  }
+</style>

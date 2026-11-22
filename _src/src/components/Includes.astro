@@ -1,0 +1,83 @@
+---
+// Блок «What the franchise includes» (Figma 1316:9773): Technology, Marketing, Operations, Equipment.
+---
+<section class="inc wrap">
+  <div class="inc__head">
+    <h2>What the franchise includes</h2>
+    <p>Four teams work on your facility from day one.<br />Live from our network today</p>
+  </div>
+  <div class="inc__grid">
+    <article class="ic ic--tech">
+      <img class="ic__phone" src="/assets/figma/inc-phone.webp" width="300" height="612" alt="SpaceHub customer app" loading="lazy" />
+      <div class="ic__txt">
+        <h3>Technology</h3>
+        <p>Customer app for booking, payment and Bluetooth access. Owner dashboard updated daily</p>
+      </div>
+    </article>
+    <div class="inc__mid">
+      <article class="ic ic--mkt">
+        <div class="ic__txt">
+          <h3>Marketing</h3>
+          <p>Search and maps listings, Google Ads, social campaigns and a landing page for your facility</p>
+        </div>
+        <span class="logo logo--g"><img src="/assets/figma/inc-google.svg" width="50" height="50" alt="Google" /></span>
+        <span class="logo logo--m"><img src="/assets/figma/inc-meta.svg" width="60" height="60" alt="Meta" /></span>
+        <span class="logo logo--p"><img src="/assets/figma/inc-maps.png" width="43" height="55" alt="Google Maps" /></span>
+        <span class="logo logo--t"><img src="/assets/figma/inc-tiktok.svg" width="49" height="54" alt="TikTok" /></span>
+      </article>
+      <article class="ic ic--ops">
+        <img class="ic__chat" src="/assets/figma/inc-chat.webp" width="118" height="118" alt="" loading="lazy" />
+        <div class="ic__txt">
+          <h3>Operations</h3>
+          <p>Call centre and chat in your language, pricing, contracts, payments and debt collection</p>
+        </div>
+      </article>
+    </div>
+    <article class="ic ic--eq">
+      <div class="ic__txt">
+        <h3>Equipment</h3>
+        <p>One partner for the whole fit-out. We design the layout and the unit mix, calculate the cost of the equipment, produce it, deliver it and install it</p>
+      </div>
+      <img class="ic__eq" src="/assets/figma/inc-equipment.webp" width="545" height="545" alt="Storage unit layout" loading="lazy" />
+    </article>
+  </div>
+</section>
+
+<style>
+  .inc { padding-block: 96px; display: flex; flex-direction: column; align-items: center; gap: 64px; }
+  .inc__head { max-width: 768px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
+  .inc__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
+  .inc__head p { font-weight: 500; font-size: 20px; line-height: 28px; }
+  .inc__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 1296px; height: 565px; }
+  .inc__mid { display: grid; grid-template-rows: 276px 1fr; gap: 12px; min-width: 0; }
+  .ic { position: relative; overflow: hidden; background: var(--gray-100); border-radius: 25px; padding: 32px; display: flex; flex-direction: column; min-width: 0; }
+  .ic__txt { position: relative; display: flex; flex-direction: column; gap: 8px; }
+  .ic h3 { font-weight: 700; font-size: 26px; line-height: 30px; }
+  .ic p { font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; }
+  .ic--tech { justify-content: flex-end; }
+  .ic__phone { position: absolute; left: 50%; top: -235px; width: 300px; transform: translateX(-50%); }
+  .logo { position: absolute; width: 86px; height: 86px; border-radius: 24px; background: rgba(255,255,255,.2); box-shadow: 4px 4px 4px rgba(0,0,0,.05);
+          display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .logo--g { left: -18px; top: 155px; transform: rotate(-23deg); }
+  .logo--m { left: 108px; top: 132px; transform: rotate(-5deg); }
+  .logo--p { left: 229px; top: 167px; transform: rotate(5deg); }
+  .logo--t { left: 353px; top: 126px; transform: rotate(13deg); }
+  .ic--ops { justify-content: flex-end; align-items: flex-end; }
+  .ic--ops .ic__txt { width: 100%; }
+  .ic__chat { width: 118px; margin: auto 0 8px; }
+  .ic__eq { position: absolute; left: 45px; top: 136px; width: 545px; max-width: none; }
+  @media (max-width: 900px) {
+    .inc { padding-block: 64px; gap: 32px; }
+    .inc__head h2 { font-size: 32px; line-height: 38px; }
+    .inc__head p { font-size: 17px; line-height: 24px; }
+    .inc__grid { grid-template-columns: 1fr; height: auto; }
+    .inc__mid { grid-template-rows: 300px auto; }
+    .ic { padding: 24px; }
+    .ic h3 { font-size: 22px; line-height: 26px; }
+    .ic--tech { height: 520px; }
+    .ic__phone { top: -250px; width: 280px; }
+    .logo--g { left: 0; top: 190px; } .logo--m { left: 90px; top: 175px; } .logo--p { left: 180px; top: 200px; } .logo--t { left: 270px; top: 170px; }
+    .ic--eq { height: 460px; }
+    .ic__eq { left: 20px; top: 170px; width: 420px; }
+  }
+</style>

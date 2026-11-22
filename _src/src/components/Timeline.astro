@@ -1,0 +1,55 @@
+---
+// «From the first call to opening» (Figma 1933:1494). В Figma описания этапов Production и Installation скопированы
+// с соседних – заменены. Сроки только из Figma: исследование 2 недели, производство 5–7 недель, всего 10–13 недель.
+const steps = [
+  { t: "Feasibility study", d: "Layout, location analysis, budget, forecast", w: "2 weeks", icon: "tl-rocket" },
+  { t: "Agreement", d: "Franchise signed, equipment ordered, your project manager starts", icon: "tl-rocket" },
+  { t: "Production", d: "Doors, partitions and locks made to your layout", w: "5–7 weeks", icon: "tl-rocket" },
+  { t: "Delivery", d: "Equipment arrives on site", icon: "tl-warehouse" },
+  { t: "Installation", d: "Units assembled, locks and cameras connected", icon: "tl-rocket" },
+  { t: "Opening", d: "First customers rent units from the app", icon: "tl-star" },
+];
+---
+<section class="tl">
+  <div class="tl__head wrap">
+    <h2>From the first call to opening</h2>
+    <p>10–13 weeks from the feasibility study to opening,<br />in markets where we already work</p>
+  </div>
+  <div class="tl__scroll">
+    <ol class="tl__row">
+      {steps.map((s) => (
+        <li>
+          <img src={`/assets/figma/${s.icon}.svg`} width="24" height="24" alt="" />
+          <b>{s.t}</b>
+          <p>{s.d}</p>
+          <i class="tl__tick"></i>
+          <small>{s.w ?? ""}</small>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .tl { background: var(--gray-900); color: var(--white); padding-block: 120px 96px; display: flex; flex-direction: column; gap: 64px; }
+  .tl__head { text-align: center; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+  .tl__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
+  .tl__head p { font-weight: 500; font-size: 20px; line-height: 28px; }
+  .tl__scroll { overflow-x: auto; padding: 0 var(--gutter, 24px); scrollbar-width: none; }
+  .tl__row { list-style: none; display: grid; grid-template-columns: repeat(6, minmax(200px, 1fr)); max-width: 1296px; margin: 0 auto; }
+  .tl__row li { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 0 12px; position: relative; }
+  .tl__row b { font-weight: 700; font-size: 24px; line-height: 28px; letter-spacing: -0.48px; }
+  .tl__row p { font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; min-height: 72px; }
+  .tl__tick { position: relative; width: 100%; height: 32px; }
+  .tl__tick::before { content: ""; position: absolute; left: 50%; top: 0; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: var(--white); }
+  .tl__tick::after { content: ""; position: absolute; left: 50%; top: 9px; bottom: 0; width: 1px; background: var(--gray-500); }
+  .tl__row li::after { content: ""; position: absolute; left: 0; right: 0; bottom: 40px; height: 1px; background: var(--gray-700); }
+  .tl__row small { font-weight: 500; font-size: 16px; line-height: 24px; color: var(--gray-400); min-height: 24px; }
+  @media (max-width: 900px) {
+    .tl { padding-block: 64px; gap: 32px; }
+    .tl__head h2 { font-size: 32px; line-height: 38px; }
+    .tl__head p { font-size: 17px; line-height: 24px; }
+    .tl__row { grid-template-columns: repeat(6, 220px); }
+    .tl__row b { font-size: 20px; }
+  }
+</style>

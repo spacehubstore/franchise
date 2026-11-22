@@ -1,0 +1,170 @@
+---
+// Калькулятор «What your space could earn» (Figma 1318:9853). Логика – калькулятор v6 макета (`equipment-hub-2026-10-07/mockups/franchise.js`,
+// встреча 15.10, CMO 19.10): арендопригодно = площадь × 70 % (× 1,8 при двух уровнях); выручка = арендопригодно × ставка × 85 %;
+// доход = выручка − роялти 20 % − операционные 10 % − расходы собственника; стоимость = доход × 12 / cap rate, осторожно +1 п.п.
+// Ставки по рынкам – значения по умолчанию из макета (ресерч 19.10, «сверить»); Таиланд – ставка кейса Бангкока (финмодель, ~$20/м²).
+---
+<section class="calc" id="calc" data-calc>
+  <img class="calc__g1" src="/assets/figma/glow-c1.svg" alt="" aria-hidden="true" />
+  <img class="calc__g2" src="/assets/figma/glow-c2.svg" alt="" aria-hidden="true" />
+  <div class="calc__in">
+    <div class="calc__left">
+      <div class="calc__head">
+        <h2>What your space could earn</h2>
+        <p>Enter what the space earns today. See your income and the value of the property, now and as a self-storage facility</p>
+      </div>
+      <div class="form">
+        <h3>Your space today</h3>
+        <label class="fld">
+          <span class="fld__lb">Location</span>
+          <select data-k="country"></select>
+          <img class="fld__caret" src="/assets/figma/caret-down.svg" width="20" height="20" alt="" />
+        </label>
+        <label class="fld">
+          <span class="fld__lb">Floor area</span>
+          <input data-k="area" inputmode="decimal" />
+          <span class="units" role="group" aria-label="Units">
+            <button type="button" class="on" data-unit="m2">m²</button><button type="button" data-unit="ft">ft²</button>
+          </span>
+        </label>
+        <label class="fld">
+          <span class="fld__lb">What it earns now <img src="/assets/figma/info.svg" width="16" height="16" alt="" title="Rent you receive for the whole space a month" /></span>
+          <input data-k="rent" inputmode="decimal" />
+          <span class="fld__sfx">$ a month</span>
+        </label>
+        <label class="fld">
+          <span class="fld__lb">Your costs as the owner <img src="/assets/figma/info.svg" width="16" height="16" alt="" title="Taxes, insurance and other costs you pay as the owner" /></span>
+          <input data-k="own" inputmode="decimal" />
+          <span class="fld__sfx">$ a month</span>
+        </label>
+        <div class="ceil">
+          <span class="fld__lb fld__lb--static">Ceiling height</span>
+          <div class="ceil__opts">
+            <button type="button" class="opt" data-lv="1"><span><b>Under 4.8 m</b><small>1 level</small></span><i></i></button>
+            <button type="button" class="opt on" data-lv="2"><span><b>4.8 m or more</b><small>2 levels</small></span><i></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="res">
+      <h3>The result</h3>
+      <dl>
+        <div><dt>Rentable units</dt><dd data-o="units"></dd></div>
+        <div><dt>Revenue at 85% occupancy</dt><dd data-o="rev"></dd></div>
+        <div><dt>Royalty 20%</dt><dd data-o="roy"></dd></div>
+        <div><dt>Running costs</dt><dd data-o="run"></dd></div>
+      </dl>
+      <div class="box">
+        <span>Your income a month</span>
+        <p><em data-o="incNow"></em><img src="/assets/figma/arrow-right.svg" width="24" height="24" alt="" /><strong data-o="incSS"></strong></p>
+      </div>
+      <div class="box">
+        <span>What the property is worth</span>
+        <p><em data-o="valNow"></em><img src="/assets/figma/arrow-right.svg" width="24" height="24" alt="" /><strong data-o="valSS"></strong></p>
+        <small data-o="cau"></small>
+      </div>
+      <a class="btn btn--or" href="#check" data-ev="calc_cta" data-loc="calculator">Get an assessment of your space</a>
+      <small class="res__note">Estimate with default market rates, not a guarantee</small>
+    </div>
+  </div>
+</section>
+
+<script>
+  const MARKETS: Record<string, { name: string; area: number; rent: number; ss: number; cap: number }> = {
+    ae: { name: "UAE · Sharjah", area: 250, rent: 12, ss: 50, cap: 8.5 },
+    th: { name: "Thailand · Bangkok", area: 200, rent: 5, ss: 20, cap: 8 },
+    ee: { name: "Estonia · Tallinn", area: 300, rent: 6, ss: 22, cap: 8 },
+    xx: { name: "Another country", area: 250, rent: 8, ss: 20, cap: 9 },
+  };
+  const FT = 10.7639, ROY = 0.2, OCC = 0.85, NET = 0.7, RUN = 0.1, LV2 = 0.8;
+  const root = document.querySelector<HTMLElement>("[data-calc]")!;
+  const q = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+  const inp = { country: q<HTMLSelectElement>('[data-k="country"]'), area: q<HTMLInputElement>('[data-k="area"]'),
+                rent: q<HTMLInputElement>('[data-k="rent"]'), own: q<HTMLInputElement>('[data-k="own"]') };
+  const st = { c: "ae", unit: "m2", lv: 2, area: 0, inc: 0, own: 0, incSet: false };
+  Object.entries(MARKETS).forEach(([k, m]) => inp.country.add(new Option(m.name, k)));
+  const num = (v: string) => { const n = parseFloat(String(v).replace(/[^\d.]/g, "")); return isFinite(n) ? n : 0; };
+  const show = (n: number) => Math.round(n).toLocaleString("en-US");
+  const usd = (n: number) => (n < 0 ? "−$" : "$") + Math.round(Math.abs(n)).toLocaleString("en-US");
+  const usdR = (n: number) => usd(Math.round(n / 1000) * 1000);
+  const f = () => (st.unit === "ft" ? FT : 1);
+  const out = (k: string, v: string) => { const e = root.querySelector(`[data-o="${k}"]`); if (e) e.textContent = v; };
+  const fill = () => { inp.area.value = show(st.area * f()); inp.rent.value = show(st.inc); inp.own.value = show(st.own); inp.country.value = st.c; };
+  const calc = () => {
+    const m = MARKETS[st.c];
+    const units = st.area * NET * (st.lv === 2 ? 1 + LV2 : 1);
+    const rev = units * m.ss * OCC, roy = rev * ROY, run = rev * RUN;
+    const now = st.inc - st.own, ss = rev - roy - run - st.own, cap = m.cap / 100;
+    out("units", `${show(units * f())} ${st.unit === "ft" ? "ft²" : "m²"}`);
+    out("rev", `${usd(rev)} a month`); out("roy", `−${usd(roy)}`); out("run", `−${usd(run)}`);
+    out("incNow", usd(now)); out("incSS", usd(ss));
+    out("valNow", usdR((now * 12) / cap)); out("valSS", usdR((ss * 12) / cap));
+    out("cau", `Cautious view: at a cap rate of ${(m.cap + 1).toFixed(1)}% for self-storage, the property is worth ${usdR((ss * 12) / (cap + 0.01))}`);
+  };
+  const setMarket = (k: string) => { const m = MARKETS[k]; st.c = k; st.area = m.area; if (!st.incSet) st.inc = Math.round((st.area * m.rent) / 10) * 10; fill(); calc(); };
+  inp.country.addEventListener("change", () => { setMarket(inp.country.value); (window as any).dataLayer?.push({ event: "calc_country", country: st.c }); });
+  inp.area.addEventListener("input", () => { st.area = num(inp.area.value) / f(); if (!st.incSet) { st.inc = Math.round((st.area * MARKETS[st.c].rent) / 10) * 10; inp.rent.value = show(st.inc); } calc(); });
+  inp.rent.addEventListener("input", () => { st.inc = num(inp.rent.value); st.incSet = true; calc(); });
+  inp.own.addEventListener("input", () => { st.own = num(inp.own.value); calc(); });
+  [inp.area, inp.rent, inp.own].forEach((e) => e.addEventListener("blur", () => { fill(); (window as any).dataLayer?.push({ event: "calc_change" }); }));
+  root.querySelectorAll<HTMLButtonElement>("[data-unit]").forEach((b) => b.addEventListener("click", (e) => {
+    e.preventDefault(); st.unit = b.dataset.unit!; root.querySelectorAll("[data-unit]").forEach((x) => x.classList.toggle("on", x === b)); fill(); calc(); }));
+  root.querySelectorAll<HTMLButtonElement>("[data-lv]").forEach((b) => b.addEventListener("click", () => {
+    st.lv = +b.dataset.lv!; root.querySelectorAll("[data-lv]").forEach((x) => x.classList.toggle("on", x === b)); calc(); }));
+  setMarket("ae");
+</script>
+
+<style>
+  .calc { position: relative; overflow: hidden; background: var(--gray-100); padding: 72px var(--gutter); }
+  .calc__g1 { position: absolute; left: 831px; top: 384px; width: 1192px; max-width: none; pointer-events: none; }
+  .calc__g2 { position: absolute; left: -549px; top: -170px; width: 930px; max-width: none; pointer-events: none; }
+  .calc__in { position: relative; display: flex; gap: 64px; align-items: flex-end; max-width: 1078px; margin: 0 auto; }
+  .calc__left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 64px; }
+  .calc__head { display: flex; flex-direction: column; gap: 20px; }
+  .calc__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
+  .calc__head p { font-weight: 500; font-size: 20px; line-height: 28px; }
+  .form { background: var(--white); border-radius: 25px; padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+  .form h3, .res h3 { font-weight: 700; font-size: 26px; line-height: 30px; }
+  .fld { position: relative; display: flex; align-items: center; gap: 16px; height: 54px; padding: 0 16px; border: 1px solid var(--gray-300); border-radius: 12px; }
+  .fld:focus-within { border-color: var(--gray-900); }
+  .fld__lb { position: absolute; left: 12px; top: -9px; display: inline-flex; gap: 4px; align-items: center; padding: 0 4px; background: var(--white); font-weight: 500; font-size: 13px; line-height: 16px; color: var(--gray-500); }
+  .fld__lb--static { position: static; padding: 0; }
+  .fld input, .fld select { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: 500 15px/22px "Manrope", sans-serif; color: var(--gray-900); appearance: none; }
+  .fld__caret { pointer-events: none; }
+  .fld__sfx { font-weight: 500; font-size: 14px; color: var(--gray-500); white-space: nowrap; }
+  .units { display: flex; gap: 8px; }
+  .units button { width: 40px; height: 28px; border-radius: 100px; font-weight: 500; font-size: 14px; }
+  .units button.on { background: var(--gray-100); }
+  .ceil { display: flex; flex-direction: column; gap: 12px; }
+  .ceil__opts { display: flex; gap: 24px; }
+  .opt { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px; text-align: left; }
+  .opt span { display: flex; flex-direction: column; }
+  .opt b { font-weight: 500; font-size: 15px; line-height: 22px; }
+  .opt small { font-weight: 500; font-size: 13px; line-height: 16px; color: var(--gray-500); }
+  .opt i { width: 20px; height: 20px; background: url(/assets/figma/radio-off.svg) center/contain no-repeat; }
+  .opt.on { border-color: var(--brand); }
+  .opt.on i { background-image: url(/assets/figma/radio-on.svg); }
+  .res { flex: none; width: 507px; align-self: stretch; background: var(--gray-900); color: var(--white); border-radius: 25px; padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+  .res h3 { color: var(--brand); }
+  .res dl div { display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--gray-700); font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; }
+  .box { background: var(--gray-800); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .box > span { font-weight: 500; font-size: 16px; line-height: 24px; }
+  .box p { display: flex; align-items: center; gap: 8px; }
+  .box em, .box strong { font-style: normal; font-weight: 700; font-size: 26px; line-height: 30px; }
+  .box em { color: var(--gray-400); }
+  .box strong { color: var(--brand); }
+  .box small { font-weight: 500; font-size: 14px; line-height: 20px; color: var(--gray-400); }
+  .res .btn--or { width: 100%; }
+  .res__note { font-size: 13px; color: var(--gray-500); text-align: center; margin-top: -12px; }
+  @media (max-width: 900px) {
+    .calc { padding: 56px 16px; }
+    .calc__in { flex-direction: column; align-items: stretch; gap: 24px; }
+    .calc__left { gap: 32px; }
+    .calc__head h2 { font-size: 32px; line-height: 38px; }
+    .calc__head p { font-size: 17px; line-height: 24px; }
+    .form, .res { padding: 20px; }
+    .res { width: 100%; }
+    .ceil__opts { gap: 12px; }
+    .box em, .box strong { font-size: 22px; }
+  }
+</style>
