@@ -120,25 +120,59 @@ const phases: [string, number, number][] = [["Fit-out", 0, 4], ["Filling up", 4,
     form: "feasibility", title: "Free assessment of your space", lead: "We get in touch within 1 working hour and tell you if the space fits. The study comes after, only if it does",
     text: (who) => `Franchise request: free assessment (feasibility block). ${who}`,
   }));
-  // анимация по одной карточке: срабатывает в средней полосе экрана, играет один раз
+  // Анимация карточек (CMO 22.11.2026: была нестабильной). Запуск – по положению при каждой прокрутке, не по пересечению узкой
+  // полосы: при быстрой прокрутке и переходе по якорю полоса проскакивалась, и карточка оставалась пустой. Ролики грузятся целиком
+  // (fetch → blob), без частичных запросов, на которых Safari подвисал. Любой сбой или задержка – сразу итоговая картинка.
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  // планировка и бюджет: боксы и детали падают на место (ролики), остановка на последнем кадре = итоговой картинке
-  const drops = root.querySelectorAll<HTMLVideoElement>("[data-drop]");
-  const fin = (v: HTMLVideoElement) => { v.parentElement!.querySelector<HTMLImageElement>("[data-final]")!.style.visibility = ""; v.hidden = true; };
-  if (!still) drops.forEach((v) => {
-    // пока карточка не доиграла – пустой кадр; ролик грузится заранее, когда блок близко
-    v.hidden = false; v.parentElement!.querySelector<HTMLImageElement>("[data-final]")!.style.visibility = "hidden";
-    new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { v.src = v.dataset.src!; v.preload = "auto"; o.disconnect(); } }, { rootMargin: "600px 0px" }).observe(v);
-    v.addEventListener("ended", () => fin(v));
-  });
-  function drop(v: HTMLVideoElement) { if (still) return; if (!v.src) v.src = v.dataset.src!; v.playbackRate = 1.6; v.play().catch(() => fin(v)); }
-  const io = new IntersectionObserver((es) => es.forEach((e) => {
-    if (!e.isIntersecting) return;
-    const c = e.target as HTMLElement; c.classList.add("play"); io.unobserve(c);
-    const v = c.querySelector<HTMLVideoElement>("[data-drop]"); if (v) drop(v);
+  const cards = Array.from(root.querySelectorAll<HTMLElement>("[data-play]"));
+  const blobs = new Map<HTMLVideoElement, Promise<string>>();
+  const load = (v: HTMLVideoElement) => {
+    if (!blobs.has(v)) blobs.set(v, fetch(v.dataset.src!).then((r) => { if (!r.ok) throw 0; return r.blob(); }).then((b) => URL.createObjectURL(b)));
+    return blobs.get(v)!;
+  };
+  // итог: картинка с готовым состоянием поверх ролика
+  const fin = (v: HTMLVideoElement) => { const img = v.parentElement!.querySelector<HTMLElement>("[data-final]")!; img.classList.remove("is-wait"); v.hidden = true; };
+  const drops = Array.from(root.querySelectorAll<HTMLVideoElement>("[data-drop]"));
+  if (!still) drops.forEach((v) => { v.hidden = false; v.parentElement!.querySelector<HTMLElement>("[data-final]")!.classList.add("is-wait"); });
+  const drop = (v: HTMLVideoElement) => {
+    let done = false; const end = () => { if (!done) { done = true; fin(v); } };
+    const guard = setTimeout(end, 1800);   // ролик не начал играть за 1.8 с – показываем итог
+    load(v).then((url) => {
+      v.src = url; v.playbackRate = 1.6;
+      v.addEventListener("playing", () => { clearTimeout(guard); setTimeout(end, ((v.duration || 4) / 1.6) * 1000 + 1200); }, { once: true });
+      v.addEventListener("ended", end, { once: true }); v.addEventListener("error", end, { once: true });
+      v.play().catch(end);
+    }).catch(end);
+  };
+  const start = (c: HTMLElement, animate: boolean) => {
+    c.dataset.started = "1";
+    if (!animate) c.classList.add("instant");
+    c.classList.add("play");
+    const v = c.querySelector<HTMLVideoElement>("[data-drop]");
+    if (v) animate ? drop(v) : fin(v);
     (window as any).dataLayer?.push({ event: "study_card_viewed", card: c.dataset.card });
-  }), { rootMargin: "-40% 0px -40% 0px" });
-  root.querySelectorAll("[data-play]").forEach((c) => (still ? c.classList.add("play") : io.observe(c)));
+  };
+  if (still) cards.forEach((c) => start(c, false));
+  else {
+    let last = 0, raf = 0;
+    const check = () => {
+      raf = 0;
+      const h = innerHeight, now = performance.now();
+      for (const c of cards) {
+        if (c.dataset.started) continue;
+        const r = c.getBoundingClientRect();
+        if (r.bottom < 0) { start(c, false); continue; }            // уже проскочили – сразу итог, без анимации
+        const v = c.querySelector<HTMLVideoElement>("[data-drop]");
+        if (v && r.top < h * 2) load(v).catch(() => {});             // ролик – заранее, за два экрана
+        if (r.top < h * 0.62) {                                      // верх карточки прошёл 62 % экрана – играем, даже если она уже уходит вверх
+          if (now - last < 700) { setTimeout(() => { if (!raf) raf = requestAnimationFrame(check); }, 700 - (now - last)); break; }
+          last = now; start(c, true); break;                          // по одной карточке за раз
+        }
+      }
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(check); };
+    addEventListener("scroll", kick, { passive: true }); addEventListener("resize", kick); kick();
+  }
 </script>
 
 <style>
@@ -177,6 +211,9 @@ const phases: [string, number, number][] = [["Fit-out", 0, 4], ["Filling up", 4,
   .mk--me { background: var(--brand); color: var(--white); padding: 5px 12px; }
   .mk--me::after { border-top-color: var(--brand); }
   .dim { transform: translate(-50%, -50%) rotate(var(--r)); padding: 1px 6px; background: var(--white); color: var(--gray-700); font-weight: 700; font-size: 12px; }
+  .fc__img [data-final] { transition: opacity .25s; }
+  .fc__img [data-final].is-wait { opacity: 0; }
+  .fc.instant * { animation-duration: 0s !important; animation-delay: 0s !important; transition-duration: 0s !important; transition-delay: 0s !important; }
   .fc__vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--white); }
   .dim { position: absolute; transform: translate(-50%, -50%) rotate(var(--r)); padding: 0 5px; background: var(--white); white-space: nowrap; font: 700 11px/14px "Manrope", sans-serif; color: var(--gray-600); }
   .kit { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; }
