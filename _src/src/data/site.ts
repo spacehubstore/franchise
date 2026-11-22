@@ -24,10 +24,10 @@ export const CITIES: City[] = [
     space: "37 m²", note: "SpaceHub model, after management commission",
     photos: { before: "/assets/case-bkk-before.jpg", after: "/assets/case-bkk-after.jpg" } },
   { id: "sharjah", name: "Sharjah", region: "Middle East", verified: false, before: "$2,220", after: "$9,700",
-    space: "185 m²", note: "SpaceHub model, after management commission. Photo: Al Quoz, Dubai",
+    space: "185 m²", note: "SpaceHub model, after management commission",
     photos: { before: "/assets/case-uae-before.jpg", after: "/assets/case-uae-after.jpg" } },
   { id: "tallinn", name: "Tallinn", region: "Europe", verified: false, before: "$2,100", after: "$10,500",
-    space: "300 m²", note: "SpaceHub model, after management commission. Photo: Tammsaare, Tallinn",
+    space: "300 m²", note: "SpaceHub model, after management commission",
     photos: { before: "/assets/case-tll-before.jpg", after: "/assets/case-tll-after.jpg" } },
 ];
 
