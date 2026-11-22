@@ -7,8 +7,8 @@
 // подписи должны читаться вместе с анимацией). Смена пункта – по факту окончания ролика, не по таймеру.
 // Тексты пунктов – макет v7 и решения CMO (второй уровень «до 80 %», 20.10.2026); 2,5–3× – макет v7; 25 и 96 % – по планировке сцены.
 const items = [
-  // заголовки – CMO 22.11.2026; «up to 6×» – со слов CMO, источник-кейс будет предоставлен, до публикации подтвердить (F-1783)
-  { t: "Same space, up to 6× the income", d: "Small units rent for more per m² than one tenant leasing the whole floor" },
+  // заголовки – CMO 22.11.2026; «up to 5–6×» – со слов CMO, источник-кейс будет предоставлен, до публикации подтвердить (F-1783)
+  { t: "Same space, up to 5–6× the income", d: "Small units rent for more per m² than one tenant leasing the whole floor" },
   { t: "Up to 80% more space to rent", d: "Where the ceiling allows, a loft tier of smaller units goes above the main ones" },
   { t: "No staff on site", d: "Customers book, pay and open their unit in the app 24/7. Our dispatch centre watches every facility on CCTV" },
   { t: "Steady cash flow every month", d: "Dozens of tenants pay monthly. If one leaves, income dips by a few percent" },
@@ -64,24 +64,16 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
         <ol class="steps3"><li>Booked online</li><li>Paid in the app</li><li>Unit opened, no staff</li></ol>
       </div>
 
-      <div class="vis sc s4" data-vis="3">
-        <div class="fr"><video src={V("s4")} poster={F("s4").a} muted playsinline preload="metadata"></video><span class="pin">vacant</span></div>
+      <div class="vis sc s4" data-vis="3" data-ms="1500">
         <div class="cap">
-          <div class="cap__a"><small>Monthly income</small><b>25 tenants</b><span>vs one tenant on the whole floor</span></div>
-          <div class="cap__b"><small>Monthly income</small><b>Cash flow every month</b><span>one leaves: −4%, not −100%</span></div>
+          <div class="cap__a"><small>Rent payments, 12 months</small><b>Who pays every month?</b><span>the same floor, two ways to rent it</span></div>
+          <div class="cap__b"><small>Rent payments, 12 months</small><b>Paid every month</b><span>a tenant leaves, the other 24 keep paying</span></div>
         </div>
-        <div class="cf">
-          <svg viewBox="0 0 560 150" preserveAspectRatio="none" aria-hidden="true">
-            <line class="cf__grid" x1="40" y1="20" x2="540" y2="20" /><line class="cf__grid" x1="40" y1="120" x2="540" y2="120" />
-            <text class="cf__ax" x="32" y="24">100%</text><text class="cf__ax" x="32" y="124">0</text>
-            <path class="cf__one" pathLength="1" d="M40 20 H222 V120 H358 V20 H540" />
-            <path class="cf__many" pathLength="1" d="M40 20 H222 V24 H358 V20 H540" />
-            <text class="cf__dip" x="290" y="12">−4%</text><text class="cf__drop" x="290" y="112">0%</text>
-            <text class="cf__ax cf__m" x="40" y="142">Month 1</text><text class="cf__ax cf__m cf__end" x="540" y="142">12</text>
-          </svg>
-          <div class="cf__leg"><span class="k-many">25 tenants</span><span class="k-one">1 tenant: 3 months empty</span></div>
+        <div class="pay">
+          <div class="pay__row pay__row--one"><div class="pay__who"><b>1 tenant</b><span>leases the whole floor</span></div><div class="pay__m"><i class="m" style="--k:0"><b></b><em>J</em></i><i class="m" style="--k:1"><b></b><em>F</em></i><i class="m" style="--k:2"><b></b><em>M</em></i><i class="m" style="--k:3"><b></b><em>A</em></i><i class="m" style="--k:4"><b></b><em>M</em></i><i class="m m--empty" style="--k:5"><b></b><em>J</em></i><i class="m m--empty" style="--k:6"><b></b><em>J</em></i><i class="m m--empty" style="--k:7"><b></b><em>A</em></i><i class="m" style="--k:8"><b></b><em>S</em></i><i class="m" style="--k:9"><b></b><em>O</em></i><i class="m" style="--k:10"><b></b><em>N</em></i><i class="m" style="--k:11"><b></b><em>D</em></i></div><div class="pay__res"><b>9/12</b><span>months paid</span></div></div>
+          <div class="pay__row pay__row--many"><div class="pay__who"><b>25 tenants</b><span>rent small units</span></div><div class="pay__m"><i class="m" style="--k:0"><b></b><em>J</em></i><i class="m" style="--k:1"><b></b><em>F</em></i><i class="m" style="--k:2"><b></b><em>M</em></i><i class="m" style="--k:3"><b></b><em>A</em></i><i class="m" style="--k:4"><b></b><em>M</em></i><i class="m" style="--k:5"><b></b><em>J</em></i><i class="m" style="--k:6"><b></b><em>J</em></i><i class="m" style="--k:7"><b></b><em>A</em></i><i class="m" style="--k:8"><b></b><em>S</em></i><i class="m" style="--k:9"><b></b><em>O</em></i><i class="m" style="--k:10"><b></b><em>N</em></i><i class="m" style="--k:11"><b></b><em>D</em></i></div><div class="pay__res"><b>12/12</b><span>months paid</span></div></div>
         </div>
-        <p class="foot">Illustration</p>
+        <p class="foot">Illustration: one tenant leaves and the floor stands empty for 3 months</p>
       </div>
       <span class="stage__n" data-count>1 / {items.length}</span>
     </div>
@@ -105,14 +97,17 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   function start(sc: S) {
     sc.classList.remove("is-on", "is-done", "is-cap"); void sc.offsetWidth; sc.classList.add("is-on");
     sc._end = 0; sc._start = performance.now();
-    const v = sc.querySelector("video")!;
+    const v = sc.querySelector("video");
+    if (!v) { clearTimeout(sc._t); if (still) { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); return; }
+              sc._t = window.setTimeout(() => sc.classList.add("is-cap"), +(sc.dataset.ms || 1200) * .66);
+              window.setTimeout(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); }, +(sc.dataset.ms || 1200)); return; }
     clearTimeout(sc._t); v.pause();
     if (still) { v.poster = v.poster.replace("-a.webp", "-b.webp"); sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); return; }
     v.currentTime = 0;
     v.onended = () => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); };
     sc._t = window.setTimeout(() => { v.playbackRate = RATE; v.play().catch(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); }); }, +(v.dataset.pre || 0));
   }
-  const expected = (sc: S) => { const v = sc.querySelector("video")!; return +(v.dataset.pre || 0) + 1000 * (v.duration || 4) / RATE; };
+  const expected = (sc: S) => { const v = sc.querySelector("video"); if (!v) return +(sc.dataset.ms || 1200); return +(v.dataset.pre || 0) + 1000 * (v.duration || 4) / RATE; };
 
   // автопоказ: следующий пункт – через HOLD после окончания ролика; полоска – доля ожидаемого времени
   let active = 0, inView = false, hover = false, pausedAt = 0;
@@ -120,7 +115,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   function go(i: number) {
     active = (i + n) % n;
     items.forEach((it, k) => { it.classList.toggle("is-on", k === active); it.style.setProperty("--p", "0"); });
-    vis.forEach((v, k) => { if (k !== active) { v.classList.remove("is-on", "is-done", "is-cap"); v.querySelector("video")!.pause(); } });
+    vis.forEach((v, k) => { if (k !== active) { v.classList.remove("is-on", "is-done", "is-cap"); v.querySelector("video")?.pause(); } });
     count.textContent = `${active + 1} / ${n}`;
     start(vis[active] as S);
   }
@@ -157,7 +152,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   }, { threshold: .3 }).observe(sec);
   }
   const pause = (on: boolean) => {
-    const sc = vis[active] as S, v = sc.querySelector("video")!;
+    const sc = vis[active] as S, v = sc.querySelector("video"); if (!v) return;
     if (on) { pausedAt = performance.now(); v.pause(); }
     else if (pausedAt) { const d = performance.now() - pausedAt; sc._start! += d; if (sc._end) sc._end += d; else v.play().catch(() => {}); pausedAt = 0; }
   };
@@ -281,25 +276,26 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .steps3 li:nth-child(3)::before { background: var(--white); }
   .is-cap .steps3 li:nth-child(3) { opacity: 1; transform: none; }
 
-  /* 4: склад сверху, график дохода за 12 месяцев рисуется слева направо (иллюстрация, не данные объекта) */
-  .s4 { flex-direction: column; justify-content: flex-start; padding-top: 4%; gap: 0; }
-  .s4 .fr { width: 62%; margin-left: 18%; }
-  .cf { width: 86%; margin-top: -2%; }
-  .cf svg { display: block; width: 100%; height: auto; aspect-ratio: 560 / 150; overflow: visible; }
-  .cf__grid { stroke: var(--gray-200); stroke-dasharray: 3 5; }
-  .cf__ax { font: 500 11px "Manrope", sans-serif; fill: var(--gray-400); text-anchor: end; }
-  .cf__m { text-anchor: start; } .cf__end { text-anchor: end; }
-  .cf__one, .cf__many { fill: none; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
-  .cf__one { stroke: var(--gray-300); stroke-width: 3; }
-  .cf__many { stroke: var(--brand); stroke-width: 4; }
-  .is-on .cf__one { transition: stroke-dashoffset 1.4s linear .1s; stroke-dashoffset: 0; }
-  .is-on .cf__many { transition: stroke-dashoffset 1.4s linear .25s; stroke-dashoffset: 0; }
-  .cf__dip, .cf__drop { font: 700 12px "Manrope", sans-serif; text-anchor: middle; opacity: 0; transition: opacity .3s; }
-  .cf__dip { fill: var(--brand); } .cf__drop { fill: var(--gray-400); }
-  .is-on .cf__dip, .is-on .cf__drop { opacity: 1; transition-delay: .9s; }
-  .cf__leg { display: flex; gap: 18px; margin-top: 6px; font-weight: 600; font-size: 12px; color: var(--gray-600); }
-  .cf__leg span::before { content: ""; display: inline-block; width: 16px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: 3px; }
-  .k-many::before { background: var(--brand); } .k-one::before { background: var(--gray-300); }
+  /* 4: платежи за 12 месяцев – две строки и крупный итог справа; месяцы заполняются по очереди (~1 с) */
+  .s4 { flex-direction: column; justify-content: center; padding: 18% 5% 8%; }
+  .pay { width: 100%; display: flex; flex-direction: column; gap: 14px; }
+  .pay__row { display: grid; grid-template-columns: 118px 1fr 84px; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: var(--gray-100); }
+  .pay__row--many { background: #fff4ee; }
+  .pay__who b { display: block; font-size: 16px; line-height: 20px; }
+  .pay__who span { font-size: 12px; line-height: 16px; color: var(--gray-500); }
+  .pay__m { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; }
+  .m { display: flex; flex-direction: column; align-items: center; gap: 3px; font-style: normal; }
+  .m b { width: 100%; aspect-ratio: 1 / 1.3; border-radius: 5px; background: var(--gray-200); transition: background .18s; transition-delay: calc(var(--k) * 70ms); }
+  .m em { font-style: normal; font-size: 10px; color: var(--gray-400); }
+  .is-on .m b { background: var(--brand); }
+  .is-on .m--empty b { background: transparent; box-shadow: inset 0 0 0 1.5px var(--gray-300); }
+  .pay__row--one .is-on .m b, .is-on .pay__row--one .m:not(.m--empty) b { background: var(--gray-500); }
+  .pay__res { text-align: right; }
+  .pay__res b { display: block; font-size: 30px; line-height: 32px; letter-spacing: -0.6px; font-variant-numeric: tabular-nums; color: var(--gray-500);
+                opacity: 0; transition: opacity .3s .9s; }
+  .pay__row--many .pay__res b { color: var(--brand); }
+  .pay__res span { font-size: 11px; color: var(--gray-500); }
+  .is-on .pay__res b { opacity: 1; }
   .pin { position: absolute; left: 42%; top: 40%; transform: translate(-50%, -100%) scale(.6); opacity: 0; background: var(--gray-900); color: var(--white); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 100px; transition: opacity .3s, transform .4s cubic-bezier(.2,1.4,.4,1); }
   .pin::after { content: ""; position: absolute; left: 50%; bottom: -5px; margin-left: -5px; border: 5px solid transparent; border-bottom: 0; border-top-color: var(--gray-900); }
   .is-cap .pin { opacity: 1; transform: translate(-50%, -100%); }
@@ -325,5 +321,10 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
     .cap > div { padding: 8px 12px; } .cap b { font-size: 17px; line-height: 20px; } .cap span { font-size: 11px; line-height: 14px; }
     .steps3 { top: 10px; right: 10px; } .steps3 li { font-size: 11px; padding: 5px 10px; }
     .foot { bottom: 8px; font-size: 11px; }
+    .acc__it > .s4 { padding: 84px 10px 32px; }
+    .pay__row { grid-template-columns: 1fr 92px; gap: 8px 10px; padding: 10px 12px; }
+    .acc__it > .s4 .foot { position: static; margin-top: 10px; }
+    .pay__m { grid-column: 1 / -1; grid-row: 2; }
+    .pay__res b { font-size: 22px; line-height: 24px; }
   }
 </style>
