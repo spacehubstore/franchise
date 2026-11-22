@@ -77,7 +77,8 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
 </section>
 
 <script>
-  const RATE = 1.6, HOLD = 1400, PRE_S3 = 900;   // скорость роликов, пауза на итоговом кадре, свайп на телефоне до ролика
+  // холодный трафик (CMO 22.11.2026): пункт ~2,5–3 с, круг ~11 с; плашка «После» – на 2/3 ролика, пока картинка ещё движется
+  const RATE = 2.2, HOLD = 800, CAP_AT = .66;
   const sec = document.querySelector<HTMLElement>("[data-floor]")!;
   const items = Array.from(sec.querySelectorAll<HTMLElement>(".acc__it"));
   const vis = Array.from(sec.querySelectorAll<HTMLElement>(".stage .vis"));
@@ -87,17 +88,17 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   items.forEach((it, i) => { const c = vis[i].cloneNode(true) as HTMLElement; c.classList.remove("is-on"); it.querySelector(".vis--inline")!.replaceWith(c); });
 
-  // сцена: «до» → свайп (сцена 3) → ролик ×1,6 → по окончании ролика «после» (.is-done)
+  // сцена: «до» → свайп (сцена 3) → ролик ×2,2 → на 2/3 ролика плашка «после» (.is-cap) → конец ролика (.is-done)
   type S = HTMLElement & { _t?: number; _end?: number; _start?: number };
   function start(sc: S) {
-    sc.classList.remove("is-on", "is-done"); void sc.offsetWidth; sc.classList.add("is-on");
+    sc.classList.remove("is-on", "is-done", "is-cap"); void sc.offsetWidth; sc.classList.add("is-on");
     sc._end = 0; sc._start = performance.now();
     const v = sc.querySelector("video")!;
     clearTimeout(sc._t); v.pause();
-    if (still) { v.poster = v.poster.replace("-a.webp", "-b.webp"); sc.classList.add("is-done"); sc._end = performance.now(); return; }
+    if (still) { v.poster = v.poster.replace("-a.webp", "-b.webp"); sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); return; }
     v.currentTime = 0;
-    v.onended = () => { sc.classList.add("is-done"); sc._end = performance.now(); };
-    sc._t = window.setTimeout(() => { v.playbackRate = RATE; v.play().catch(() => { sc.classList.add("is-done"); sc._end = performance.now(); }); }, +(v.dataset.pre || 0));
+    v.onended = () => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); };
+    sc._t = window.setTimeout(() => { v.playbackRate = RATE; v.play().catch(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); }); }, +(v.dataset.pre || 0));
   }
   const expected = (sc: S) => { const v = sc.querySelector("video")!; return +(v.dataset.pre || 0) + 1000 * (v.duration || 4) / RATE; };
 
@@ -107,7 +108,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   function go(i: number) {
     active = (i + n) % n;
     items.forEach((it, k) => { it.classList.toggle("is-on", k === active); it.style.setProperty("--p", "0"); });
-    vis.forEach((v, k) => { if (k !== active) { v.classList.remove("is-on", "is-done"); v.querySelector("video")!.pause(); } });
+    vis.forEach((v, k) => { if (k !== active) { v.classList.remove("is-on", "is-done", "is-cap"); v.querySelector("video")!.pause(); } });
     count.textContent = `${active + 1} / ${n}`;
     start(vis[active] as S);
   }
@@ -119,9 +120,29 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
       items[active].style.setProperty("--p", String(p));
       if (sc._end && now - sc._end >= HOLD) go(active + 1);
       // ролик не дошёл до конца за ожидаемое время + 4 с (сеть) – показываем «после» и идём дальше
-      else if (!sc._end && now - sc._start > expected(sc) + 4000) { sc.classList.add("is-done"); sc._end = now; }
+      else if (!sc._end && now - sc._start > expected(sc) + 4000) { sc.classList.add("is-done", "is-cap"); sc._end = now; }
     }
     requestAnimationFrame(tick);
+  sec.querySelectorAll<HTMLVideoElement>("video").forEach((v) => v.addEventListener("timeupdate", () => {
+    if (v.duration && v.currentTime / v.duration >= CAP_AT) v.closest(".vis")!.classList.add("is-cap");
+  }));
+
+  // замер для подстройки скорости (CMO 22.11.2026): какой пункт досмотрен (ролик доиграл) и сколько секунд блок был в экране
+  const done = new Set<number>(); let shownAt = 0, shownMs = 0;
+  function seen(sc: HTMLElement) {
+    const i = +(sc.dataset.vis || 0) + 1;
+    if (done.has(i)) return; done.add(i);
+    (window as any).dataLayer?.push({ event: "floor_item_viewed", item: i, site_variant: location.pathname });
+  }
+  new IntersectionObserver((es) => {
+    const on = es[0].isIntersecting;
+    if (on) shownAt = performance.now();
+    else if (shownAt) {
+      shownMs += performance.now() - shownAt; shownAt = 0;
+      (window as any).dataLayer?.push({ event: "floor_block_left", max_item: done.size ? Math.max(...done) : 0,
+        seconds_visible: Math.round(shownMs / 1000), site_variant: location.pathname });
+    }
+  }, { threshold: .3 }).observe(sec);
   }
   const pause = (on: boolean) => {
     const sc = vis[active] as S, v = sc.querySelector("video")!;
@@ -129,18 +150,38 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
     else if (pausedAt) { const d = performance.now() - pausedAt; sc._start! += d; if (sc._end) sc._end += d; else v.play().catch(() => {}); pausedAt = 0; }
   };
   new IntersectionObserver((es) => {
-    const was = inView; inView = es[0].intersectionRatio >= .5;
+    const was = inView; inView = es[0].intersectionRatio >= .3;
     if (inView && !was && desk.matches) {
       sec.querySelectorAll<HTMLVideoElement>(".stage video").forEach((v) => (v.preload = "auto"));   // все ролики – заранее
       go(active);
     }
-  }, { threshold: [0, .5] }).observe(sec.querySelector(".stage")!);
+  }, { threshold: [0, .3] }).observe(sec.querySelector(".stage")!);
   sec.addEventListener("mouseenter", () => { hover = true; pause(true); });
   sec.addEventListener("mouseleave", () => { hover = false; pause(false); });
   items.forEach((it, i) => it.querySelector("button")!.addEventListener("click", () => {
     if (desk.matches) { go(i); (window as any).dataLayer?.push({ event: "floor_item_clicked", item: i + 1 }); }
   }));
   requestAnimationFrame(tick);
+  sec.querySelectorAll<HTMLVideoElement>("video").forEach((v) => v.addEventListener("timeupdate", () => {
+    if (v.duration && v.currentTime / v.duration >= CAP_AT) v.closest(".vis")!.classList.add("is-cap");
+  }));
+
+  // замер для подстройки скорости (CMO 22.11.2026): какой пункт досмотрен (ролик доиграл) и сколько секунд блок был в экране
+  const done = new Set<number>(); let shownAt = 0, shownMs = 0;
+  function seen(sc: HTMLElement) {
+    const i = +(sc.dataset.vis || 0) + 1;
+    if (done.has(i)) return; done.add(i);
+    (window as any).dataLayer?.push({ event: "floor_item_viewed", item: i, site_variant: location.pathname });
+  }
+  new IntersectionObserver((es) => {
+    const on = es[0].isIntersecting;
+    if (on) shownAt = performance.now();
+    else if (shownAt) {
+      shownMs += performance.now() - shownAt; shownAt = 0;
+      (window as any).dataLayer?.push({ event: "floor_block_left", max_item: done.size ? Math.max(...done) : 0,
+        seconds_visible: Math.round(shownMs / 1000), site_variant: location.pathname });
+    }
+  }, { threshold: .3 }).observe(sec);
 
   // мобильный: каждая сцена проигрывается, когда попадает в экран
   const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting && !e.target.classList.contains("is-on")) start(e.target as S); }), { threshold: .45 });
@@ -191,13 +232,13 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .cap__a small, .cap__a span { color: var(--gray-500); }
   .cap__b { background: var(--brand); color: var(--white); opacity: 0; transform: translateY(8px) scale(.96); }
   .cap__b small, .cap__b span { color: rgba(255,255,255,.88); }
-  .is-done .cap__a { opacity: 0; transform: translateY(-6px); }
-  .is-done .cap__b { opacity: 1; transform: none; }
+  .is-cap .cap__a { opacity: 0; transform: translateY(-6px); }
+  .is-cap .cap__b { opacity: 1; transform: none; }
   .meter { display: block; height: 8px; margin: 6px 0 4px; border-radius: 4px; background: rgba(0,0,0,.08); overflow: hidden; }
   .cap__b .meter { background: rgba(255,255,255,.3); }
   .meter u { display: block; height: 100%; width: calc(var(--w) * 100%); background: var(--brand); border-radius: 4px; }
   .cap__b .meter u { background: var(--white); width: 100%; transition: width .6s .15s; }
-  .is-done .cap__b .meter u { width: calc(var(--w) * 100%); }
+  .is-cap .cap__b .meter u { width: calc(var(--w) * 100%); }
 
   /* 3: приложение открывает бокс */
   .fr--s3 { width: 80%; margin-left: 26%; }
@@ -226,14 +267,14 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .is-on .steps3 li:nth-child(2) { animation: in .3s .25s forwards; }
   .steps3 li:nth-child(3) { background: var(--brand); color: var(--white); }
   .steps3 li:nth-child(3)::before { background: var(--white); }
-  .is-done .steps3 li:nth-child(3) { opacity: 1; transform: none; }
+  .is-cap .steps3 li:nth-child(3) { opacity: 1; transform: none; }
 
   /* 4: освободившийся бокс отмечен, деньги – в плашке */
   .pin { position: absolute; left: 42%; top: 40%; transform: translate(-50%, -100%) scale(.6); opacity: 0; background: var(--gray-900); color: var(--white); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 100px; transition: opacity .3s, transform .4s cubic-bezier(.2,1.4,.4,1); }
   .pin::after { content: ""; position: absolute; left: 50%; bottom: -5px; margin-left: -5px; border: 5px solid transparent; border-bottom: 0; border-top-color: var(--gray-900); }
-  .is-done .pin { opacity: 1; transform: translate(-50%, -100%); }
+  .is-cap .pin { opacity: 1; transform: translate(-50%, -100%); }
   .foot { position: absolute; left: 5%; bottom: 12px; font-size: 12px; color: var(--gray-400); opacity: 0; transition: opacity .4s .3s; }
-  .is-done .foot { opacity: 1; }
+  .is-cap .foot { opacity: 1; }
 
   @keyframes in { to { opacity: 1; transform: none; } }
   @keyframes out { to { opacity: 0; } }
