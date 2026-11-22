@@ -30,6 +30,8 @@ import LeadModal from "../components/LeadModal.astro";
   <LeadModal />
   <script>
     import { openLead } from "../lib/leadModal";
+    import { captureTouch } from "../lib/lead";
+    captureTouch();   // метки визита и первое касание – для заявки (lib/lead.ts)
     // «Get in touch» (первый экран и шапка): общее окно заявки
     document.querySelectorAll<HTMLElement>("[data-open-lead]").forEach((b) => b.addEventListener("click", () => openLead({
       form: b.dataset.loc || "get_in_touch", title: "Let’s discuss your project", lead: "We reply within 1 working hour",
