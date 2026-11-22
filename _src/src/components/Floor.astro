@@ -1,74 +1,68 @@
 ---
-// «One floor, dozens of tenants» (Figma 1819:1403). На десктопе блок «прилипает», пункты переключаются прокруткой.
-// Под каждым пунктом – ролик 4 с в стиле 3D-иллюстраций квиза (CMO 22.11.2026): кадры Nano Banana Pro, движение
-// Gemini Omni Flash от кадра «до» к кадру «после» (`hub/06-directions/franchise/landing-icons/gen_floor_google.py`).
-// Ролик стартует, когда пункт становится активным, и останавливается на последнем кадре; поверх – плашки и полосы дохода.
+// «One floor, dozens of tenants» (Figma 1819:1403). Автопоказ (CMO 22.11.2026): блок обычной высоты, пункты сменяются сами,
+// когда блок виден; полоска прогресса под активным пунктом, клик переключает, наведение – пауза. Заголовок в левой колонке,
+// высота сцены – от высоты окна, чтобы блок целиком помещался в экран.
+// Под каждым пунктом – ролик 4 с в стиле 3D-иллюстраций квиза: кадры Nano Banana Pro, движение Gemini Omni Flash от кадра
+// «до» к кадру «после» (`hub/06-directions/franchise/landing-icons/gen_floor_google.py`, `gen_floor_v2.py`).
 // Тексты пунктов – макет v7 и решения CMO (второй уровень «до 80 %», 20.10.2026); 2,5–3× – макет v7.
 const items = [
-  { t: "Small units rent for more", d: "The same m² earns 2.5–3× more in small units than leased whole" },
-  { t: "A second level adds area", d: "Where the ceiling allows, a second level adds up to 80% more rentable area" },
-  { t: "No staff on site", d: "Customers book, pay and open their unit in the app 24/7. Our dispatch centre watches every facility on CCTV" },
-  { t: "Dozens of tenants, steady revenue", d: "If one tenant leaves, income dips by a few percent" },
+  { t: "Small units rent for more", d: "The same m² earns 2.5–3× more in small units than leased whole", dur: 5500 },
+  { t: "A second level adds area", d: "Where the ceiling allows, a second level adds up to 80% more rentable area", dur: 5500 },
+  { t: "No staff on site", d: "Customers book, pay and open their unit in the app 24/7. Our dispatch centre watches every facility on CCTV", dur: 6800 },
+  { t: "Dozens of tenants, steady revenue", d: "If one tenant leaves, income dips by a few percent", dur: 5500 },
 ];
 const F = (s: string) => ({ a: `/assets/floor/${s}-a.webp`, b: `/assets/floor/${s}-b.webp` });
 const V = (s: string) => `/assets/floor/${s}.mp4`;
 ---
-<section class="fl" data-floor style={`--n:${items.length}`}>
-  <div class="fl__stick">
-    <div class="fl__in wrap">
+<section class="fl wrap" data-floor>
+  <div class="fl__grid">
+    <div class="fl__left">
       <div class="fl__head">
         <h2>One floor, dozens of tenants</h2>
         <p>Self-storage splits a space into lockable units that people and small businesses rent by the month</p>
       </div>
-      <div class="fl__body">
-        <div class="fl__left">
-          <ol class="acc">
-            {items.map((it, i) => (
-              <li class={`acc__it ${i === 0 ? "is-on" : ""}`} data-i={i}>
-                <button type="button" class="acc__t">{it.t}</button>
-                <p class="acc__d">{it.d}</p>
-                <i class="acc__bar"><b></b></i>
-                <div class="vis vis--inline" data-vis={i}></div>
-              </li>
-            ))}
-          </ol>
-          <div class="stat">
-            <img class="stat__glow" src="/assets/figma/glow-49.svg" alt="" aria-hidden="true" />
-            <b>+7–8%</b>
-            <span>a year: self-storage market growth in the Middle East, Africa and Asia Pacific</span>
-          </div>
-        </div>
+      <ol class="acc">
+        {items.map((it, i) => (
+          <li class={`acc__it ${i === 0 ? "is-on" : ""}`} data-i={i} data-dur={it.dur}>
+            <button type="button" class="acc__t"><span class="acc__n">0{i + 1}</span>{it.t}</button>
+            <p class="acc__d">{it.d}</p>
+            <i class="acc__bar"><b></b></i>
+            <div class="vis vis--inline" data-vis={i}></div>
+          </li>
+        ))}
+      </ol>
+      <p class="stat"><b>+7–8%</b> a year: self-storage market growth in the Middle East, Africa and Asia Pacific</p>
+    </div>
 
-        <div class="stage" aria-hidden="true">
-          <div class="vis sc s1 is-on" data-vis="0">
-            <div class="fr"><video src={V("s1")} poster={F("s1").a} muted playsinline preload="none"></video></div>
-            <div class="chip chip--a"><b>1 tenant</b><span>the whole floor at one rent</span></div>
-            <div class="chip chip--b"><b>25 small units</b><span>2.5–3× more per m²</span></div>
-          </div>
+    <div class="stage" aria-hidden="true">
+      <div class="vis sc s1 is-on" data-vis="0">
+        <div class="fr"><video src={V("s1")} poster={F("s1").a} muted playsinline preload="none"></video></div>
+        <div class="chip chip--a"><b>1 tenant</b><span>the whole floor at one rent</span></div>
+        <div class="chip chip--b"><b>25 small units</b><span>2.5–3× more per m²</span></div>
+      </div>
 
-          <div class="vis sc s2" data-vis="1">
-            <div class="fr"><video src={V("s2")} poster={F("s2").a} muted playsinline preload="none"></video></div>
-            <div class="chip chip--a"><b>1 level</b><span>height above the units stands empty</span></div>
-            <div class="chip chip--b"><b>+80%</b><span>rentable area with a second level</span></div>
-          </div>
+      <div class="vis sc s2" data-vis="1">
+        <div class="fr"><video src={V("s2")} poster={F("s2").a} muted playsinline preload="none"></video></div>
+        <div class="chip chip--a"><b>1 level</b><span>height above the units stands empty</span></div>
+        <div class="chip chip--b"><b>+80%</b><span>rentable area with a second level</span></div>
+      </div>
 
-          <div class="vis sc s3" data-vis="2">
-            <div class="fr fr--s3"><video src={V("s3")} poster={F("s3").a} muted playsinline preload="none" data-delay="1300"></video></div>
-            <div class="phone"><img src="/assets/figma/inc-phone.webp" alt="" loading="lazy" /><div class="slide"><span class="slide__t slide__t--a">Open</span><span class="slide__t slide__t--b">Unlocked</span><i class="knob"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i></div></div>
-            <svg class="sig" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M2 30 C 30 2, 70 2, 98 24" /></svg>
-            <ol class="steps3"><li>Booked online</li><li>Paid in the app</li><li>Unit opened</li></ol>
-          </div>
+      <div class="vis sc s3" data-vis="2">
+        <div class="fr fr--s3"><video src={V("s3")} poster={F("s3").a} muted playsinline preload="none" data-delay="1300"></video></div>
+        <div class="phone"><img src="/assets/figma/inc-phone.webp" alt="" loading="lazy" /><div class="slide"><span class="slide__t slide__t--a">Open</span><span class="slide__t slide__t--b">Unlocked</span><i class="knob"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i></div></div>
+        <svg class="sig" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M2 30 C 30 2, 70 2, 98 24" /></svg>
+        <ol class="steps3"><li>Booked online</li><li>Paid in the app</li><li>Unit opened</li></ol>
+      </div>
 
-          <div class="vis sc s4" data-vis="3">
-            <div class="fr fr--s4"><video src={V("s4")} poster={F("s4").a} muted playsinline preload="none"></video></div>
-            <div class="cmp">
-              <div class="cmp__row"><span>1 tenant leaves a whole floor</span><i><b class="bar bar--l"></b></i><em class="v v--a">100%</em><em class="v v--b v--bad">0%</em></div>
-              <div class="cmp__row"><span>1 of 25 tenants leaves</span><i><b class="bar bar--r"></b></i><em class="v v--a">100%</em><em class="v v--b">96%</em></div>
-              <small>Monthly income of the same floor</small>
-            </div>
-          </div>
+      <div class="vis sc s4" data-vis="3">
+        <div class="fr fr--s4"><video src={V("s4")} poster={F("s4").a} muted playsinline preload="none"></video></div>
+        <div class="cmp">
+          <div class="cmp__row"><span>1 tenant leaves a whole floor</span><i><b class="bar bar--l"></b></i><em class="v v--a">100%</em><em class="v v--b v--bad">0%</em></div>
+          <div class="cmp__row"><span>1 of 25 tenants leaves</span><i><b class="bar bar--r"></b></i><em class="v v--a">100%</em><em class="v v--b">96%</em></div>
+          <small>Monthly income of the same floor</small>
         </div>
       </div>
+      <span class="stage__n" data-count>1 / {items.length}</span>
     </div>
   </div>
 </section>
@@ -77,74 +71,81 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   const sec = document.querySelector<HTMLElement>("[data-floor]")!;
   const items = Array.from(sec.querySelectorAll<HTMLElement>(".acc__it"));
   const vis = Array.from(sec.querySelectorAll<HTMLElement>(".stage .vis"));
+  const count = sec.querySelector<HTMLElement>("[data-count]")!;
   const n = items.length;
   const desk = matchMedia("(min-width: 1101px)");
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   // на мобильном сцена встраивается под каждый пункт
   items.forEach((it, i) => { const c = vis[i].cloneNode(true) as HTMLElement; c.classList.remove("is-on"); it.querySelector(".vis--inline")!.replaceWith(c); });
-  let active = -1;
-  const show = (i: number) => {
-    if (i === active) return; active = i;
-    items.forEach((it, k) => it.classList.toggle("is-on", k === i));
-    vis.forEach((v, k) => v.classList.toggle("is-on", k === i));
-    if (inView) play(vis[i]);
-  };
-  let inView = false;
-  // ролик сцены: с начала при каждом показе; при reduce motion сразу последний кадр
-  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ролик сцены: с начала при каждом показе; без анимаций – сразу последний кадр
   function play(scene: HTMLElement) {
     const v = scene.querySelector("video"); if (!v) return;
     if (still) { v.poster = v.poster.replace("-a.webp", "-b.webp"); return; }
     v.preload = "auto"; v.pause(); v.currentTime = 0;
     clearTimeout((v as any)._t); (v as any)._t = setTimeout(() => v.play().catch(() => {}), +(v.dataset.delay || 0));
   }
-  const onScroll = () => {
-    if (!desk.matches) return;
-    const r = sec.getBoundingClientRect(), span = sec.offsetHeight - innerHeight;
-    const p = Math.min(Math.max(-r.top / Math.max(span, 1), 0), 0.9999);
-    const i = Math.floor(p * n); show(i);
-    items.forEach((it, k) => it.style.setProperty("--p", String(k < i ? 1 : k > i ? 0 : p * n - i)));
-  };
-  new IntersectionObserver((es) => {
-    const was = inView; inView = es[0].isIntersecting;
-    if (inView && !was && desk.matches && active >= 0) {
-      const v = vis[active]; v.classList.remove("is-on"); void v.offsetWidth; v.classList.add("is-on"); play(v);
+  const restart = (el: HTMLElement) => { el.classList.remove("is-on"); void el.offsetWidth; el.classList.add("is-on"); };
+
+  // автопоказ: пункт держится data-dur мс (ролик + пауза на итоговом кадре), потом следующий по кругу
+  let active = 0, t0 = 0, elapsed = 0, inView = false, hover = false, raf = 0;
+  const running = () => desk.matches && inView && !hover && !document.hidden && !still;
+  function go(i: number) {
+    active = (i + n) % n; elapsed = 0; t0 = performance.now();
+    items.forEach((it, k) => { it.classList.toggle("is-on", k === active); it.style.setProperty("--p", "0"); });
+    vis.forEach((v, k) => { if (k === active) restart(v); else v.classList.remove("is-on"); });
+    count.textContent = `${active + 1} / ${n}`;
+    play(vis[active]);
+  }
+  function tick(now: number) {
+    if (running()) {
+      elapsed += now - t0;
+      const dur = +items[active].dataset.dur!;
+      items[active].style.setProperty("--p", String(Math.min(elapsed / dur, 1)));
+      if (elapsed >= dur) go(active + 1);
     }
-  }, { threshold: .35 }).observe(sec.querySelector(".stage")!);
-  addEventListener("scroll", onScroll, { passive: true }); addEventListener("resize", onScroll); onScroll();
+    t0 = now; raf = requestAnimationFrame(tick);
+  }
+  new IntersectionObserver((es) => {
+    const was = inView; inView = es[0].intersectionRatio >= .5;
+    if (inView && !was && desk.matches) go(active);   // при каждом возвращении блока пункт проигрывается заново
+  }, { threshold: [0, .5] }).observe(sec.querySelector(".stage")!);
+  sec.addEventListener("mouseenter", () => { hover = true; });
+  sec.addEventListener("mouseleave", () => { hover = false; });
   items.forEach((it, i) => it.querySelector("button")!.addEventListener("click", () => {
-    if (desk.matches) { const top = sec.getBoundingClientRect().top + scrollY + (sec.offsetHeight - innerHeight) * (i + 0.15) / n; scrollTo({ top, behavior: "smooth" }); }
+    if (desk.matches) { go(i); (window as any).dataLayer?.push({ event: "floor_item_clicked", item: i + 1 }); }
   }));
-  // мобильный: сцена запускается, когда попадает в экран
+  raf = requestAnimationFrame(tick);
+
+  // мобильный: каждая сцена запускается, когда попадает в экран
   const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting && !e.target.classList.contains("is-on")) { e.target.classList.add("is-on"); play(e.target as HTMLElement); } }), { threshold: .45 });
   items.forEach((it) => io.observe(it.querySelector(".vis")!));
 </script>
 
 <style>
-  .fl { position: relative; height: calc(100svh * (var(--n) * 0.75 + 0.6)); }
-  .fl__stick { position: sticky; top: var(--hdr-h); min-height: calc(100svh - var(--hdr-h)); display: flex; align-items: center; padding-block: 32px; }
-  .fl__in { width: 100%; display: flex; flex-direction: column; gap: 40px; }
-  .fl__head { max-width: 768px; margin: 0 auto; text-align: center; display: flex; flex-direction: column; gap: 16px; }
-  .fl__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
-  .fl__head p { font-weight: 500; font-size: 20px; line-height: 28px; color: var(--gray-600); }
-  .fl__body { display: flex; gap: 40px; width: 100%; max-width: 1296px; margin: 0 auto; align-items: stretch; }
-  .fl__left { width: 424px; flex: none; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; }
+  .fl { padding-block: 72px; }
+  .fl__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: center; max-width: 1296px; margin: 0 auto; }
+  .fl__left { display: flex; flex-direction: column; gap: 24px; }
+  .fl__head { display: flex; flex-direction: column; gap: 12px; }
+  .fl__head h2 { font-weight: 700; font-size: clamp(34px, 3.2vw, 44px); line-height: 1.12; letter-spacing: -1px; text-wrap: balance; }
+  .fl__head p { font-weight: 500; font-size: 17px; line-height: 25px; color: var(--gray-600); }
   .acc { list-style: none; }
-  .acc__it { padding: 20px 0; border-bottom: 1px solid var(--gray-200); }
-  .acc__t { font-weight: 700; font-size: 24px; line-height: 28px; letter-spacing: -0.48px; color: var(--gray-400); text-align: left; transition: color .3s; }
-  .acc__d { max-height: 0; overflow: hidden; opacity: 0; font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; transition: max-height .45s, opacity .35s, margin .35s; }
-  .acc__bar { display: block; height: 2px; margin-top: 16px; background: var(--gray-100); border-radius: 2px; overflow: hidden; opacity: 0; transition: opacity .3s; }
+  .acc__it { padding: 14px 0; border-bottom: 1px solid var(--gray-200); }
+  .acc__t { display: flex; gap: 12px; align-items: baseline; font-weight: 700; font-size: 20px; line-height: 26px; letter-spacing: -0.3px; color: var(--gray-400); text-align: left; transition: color .3s; }
+  .acc__n { font-size: 13px; font-weight: 600; color: var(--gray-300); font-variant-numeric: tabular-nums; transition: color .3s; }
+  .acc__d { max-height: 0; overflow: hidden; opacity: 0; padding-left: 31px; font-weight: 500; font-size: 15px; line-height: 22px; transition: max-height .45s, opacity .35s, margin .35s; }
+  .acc__bar { display: block; height: 2px; margin: 12px 0 0 31px; background: var(--gray-100); border-radius: 2px; overflow: hidden; opacity: 0; transition: opacity .3s; }
   .acc__bar b { display: block; height: 100%; width: calc(var(--p, 0) * 100%); background: var(--brand); }
   .acc__it.is-on .acc__t { color: var(--gray-900); }
-  .acc__it.is-on .acc__d { max-height: 120px; opacity: 1; margin-top: 10px; }
+  .acc__it.is-on .acc__n { color: var(--brand); }
+  .acc__it.is-on .acc__d { max-height: 100px; opacity: 1; margin-top: 6px; }
   .acc__it.is-on .acc__bar { opacity: 1; }
   .acc__it > .vis { display: none; }
+  .stat { font-size: 14px; line-height: 20px; color: var(--gray-500); }
+  .stat b { color: var(--brand); font-size: 16px; margin-right: 4px; }
 
-  .stat { position: relative; overflow: hidden; background: var(--gray-100); border-radius: var(--radius-l); padding: 24px; display: flex; flex-direction: column; gap: 10px; }
-  .stat__glow { position: absolute; right: -100px; top: -63px; width: 418px; max-width: none; pointer-events: none; }
-  .stat b { position: relative; font-weight: 700; font-size: 44px; line-height: 1; color: var(--brand); }
-  .stat span { position: relative; font-weight: 500; font-size: 15px; line-height: 22px; }
-
-  .stage { position: relative; flex: 1; min-width: 0; min-height: 540px; border-radius: var(--radius-l); background: #fff; border: 1px solid var(--gray-200); overflow: hidden; }
+  .stage { position: relative; height: clamp(400px, calc(100svh - var(--hdr-h) - 140px), 600px); border-radius: var(--radius-l); background: #fff; border: 1px solid var(--gray-200); overflow: hidden; }
+  .stage__n { position: absolute; left: 16px; bottom: 12px; font-size: 12px; font-weight: 600; color: var(--gray-400); font-variant-numeric: tabular-nums; }
   .vis { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .45s; pointer-events: none; }
   .vis.is-on { opacity: 1; }
 
@@ -152,11 +153,11 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .fr { position: relative; width: 100%; }
   .fr video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; mix-blend-mode: multiply; }
 
-  .chip { position: absolute; top: 7%; display: flex; flex-direction: column; background: var(--white); border-radius: 16px; padding: 12px 16px; box-shadow: 0 12px 30px rgba(0,0,0,.08); max-width: 46%; }
+  .chip { position: absolute; top: 6%; display: flex; flex-direction: column; background: var(--white); border-radius: 16px; padding: 12px 16px; box-shadow: 0 12px 30px rgba(0,0,0,.08); max-width: 46%; }
   .chip b { font-weight: 700; font-size: 22px; line-height: 26px; }
   .chip span { font-size: 13px; line-height: 18px; color: var(--gray-500); }
-  .chip--a { left: 6%; }
-  .chip--b { right: 6%; background: var(--brand); color: var(--white); opacity: 0; transform: translateY(10px); }
+  .chip--a { left: 5%; }
+  .chip--b { right: 5%; background: var(--brand); color: var(--white); opacity: 0; transform: translateY(10px); }
   .chip--b span { color: rgba(255,255,255,.88); }
   .is-on .chip--a { animation: dim .4s 2.4s forwards; }
   .is-on .chip--b { animation: in .5s 3.1s forwards; }
@@ -190,8 +191,8 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .is-on .steps3 li:nth-child(3) { animation-delay: 3.6s; }
 
   /* 4: уход одного арендатора */
-  .s4 { flex-direction: column; gap: 8px; }
-  .fr--s4 { width: 88%; margin-top: -4%; margin-bottom: -6%; }
+  .s4 { flex-direction: column; gap: 4px; }
+  .fr--s4 { width: 92%; margin-top: -6%; margin-bottom: -7%; }
   .cmp { width: 84%; display: flex; flex-direction: column; gap: 10px; }
   .cmp__row { position: relative; display: grid; grid-template-columns: 1fr 1.1fr 52px; align-items: center; gap: 14px; font-weight: 600; font-size: 14px; }
   .cmp__row i { height: 12px; border-radius: 6px; background: var(--gray-100); overflow: hidden; }
@@ -212,16 +213,13 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   @keyframes shrink96 { to { transform: scaleX(.96); } }
 
   @media (max-width: 1100px) {
-    .fl { height: auto; }
-    .fl__stick { position: static; min-height: 0; padding-block: 64px; }
-    .fl__in { gap: 28px; }
+    .fl { padding-block: 64px; }
+    .fl__grid { grid-template-columns: 1fr; gap: 24px; }
     .fl__head h2 { font-size: 32px; line-height: 38px; }
-    .fl__head p { font-size: 17px; line-height: 24px; }
-    .fl__body { flex-direction: column; }
-    .fl__left { width: 100%; }
     .stage { display: none; }
-    .acc__t { font-size: 20px; line-height: 24px; color: var(--gray-900); }
-    .acc__d { max-height: none; opacity: 1; margin-top: 8px; }
+    .acc__t { font-size: 19px; line-height: 24px; color: var(--gray-900); }
+    .acc__n { color: var(--brand); }
+    .acc__d { max-height: none; opacity: 1; margin-top: 6px; }
     .acc__bar { display: none; }
     .acc__it > .vis { display: flex; position: relative; opacity: 1; min-height: 300px; padding: 64px 0 12px; margin-top: 16px; border-radius: 20px; border: 1px solid var(--gray-200); background: #fff; overflow: hidden; }
     .acc__it > .s4 { padding-top: 12px; }
