@@ -56,6 +56,7 @@
   const G = 1000;   // px/с²
   function burst(card: HTMLElement, from: HTMLElement[], labels: string[], perSource: number, VX: [number, number], VY: [number, number]) {
     const box = card.getBoundingClientRect();
+    const n = from.length * perSource, order = Array.from({ length: n }, (_, i) => i).sort(() => Math.random() - .5);
     from.forEach((src, si) => {
       const r = src.getBoundingClientRect();
       for (let k = 0; k < perSource; k++) {
@@ -69,7 +70,7 @@
           const tt = (j / 10) * T, x = vx * tt, y = vy * tt + G * tt * tt / 2;
           return { transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${rot * j / 10}deg) scale(${j === 0 ? .6 : 1})`, opacity: j < 6 ? 1 : 1 - (j - 5) / 5 };
         });
-        d.animate(frames, { duration: T * 1000, delay: Math.random() * 250, easing: "linear", fill: "both" }).onfinish = () => d.remove();
+        d.animate(frames, { duration: T * 1000, delay: order[si * perSource + k] * (650 / n) + Math.random() * 40, easing: "linear", fill: "both" }).onfinish = () => d.remove();
       }
     });
   }
@@ -77,9 +78,27 @@
   const fire = (c: HTMLElement) => {
     if (c === mkt) burst(c, Array.from(c.querySelectorAll<HTMLElement>(".logo")), ["+1 lead"], 3, [-190, 190], [-440, -300]);
     else if (c === ops) burst(c, [c.querySelector<HTMLElement>(".ic__chat")!], ["Call", "Chat", "Contract", "Payment", "Reminder", "Call"], 6, [-300, -60], [-300, -170]);
-    else { c.classList.add("play"); const v = c.querySelector("video"); if (v) { v.currentTime = 0; v.playbackRate = 3; v.play().catch(() => {}); } }
+    else {
+      c.classList.add("play");
+      const v = c.querySelector<HTMLVideoElement>("video");
+      if (v) { const mid = (v.duration || 3.6) / 2; if (v.currentTime > mid) v.currentTime = 2 * mid - v.currentTime;
+               v.dataset.dir = "fwd"; v.playbackRate = 1.8; v.play().catch(() => {}); }
+    }
   };
-  const rest = (c: HTMLElement) => { c.classList.remove("play"); const v = c.querySelector("video"); if (v) { v.pause(); v.currentTime = 0; } };
+  const rest = (c: HTMLElement) => {
+    c.classList.remove("play");
+    const v = c.querySelector<HTMLVideoElement>("video");
+    if (v) { const mid = (v.duration || 3.6) / 2; if (v.currentTime < mid) v.currentTime = 2 * mid - v.currentTime;
+             v.dataset.dir = "back"; v.playbackRate = 2.6; v.play().catch(() => {}); }
+  };
+  // прямая часть останавливается в середине (сборка закончена), обратная – в конце (исходное положение = кадр 0)
+  document.querySelectorAll<HTMLVideoElement>(".ic--eq video").forEach((v) => {
+    v.addEventListener("timeupdate", () => {
+      const mid = v.duration / 2;
+      if (v.dataset.dir === "fwd" && v.currentTime >= mid - .04) { v.pause(); v.currentTime = mid - .04; }
+    });
+    v.addEventListener("ended", () => { v.currentTime = 0; v.dataset.dir = ""; });
+  });
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
     if (matchMedia("(hover: hover)").matches) {
       cards.forEach((c) => {
