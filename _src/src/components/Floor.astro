@@ -43,7 +43,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
           <div class="vis sc s1 is-on" data-vis="0">
             <div class="fr"><video src={V("s1")} poster={F("s1").a} muted playsinline preload="none"></video></div>
             <div class="chip chip--a"><b>1 tenant</b><span>the whole floor at one rent</span></div>
-            <div class="chip chip--b"><b>12 units</b><span>2.5–3× more per m²</span></div>
+            <div class="chip chip--b"><b>25 small units</b><span>2.5–3× more per m²</span></div>
           </div>
 
           <div class="vis sc s2" data-vis="1">
@@ -63,7 +63,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
             <div class="fr fr--s4"><video src={V("s4")} poster={F("s4").a} muted playsinline preload="none"></video></div>
             <div class="cmp">
               <div class="cmp__row"><span>1 tenant leaves a whole floor</span><i><b class="bar bar--l"></b></i><em class="v v--a">100%</em><em class="v v--b v--bad">0%</em></div>
-              <div class="cmp__row"><span>1 of 16 tenants leaves</span><i><b class="bar bar--r"></b></i><em class="v v--a">100%</em><em class="v v--b">94%</em></div>
+              <div class="cmp__row"><span>1 of 25 tenants leaves</span><i><b class="bar bar--r"></b></i><em class="v v--a">100%</em><em class="v v--b">96%</em></div>
               <small>Monthly income of the same floor</small>
             </div>
           </div>
@@ -191,7 +191,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
 
   /* 4: уход одного арендатора */
   .s4 { flex-direction: column; gap: 8px; }
-  .fr--s4 { width: 78%; }
+  .fr--s4 { width: 88%; margin-top: -4%; margin-bottom: -6%; }
   .cmp { width: 84%; display: flex; flex-direction: column; gap: 10px; }
   .cmp__row { position: relative; display: grid; grid-template-columns: 1fr 1.1fr 52px; align-items: center; gap: 14px; font-weight: 600; font-size: 14px; }
   .cmp__row i { height: 12px; border-radius: 6px; background: var(--gray-100); overflow: hidden; }
@@ -200,7 +200,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   .v--b { opacity: 0; } .v--bad { color: var(--gray-400); }
   .cmp small { font-size: 12px; color: var(--gray-400); }
   .is-on .bar--l { animation: shrink0 .8s 2.4s forwards; }
-  .is-on .bar--r { animation: shrink94 .8s 2.4s forwards; }
+  .is-on .bar--r { animation: shrink96 .8s 2.4s forwards; }
   .is-on .v--a { animation: out .3s 2.4s forwards; }
   .is-on .v--b { animation: in .3s 2.5s forwards; }
 
@@ -209,7 +209,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
   @keyframes dim { to { opacity: .35; } }
   @keyframes flow { to { stroke-dashoffset: -22; } }
   @keyframes shrink0 { to { transform: scaleX(0); } }
-  @keyframes shrink94 { to { transform: scaleX(.94); } }
+  @keyframes shrink96 { to { transform: scaleX(.96); } }
 
   @media (max-width: 1100px) {
     .fl { height: auto; }
