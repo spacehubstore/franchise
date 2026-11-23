@@ -1,6 +1,6 @@
 // Единое окно заявки (CMO 22.11.2026): одни поля везде – имя, город, телефон, согласие. Разметка – components/LeadModal.astro.
 // Кто открывает, передаёт метку формы, заголовок, подстановку города и страны и данные для заявки (например, расчёт).
-import { sendLead } from "./lead";
+import { sendLead, lastRequestId } from "./lead";
 import { ready as formReady } from "./formsLazy";
 
 export type LeadOpts = {
@@ -30,7 +30,7 @@ export async function openLead(o: LeadOpts) {
       const who = `${fd.get("name")}, ${phone}, ${fd.get("city") || ""}`;
       const how = await sendLead({ form: cur.form, name: fd.get("name"), city: fd.get("city"), phone, ...(cur.data || {}) },
                                  cur.text ? cur.text(who) : `Franchise request (${cur.form}): ${who}`);
-      (window as any).dataLayer?.push({ event: "callback_form_sent", form_location: "partner", lead_form: cur.form, site_variant: location.pathname, delivery: how });
+      (window as any).dataLayer?.push({ event: "callback_form_sent", form_location: "partner", lead_form: cur.form, site_variant: location.pathname, delivery: how, request_id: lastRequestId });
       dlg.querySelector<HTMLElement>("[data-lm-ok]")!.hidden = false;
     });
   }
