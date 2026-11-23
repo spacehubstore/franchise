@@ -41,7 +41,7 @@ const m = messenger(lang);
 </section>
 
 <script>
-  import { sendLead } from "../lib/lead";
+  import { sendLead, lastRequestId } from "../lib/lead";
   import { prepare, ready } from "../lib/formsLazy";
   const form = document.querySelector<HTMLFormElement>("[data-cf]")!;
   prepare(form);
@@ -52,7 +52,7 @@ const m = messenger(lang);
     if (!ok) return;
     const how = await sendLead({ form: "contact", name: f.get("name"), city: f.get("city"), phone },
                                `Franchise request. ${f.get("name")}, ${phone}, ${f.get("city") || ""}`);
-    (window as any).dataLayer?.push({ event: "callback_form_sent", form_location: "partner", lead_form: "contact", site_variant: location.pathname, delivery: how });
+    (window as any).dataLayer?.push({ event: "callback_form_sent", form_location: "partner", lead_form: "contact", site_variant: location.pathname, delivery: how, request_id: lastRequestId });
     form.querySelector<HTMLElement>("[data-cf-ok]")!.hidden = false;
   });
 </script>
