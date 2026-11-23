@@ -1,0 +1,106 @@
+---
+// «От Таллина до Бангкока» (CMO 24.11.2026): масштаб SpaceHub без цифр сети – карта точками в стиле документа LinkedIn
+// (linkedin-th-case, слайд 8) и карточки городов с настоящими фото складов со spacehubstore.com.
+// Города и районы – страницы складов сайта на 24.11.2026: Дубай (Al Quoz, Ras Al Khor, Al Karama, Al Garhoud, Deira, Umm Ramool),
+// Бангкок (Phra Khanong, Suvarnabhumi, Italthai Tower), Стамбул (Beylikdüzü), Таллин (Mustamäe, Lasnamäe), Любляна (Bežigrad).
+// Любляна – «скоро», как в документе LinkedIn: страница склада на сайте есть, открытие по админке не проверено.
+// Карта – public/assets/net/map.svg (точки из linkedin-th-case/assets/map_dots.json, долгота −12…112, широта 0…66).
+import { langOf, useT } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
+const LON0 = -12, LON1 = 112, LAT0 = 0, LAT1 = 66;
+const pos = (lon: number, lat: number) => ({ x: ((lon - LON0) / (LON1 - LON0)) * 100, y: ((LAT1 - lat) / (LAT1 - LAT0)) * 100 });
+const pins = [
+  { city: "Tallinn", lon: 24.75, lat: 59.44, side: "r" },
+  { city: "Ljubljana", lon: 14.5, lat: 46.05, side: "l", soon: true },
+  { city: "Istanbul", lon: 28.98, lat: 41.0, side: "r" },
+  { city: "Dubai", lon: 55.27, lat: 25.2, side: "r", hub: true },
+  { city: "Bangkok", lon: 100.5, lat: 13.75, side: "l" },
+].map((p, i) => ({ ...p, ...pos(p.lon, p.lat), d: 200 + i * 140 }));
+const cards = [
+  { city: "Dubai", country: "UAE", img: "dubai", areas: "Al Quoz · Ras Al Khor · Al Karama · Al Garhoud · Deira · Umm Ramool" },
+  { city: "Bangkok", country: "Thailand", img: "bangkok", areas: "Phra Khanong · Suvarnabhumi · Italthai Tower" },
+  { city: "Istanbul", country: "Türkiye", img: "istanbul", areas: "Beylikdüzü" },
+  { city: "Tallinn", country: "Estonia", img: "tallinn", areas: "Mustamäe · Lasnamäe" },
+];
+---
+<section class="net" id="network">
+  <div class="net__head wrap">
+    <h2>{t("From Tallinn to Bangkok")}</h2>
+    <p>{t("SpaceHub storage already works in Europe, the Middle East and Asia. The same units, the same app and the same team in every city")}</p>
+  </div>
+  <div class="net__map wrap rv">
+    <div class="map">
+      <img src="/assets/net/map.svg" width="952" height="568" alt="" loading="lazy" />
+      {pins.map((p) => (
+        <div class={`pin pin--${p.side}${p.hub ? " pin--hub" : ""}${p.soon ? " pin--soon" : ""}`} style={`left:${p.x.toFixed(2)}%; top:${p.y.toFixed(2)}%; --d:${p.d}ms`}>
+          <i></i>
+          <span>{t(p.city)}{p.soon && <em>{t("soon")}</em>}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+  <div class="net__cards wrap">
+    {cards.map((c) => (
+      <figure class="card">
+        <img src={`/assets/net/${c.img}-640.webp`} srcset={`/assets/net/${c.img}-640.webp 640w, /assets/net/${c.img}-1024.webp 1024w`}
+             sizes="(max-width: 900px) 50vw, 320px" width="640" height="480" alt={t(c.city)} loading="lazy" />
+        <figcaption><b>{t(c.city)}</b><span>{t(c.country)}</span><small>{c.areas}</small></figcaption>
+      </figure>
+    ))}
+  </div>
+</section>
+
+<style>
+  .net { padding-block: 96px; display: flex; flex-direction: column; gap: 40px; background: var(--white); overflow: hidden; }
+  .net__head { text-align: center; display: flex; flex-direction: column; gap: 16px; align-items: center; }
+  .net__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; letter-spacing: -0.02em; }
+  .net__head p { max-width: 720px; font-weight: 500; font-size: 20px; line-height: 28px; color: var(--gray-500); }
+
+  .net__map { max-width: 1080px; width: 100%; margin: 0 auto; }
+  .map { position: relative; width: 100%; aspect-ratio: 952 / 568; }
+  .map > img { width: 100%; height: 100%; }
+  .pin { position: absolute; width: 0; height: 0; }
+  .pin i { position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: var(--brand);
+           box-shadow: 0 0 0 8px rgba(255, 79, 0, .16); transform: scale(0); transition: transform .45s cubic-bezier(.3, 1.6, .5, 1); transition-delay: var(--d); }
+  .pin--hub i { left: -11px; top: -11px; width: 22px; height: 22px; box-shadow: 0 0 0 12px rgba(255, 79, 0, .16); }
+  .pin--hub i::after { content: ""; position: absolute; inset: -12px; border-radius: 50%; border: 2px solid var(--brand); opacity: 0; animation: ping 2.4s ease-out infinite; animation-delay: calc(var(--d) + .6s); }
+  .pin--soon i { background: var(--white); box-shadow: inset 0 0 0 3px var(--brand); }
+  .pin span { position: absolute; top: -17px; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--pill);
+              background: var(--white); box-shadow: 0 6px 18px rgba(24, 24, 27, .10); font-weight: 700; font-size: 16px; line-height: 22px;
+              opacity: 0; transform: translateY(6px); transition: opacity .35s, transform .35s; transition-delay: calc(var(--d) + .15s); }
+  .pin--r span { left: 22px; }
+  .pin--l span { right: 22px; }
+  .pin em { font-style: normal; font-weight: 600; color: var(--gray-500); }
+  .rv.in .pin i { transform: scale(1); }
+  .rv.in .pin span { opacity: 1; transform: none; }
+  @keyframes ping { 0% { transform: scale(.6); opacity: .7; } 100% { transform: scale(1.8); opacity: 0; } }
+
+  .net__cards { max-width: 1296px; width: 100%; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  .card { display: flex; flex-direction: column; gap: 14px; }
+  .card img { width: 100%; aspect-ratio: 4 / 3; height: auto; object-fit: cover; border-radius: var(--radius-l); background: var(--gray-100); }
+  .card figcaption { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; row-gap: 4px; align-items: baseline; padding-inline: 4px; }
+  .card b { font-weight: 700; font-size: 20px; line-height: 26px; }
+  .card span { font-weight: 600; font-size: 15px; color: var(--gray-500); }
+  .card small { grid-column: 1 / -1; font-weight: 500; font-size: 14px; line-height: 20px; color: var(--gray-500); }
+
+  :global([dir=rtl]) .pin--r span { left: auto; right: 22px; }
+  :global([dir=rtl]) .pin--l span { right: auto; left: 22px; }
+
+  @media (max-width: 900px) {
+    .net { padding-block: 64px; gap: 28px; }
+    .net__head h2 { font-size: 32px; line-height: 38px; }
+    .net__head p { font-size: 16px; line-height: 24px; }
+    .pin span { top: -13px; padding: 3px 10px; font-size: 12px; line-height: 20px; }
+    .pin--r span { left: 16px; }
+    .pin--l span { right: 16px; }
+    .pin--soon span { display: none; }   /* на узкой карте подпись Любляны вылезает за край экрана, кольцо остаётся */
+    .net__cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .card b { font-size: 17px; }
+    .card small { font-size: 13px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pin i, .pin span { transition: none; }
+    .pin--hub i::after { animation: none; }
+  }
+</style>
