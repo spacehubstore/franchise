@@ -137,6 +137,7 @@ const tr_ = t;
 
 <script>
   import { slowNet } from "../lib/net";
+  import { cover, uncover } from "../lib/vframe";
   import { openLead } from "../lib/leadModal";
   import { ct } from "../i18n";
   const root = document.querySelector<HTMLElement>("#study")!;
@@ -157,7 +158,7 @@ const tr_ = t;
   };
   // итог: картинка с готовым состоянием поверх ролика
   // итог проявляется поверх последнего кадра ролика, видео убирается только после – без пустого кадра между ними
-  const fin = (v: HTMLVideoElement) => { const img = v.parentElement!.querySelector<HTMLElement>("[data-final]")!; img.classList.remove("is-wait"); setTimeout(() => (v.hidden = true), 450); };
+  const fin = (v: HTMLVideoElement) => { const img = v.parentElement!.querySelector<HTMLElement>("[data-final]")!; img.classList.remove("is-wait"); setTimeout(() => { v.hidden = true; uncover(v); }, 450); };
   const drops = Array.from(root.querySelectorAll<HTMLVideoElement>("[data-drop]"));
   if (!noVideo) drops.forEach((v) => { v.hidden = false; v.parentElement!.querySelector<HTMLElement>("[data-final]")!.classList.add("is-wait"); });
   const drop = (v: HTMLVideoElement) => {
@@ -165,7 +166,7 @@ const tr_ = t;
     let done = false; const end = () => { if (!done) { done = true; fin(v); } };
     const guard = setTimeout(end, 1800);   // ролик не начал играть за 1.8 с – показываем итог
     load(v).then((url) => {
-      v.src = url; v.playbackRate = 1.6;
+      cover(v); v.src = url; v.playbackRate = 1.6;
       v.addEventListener("playing", () => { clearTimeout(guard); setTimeout(end, ((v.duration || 4) / 1.6) * 1000 + 1200); }, { once: true });
       v.addEventListener("ended", end, { once: true }); v.addEventListener("error", end, { once: true });
       v.play().catch(end);
