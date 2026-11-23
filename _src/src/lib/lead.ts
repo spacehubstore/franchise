@@ -41,9 +41,27 @@ function marks() {
   return o;
 }
 
+// Повторная отправка (CMO 23.11.2026, проверка конверсий): двойной клик или второй Enter, пока заявка уходит, создавали вторую заявку
+// в amoCRM и второе callback_form_sent (вторая конверсия Google Ads с другим request_id). Форма заперта до ответа сервиса,
+// а та же форма с тем же телефоном, уже принятая сервисом в этой сессии, заявку не повторяет.
+export function onSubmitOnce(form: HTMLFormElement, run: () => Promise<void>) {
+  let busy = false;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    busy = true;
+    const btn = form.querySelector<HTMLButtonElement>('[type="submit"]');
+    if (btn) btn.disabled = true;
+    try { await run(); } finally { busy = false; if (btn) btn.disabled = false; }
+  });
+}
+const sentKey = (lead: Record<string, unknown>) => `${lead.form}|${String(lead.phone || "").replace(/\D/g, "")}`;
+
 // номер последней заявки: тот же уходит в сервис заявок (amoCRM, BigQuery) и в dataLayer – ID транзакции конверсии Google Ads
 export let lastRequestId = "";
-export async function sendLead(lead: Record<string, unknown>, waText: string): Promise<"endpoint" | "whatsapp"> {
+export async function sendLead(lead: Record<string, unknown>, waText: string): Promise<"endpoint" | "whatsapp" | "repeat"> {
+  const sent: string[] = get(sessionStorage, "sh_lead_sent") || [];
+  if (sent.includes(sentKey(lead))) return "repeat";
   const f = get(sessionStorage, "sh_lead_fields") || {};
   const body = { source: "franchise_site", page: location.href, site_variant: location.pathname,
                  request_id: (lastRequestId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
@@ -52,7 +70,7 @@ export async function sendLead(lead: Record<string, unknown>, waText: string): P
   if (FORM_ENDPOINT) {
     try {
       const r = await fetch(FORM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      if (r.ok) return "endpoint";
+      if (r.ok) { put(sessionStorage, "sh_lead_sent", [...sent, sentKey(lead)]); return "endpoint"; }
     } catch { /* уходим в WhatsApp */ }
   }
   const url = `${CONTACTS.whatsapp.url}?text=${encodeURIComponent(waText)}`;
