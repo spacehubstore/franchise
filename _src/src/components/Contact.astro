@@ -14,7 +14,7 @@ const m = messenger(lang);
       <p>{t("We reply within 1 working hour")}</p>
     </div>
     <div class="who">
-      <span class="ava" data-ava><img src="/assets/alexey-rest.webp" width="300" height="300" alt="Alexey Romanenkov" loading="lazy" /><img class="ava__pt" src="/assets/alexey-point.webp" width="300" height="300" alt="" loading="lazy" /></span>
+      <span class="ava" data-ava><img class="ava__fig" src="/assets/alexey-rest.webp" data-anim="/assets/alexey-point.webp" data-end="/assets/alexey-end.webp" width="284" height="264" alt="Alexey Romanenkov" loading="lazy" /></span>
       <div class="who__side">
         <div class="who__txt"><b>Alexey Romanenkov</b><span>{t("Head of partnerships")}</span></div>
         <div class="who__msg">
@@ -57,10 +57,20 @@ const m = messenger(lang);
   });
   // Алексей показывает на мессенджер, когда блок контактов виден
   const who = document.querySelector<HTMLElement>("#contact .who");
-  if (who && "IntersectionObserver" in window) {
-    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { setTimeout(() => who.classList.add("go"), 350); io.disconnect(); } }), { threshold: 0.9 });
-    io.observe(who);
-  } else who?.classList.add("go");
+  const fig = who?.querySelector<HTMLImageElement>(".ava__fig");
+  if (who && fig) {
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const play = () => { fig.src = still ? fig.dataset.end! : fig.dataset.anim!; who.classList.add("go"); };
+    if (!("IntersectionObserver" in window)) play();
+    else {
+      // ролик подгружается заранее, на подходе к блоку; играет, когда блок целиком на экране
+      let ready = false; const pre = new Image();
+      pre.onload = () => (ready = true);
+      const near = new IntersectionObserver((es) => { if (es[0].isIntersecting) { pre.src = still ? fig.dataset.end! : fig.dataset.anim!; near.disconnect(); } }, { rootMargin: "600px" });
+      const io = new IntersectionObserver((es) => { if (es[0].isIntersecting) { io.disconnect(); const go = () => (ready ? setTimeout(play, 300) : setTimeout(go, 100)); go(); } }, { threshold: 0.9 });
+      near.observe(who); io.observe(who);
+    }
+  }
 </script>
 
 <style>
@@ -72,19 +82,19 @@ const m = messenger(lang);
   .ct__head h2 { font-weight: 700; font-size: 60px; line-height: 1.08; letter-spacing: -1.8px; text-wrap: balance; }
   .ct__head p { font-weight: 500; font-size: 20px; line-height: 28px; opacity: .92; }
   /* Алексей – крупный круг, рядом имя, роль и мессенджеры */
-  .who { grid-area: who; align-self: start; position: relative; display: flex; align-items: center; gap: 20px; }
+  .who { grid-area: who; align-self: start; position: relative; display: flex; align-items: center; gap: 36px; }   /* место под кисть */
   .who__side { display: flex; flex-direction: column; gap: 12px; }
-  /* Алексей (черновик CMO 24.11.2026, поза с рукой – Gemini по реальному фото): блок доехал до экрана – руки «расцепляются»,
-     он показывает на кнопку мессенджера, кнопка один раз отвечает пульсом. Без анимации – сразу кадр с жестом */
-  .ava { flex: none; position: relative; width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 4px solid rgba(255, 255, 255, .7); background: var(--white); }
-  .ava img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  :global([dir=rtl]) .ava img { scale: -1 1; }   /* справа налево кнопка слева от фото – Алексей показывает влево */
-  .ava__pt { opacity: 0; transform: scale(1.04); transition: opacity .45s ease, transform .6s cubic-bezier(.2,.8,.2,1); }
-  .who.go .ava__pt { opacity: 1; transform: none; }
-  .who.go .who__msg a:first-child { animation: nudge .7s .55s ease-out both; }
-  @keyframes nudge { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,.75); transform: translateX(0); } 35% { transform: translateX(4px); }
-                     100% { box-shadow: 0 0 0 14px rgba(255,255,255,0); transform: translateX(0); } }
-  @media (prefers-reduced-motion: reduce) { .ava__pt { opacity: 1; transform: none; transition: none; } .who.go .who__msg a:first-child { animation: none; } }
+  /* Алексей (CMO 24.11.2026): живое движение – ролик Gemini Omni по его фото, фон вырезан. Внутри круга вся фигура, за кругом только
+     кисть: руки расцепляются, рука поднимается и показывает на кнопку мессенджера, кисть выходит за край круга. Анимированный WebP
+     проигрывается один раз, когда блок виден, и останавливается на жесте. Без анимации – сразу финальный кадр.
+     Кадр 284×264: круг 240 px в левом верхнем углу, справа и снизу запас под кисть */
+  .ava { flex: none; position: relative; width: 120px; height: 120px; --in: 112px; --b: 4px; }
+  .ava::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #ecebe8; border: var(--b) solid rgba(255, 255, 255, .7); }
+  .ava__fig { position: absolute; left: var(--b); top: var(--b); width: calc(var(--in) * 284 / 240); height: auto; max-width: none; }
+  :global([dir=rtl]) .ava__fig { scale: -1 1; transform-origin: calc(var(--in) / 2) 50%; }   /* справа налево кнопка слева – показывает влево */
+  .who.go .who__msg a:first-child { animation: nudge .7s 1.5s ease-out both; }   /* кнопка отвечает, когда палец на неё указал */
+  @keyframes nudge { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,.75); } 100% { box-shadow: 0 0 0 14px rgba(255,255,255,0); } }
+  @media (prefers-reduced-motion: reduce) { .who.go .who__msg a:first-child { animation: none; } }
   .who__txt b { display: block; font-size: 22px; line-height: 28px; }
   .who__txt span { font-size: 16px; opacity: .9; }
   .who__msg { display: flex; gap: 8px; }
@@ -123,7 +133,7 @@ const m = messenger(lang);
     .ct__head { gap: 12px; }
     .ct__head h2 { font-size: 36px; letter-spacing: -1px; }
     .ct__head p { font-size: 17px; line-height: 24px; }
-    .ava { width: 88px; height: 88px; border-width: 3px; }
+    .ava { width: 88px; height: 88px; --in: 82px; --b: 3px; }
     .who__txt b { font-size: 19px; line-height: 24px; }
     .cf { padding: 28px 16px 20px; }
   }
