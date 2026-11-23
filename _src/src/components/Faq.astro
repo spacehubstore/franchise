@@ -1,7 +1,7 @@
 ---
 // «Before you ask» (Figma 1933:1306): ответы в виде переписки. Состав – решения 13.10, 15.10 и CMO 22.11.2026:
-// добавлен «What do I do after opening?», убран «Who owns the equipment?». Не подтверждены до публикации: «Has any project
-// failed?» (F-1286) и диспетчерская (F-1291).
+// добавлен «What do I do after opening?», убран «Who owns the equipment?». «Has any project failed? No» подтвердил CMO 23.11 (F-1286);
+// про безопасность – только видеонаблюдение, без диспетчерской 24/7 (CMO 23.11, F-1291).
 // Анимация: у ответа на долю секунды «печатает…», затем текст. Включается, когда вопрос дошёл до нижней трети экрана;
 // пролистанные вопросы показываются сразу, без анимации, – чтение не задерживается.
 import { CONTACTS } from "../data/site";
@@ -10,7 +10,7 @@ const qa = [
   { q: "What do I do after opening?", a: ["Keep the space clean and pay the utility bills", "Everything else is on us: finding customers, marketing, customer support and care, the app and the website"], r: "🙌" },
   { q: "Has any project failed?", a: ["No", "We have never closed a facility for being unprofitable, and no partner has left SpaceHub"], r: "🔥" },
   { q: "How fast can it open?", a: ["10–13 weeks from the start of the feasibility study to opening, in markets where we already work"], r: "⚡" },
-  { q: "How is the facility secured?", a: ["Our own dispatch centre watches every facility on CCTV 24/7, with alarm monitoring", "Customers open their units from the app"] },
+  { q: "How is the facility secured?", a: ["Every facility is equipped with CCTV cameras", "Customers open their units from the app"] },
 ];
 ---
 <section class="faq wrap" id="faq">
