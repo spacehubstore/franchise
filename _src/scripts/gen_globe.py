@@ -7,9 +7,9 @@ import json, math, sys, pathlib
 from PIL import Image, ImageDraw
 
 HERE = pathlib.Path(__file__).resolve().parent.parent
-W, H = 1440, 780                     # кадр блока
+W, H = 1440, 700                     # кадр блока
 args = sys.argv[2:]
-LON0, LAT0, R, TOP, ROLL = (float(a) for a in args) if args else (48.0, -6.0, 780.0, 230.0, 12.0)
+LON0, LAT0, R, TOP, ROLL = (float(a) for a in args) if args else (48.0, -6.0, 780.0, 190.0, 12.0)
 CX, CY = W / 2, TOP + R               # центр шара ниже кадра, виден верхний край
 N = 90000                             # точек на всю сферу
 
