@@ -94,6 +94,7 @@ const t = useT(lang);
 <script>
   import { slowNet } from "../lib/net";
   import { cover, uncover } from "../lib/vframe";
+  import { FOCUS } from "../lib/focus";
   // холодный трафик (CMO 22.11.2026): пункт ~2,5–3 с, круг ~11 с; плашка «После» – на 2/3 ролика, пока картинка ещё движется
   const RATE = 2.2, HOLD = 800, CAP_AT = .66;
   const sec = document.querySelector<HTMLElement>("[data-floor]")!;
@@ -260,8 +261,8 @@ const t = useT(lang);
     }
   }, { threshold: .3 }).observe(sec);
 
-  // мобильный: каждая сцена проигрывается, когда попадает в экран
-  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting && !e.target.classList.contains("is-on")) start(e.target as S); }), { threshold: .45 });
+  // мобильный: сцена проигрывается, когда доходит до середины экрана (lib/focus)
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting && !e.target.classList.contains("is-on")) start(e.target as S); }), FOCUS);
   items.forEach((it) => io.observe(it.querySelector(".vis")!));
 </script>
 
