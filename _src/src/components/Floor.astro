@@ -93,6 +93,7 @@ const t = useT(lang);
 
 <script>
   import { slowNet } from "../lib/net";
+  import { cover, uncover } from "../lib/vframe";
   // холодный трафик (CMO 22.11.2026): пункт ~2,5–3 с, круг ~11 с; плашка «После» – на 2/3 ролика, пока картинка ещё движется
   const RATE = 2.2, HOLD = 800, CAP_AT = .66;
   const sec = document.querySelector<HTMLElement>("[data-floor]")!;
@@ -116,8 +117,9 @@ const t = useT(lang);
               sc._t = window.setTimeout(() => sc.classList.add("is-cap"), +(sc.dataset.ms || 1200) * .66);
               sc._d = window.setTimeout(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); }, +(sc.dataset.ms || 1200)); return; }
     clearTimeout(sc._t); v.pause();
-    if (still) { v.poster = v.poster.replace("-a.webp", "-b.webp"); sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); return; }
-    v.currentTime = 0;
+    if (still) { uncover(v); v.poster = v.poster.replace("-a.webp", "-b.webp"); sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); return; }
+    cover(v);   // кадр «до» поверх ролика, пока первый кадр не нарисован – без пустого кадра на старте
+    if (v.currentTime) v.currentTime = 0;
     v.onended = () => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); };
     sc._t = window.setTimeout(() => { v.playbackRate = RATE; v.play().catch(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); }); }, +(v.dataset.pre || 0));
   }
@@ -174,6 +176,9 @@ const t = useT(lang);
     } catch (e) { console.error("chart", e); } };
     requestAnimationFrame(frame);
   }
+  // сколько сцены уже показано: у ролика – по его фактическому времени (ролик догружается – полоска ждёт вместе с ним)
+  const elapsed = (sc: S, now: number) => { const v = sc.querySelector("video"), w = now - (sc._start || now); if (!v) return w;
+    const pre = +(v.dataset.pre || 0); return v.currentTime > 0 ? pre + 1000 * v.currentTime / RATE : Math.min(pre, w); };
   const expected = (sc: S) => { const v = sc.querySelector("video"); if (!v) return +(sc.dataset.ms || 1200); return +(v.dataset.pre || 0) + 1000 * (v.duration || 4) / RATE; };
 
   // автопоказ: следующий пункт – через HOLD после окончания ролика; полоска – доля ожидаемого времени
@@ -192,7 +197,7 @@ const t = useT(lang);
     const sc = vis[active] as S;
     if (running() && sc._start) {
       const total = expected(sc) + HOLD;
-      const p = sc._end ? Math.min(1, (expected(sc) + (now - sc._end)) / total) : Math.min(.95 * expected(sc) / total, (now - sc._start) / total);
+      const p = sc._end ? Math.min(1, (expected(sc) + (now - sc._end)) / total) : Math.min(.98 * expected(sc) / total, elapsed(sc, now) / total);
       items[active].style.setProperty("--p", String(p));
       if (sc._end && now - sc._end >= HOLD) go(active + 1);
       // ролик не дошёл до конца за ожидаемое время + 4 с (сеть) – показываем «после» и идём дальше
@@ -206,11 +211,19 @@ const t = useT(lang);
   const leave = () => { const sc = vis[active] as S; if (sc._end) sc._end = Math.max(sc._end, performance.now() - HOLD / 2); };
   new IntersectionObserver((es) => {
     const was = inView; inView = es[0].intersectionRatio >= .3;
-    if (inView && !was && desk.matches) {
-      sec.querySelectorAll<HTMLVideoElement>(".stage video").forEach((v) => (v.preload = "auto"));   // все ролики – заранее
-      manual = false; go(0);
-    }
+    if (inView && !was && desk.matches) { manual = false; go(0); }
   }, { threshold: [0, .3] }).observe(sec.querySelector(".stage")!);
+  // ролики грузятся по очереди, первый – раньше всех (CMO 23.11.2026: первая сцена подвисала – четыре ролика качались разом,
+  // и первый догружался дольше, чем шла сцена). Следующий – когда предыдущий загружен целиком или через 4 с
+  const chain = (vs: HTMLVideoElement[], k = 0) => {
+    const v = vs[k]; if (!v || v.dataset.q) return; v.dataset.q = "1"; v.preload = "auto";
+    let go = false; const next = () => { if (!go) { go = true; chain(vs, k + 1); } };
+    if (v.readyState >= 4) return next();
+    v.addEventListener("canplaythrough", next, { once: true }); v.addEventListener("error", next, { once: true }); setTimeout(next, 4000);
+  };
+  if (!still) new IntersectionObserver((es, o) => { if (!es[0].isIntersecting) return; o.disconnect();
+    chain(Array.from(sec.querySelectorAll<HTMLVideoElement>(desk.matches ? ".stage video" : ".acc__it video")));
+  }, { rootMargin: "100% 0px" }).observe(sec);
   // вкладку скрыли и вернули: браузер ставил ролик на паузу – продолжаем с того же места, время скрытия не засчитываем
   let hiddenAt = 0;
   document.addEventListener("visibilitychange", () => {
