@@ -14,7 +14,7 @@ const m = messenger(lang);
       <p>{t("We reply within 1 working hour")}</p>
     </div>
     <div class="who">
-      <span class="ava" data-ava><img src="/assets/alexey-rest.webp" width="300" height="300" alt="Alexey Romanenkov" loading="lazy" /><img class="ava__pt" src="/assets/alexey-point.webp" width="300" height="300" alt="" loading="lazy" /></span>
+      <img src="/assets/alexey-round.webp" width="300" height="300" alt="Alexey Romanenkov" loading="lazy" />
       <div class="who__side">
         <div class="who__txt"><b>Alexey Romanenkov</b><span>{t("Head of partnerships")}</span></div>
         <div class="who__msg">
@@ -55,12 +55,6 @@ const m = messenger(lang);
     (window as any).dataLayer?.push({ event: "callback_form_sent", form_location: "partner", lead_form: "contact", site_variant: location.pathname, delivery: how });
     form.querySelector<HTMLElement>("[data-cf-ok]")!.hidden = false;
   });
-  // Алексей показывает на мессенджер, когда блок контактов виден
-  const who = document.querySelector<HTMLElement>("#contact .who");
-  if (who && "IntersectionObserver" in window) {
-    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { setTimeout(() => who.classList.add("go"), 350); io.disconnect(); } }), { threshold: 0.9 });
-    io.observe(who);
-  } else who?.classList.add("go");
 </script>
 
 <style>
@@ -74,17 +68,7 @@ const m = messenger(lang);
   /* Алексей – крупный круг, рядом имя, роль и мессенджеры */
   .who { grid-area: who; align-self: start; position: relative; display: flex; align-items: center; gap: 20px; }
   .who__side { display: flex; flex-direction: column; gap: 12px; }
-  /* Алексей (черновик CMO 24.11.2026, поза с рукой – Gemini по реальному фото): блок доехал до экрана – руки «расцепляются»,
-     он показывает на кнопку мессенджера, кнопка один раз отвечает пульсом. Без анимации – сразу кадр с жестом */
-  .ava { flex: none; position: relative; width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 4px solid rgba(255, 255, 255, .7); background: var(--white); }
-  .ava img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  :global([dir=rtl]) .ava img { scale: -1 1; }   /* справа налево кнопка слева от фото – Алексей показывает влево */
-  .ava__pt { opacity: 0; transform: scale(1.04); transition: opacity .45s ease, transform .6s cubic-bezier(.2,.8,.2,1); }
-  .who.go .ava__pt { opacity: 1; transform: none; }
-  .who.go .who__msg a:first-child { animation: nudge .7s .55s ease-out both; }
-  @keyframes nudge { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,.75); transform: translateX(0); } 35% { transform: translateX(4px); }
-                     100% { box-shadow: 0 0 0 14px rgba(255,255,255,0); transform: translateX(0); } }
-  @media (prefers-reduced-motion: reduce) { .ava__pt { opacity: 1; transform: none; transition: none; } .who.go .who__msg a:first-child { animation: none; } }
+  .who > img { flex: none; width: 120px; height: 120px; border-radius: 50%; object-fit: cover; object-position: center; border: 4px solid rgba(255, 255, 255, .7); background: var(--white); }
   .who__txt b { display: block; font-size: 22px; line-height: 28px; }
   .who__txt span { font-size: 16px; opacity: .9; }
   .who__msg { display: flex; gap: 8px; }
@@ -123,7 +107,7 @@ const m = messenger(lang);
     .ct__head { gap: 12px; }
     .ct__head h2 { font-size: 36px; letter-spacing: -1px; }
     .ct__head p { font-size: 17px; line-height: 24px; }
-    .ava { width: 88px; height: 88px; border-width: 3px; }
+    .who > img { width: 88px; height: 88px; border-width: 3px; }
     .who__txt b { font-size: 19px; line-height: 24px; }
     .cf { padding: 28px 16px 20px; }
   }
