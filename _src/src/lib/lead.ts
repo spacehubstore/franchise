@@ -2,11 +2,13 @@
 // Без адреса или при сбое заявка уходит в WhatsApp с заполненным текстом.
 // Метки (CMO 23.11.2026): UTM – текущего визита (лид по своему следу); клики рекламы (gclid, gbraid, wbraid, fbclid, li_fat_id)
 // – текущего визита, а если их нет – последние сохранённые за 90 дней (окно загрузки конверсий в Google Ads); первое касание
+// oppref – ID клика рекламы в ChatGPT (OpenAI Ads), нужен для серверной передачи квал-лидов в OpenAI (F-1789, CMO 23.11.2026);
+// без него в адресе берём cookie __oppref, которую пишет пиксель OpenAI.
 // хранится отдельно (first_touch). Плюс fbc/fbp для Meta, GA client_id, источник перехода.
 import { CONTACTS, FORM_ENDPOINT } from "../data/site";
 
 const UTM = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
-const CLICK = ["gclid", "gbraid", "wbraid", "fbclid", "li_fat_id"];
+const CLICK = ["gclid", "gbraid", "wbraid", "fbclid", "li_fat_id", "oppref"];
 const DAY = 864e5, KEEP = 90 * DAY;
 const get = (st: Storage, k: string) => { try { return JSON.parse(st.getItem(k) || "null"); } catch { return null; } };
 const put = (st: Storage, k: string, v: unknown) => { try { st.setItem(k, JSON.stringify(v)); } catch { /* без хранилища */ } };
@@ -33,6 +35,7 @@ function marks() {
   const saved = get(localStorage, "sh_click");
   const old = saved && Date.now() - saved.at < KEEP ? saved : {};
   CLICK.forEach((k) => { const v = visit[k] || old[k]; if (v) o[k] = v; });
+  if (!o.oppref && cookie("__oppref")) o.oppref = decodeURIComponent(cookie("__oppref"));
   if (visit.referrer) o.referrer = visit.referrer;
   const fbclid = o.fbclid as string | undefined;
   o.fbc = cookie("_fbc") || (fbclid ? `fb.1.${saved && saved.fbclid === fbclid ? saved.at : Date.now()}.${fbclid}` : "");
