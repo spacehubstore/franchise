@@ -6,7 +6,7 @@ export const CONTACTS = {
 };
 
 // Соцсети в подвале (CMO 24.11.2026): Instagram франшизы и страница компании в LinkedIn.
-// LinkedIn – по ID страницы 90608890 (организация рекламного аккаунта), адрес с vanity-именем не проверен – заменить на точный.
+// LinkedIn – по ID страницы 90608890 (организация рекламного аккаунта), адрес подтвердил CMO 24.11.2026.
 export const SOCIAL = [
   { name: "LinkedIn", url: "https://www.linkedin.com/company/90608890/" },
   { name: "Instagram", url: "https://www.instagram.com/spacehub_franchise/" },
