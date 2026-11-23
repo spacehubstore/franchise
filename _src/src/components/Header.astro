@@ -1,7 +1,7 @@
 ---
 // Шапка (Figma 1531:5928): логотип, «franchise», кнопки «Get in touch» (общее окно заявки) и WhatsApp.
 // На первом экране кнопок нет – они дублировали бы кнопки первого экрана; появляются, когда первый экран ушёл (CMO 23.11.2026).
-// Свёрнутые кнопки не занимают места, переключатель языка стоит в правом углу (CMO 24.11.2026).
+// Свёрнутые кнопки не занимают места, переключатель языка стоит в правом углу (CMO 23.11.2026).
 import { CONTACTS } from "../data/site";
 const { cta = true } = Astro.props;   // на служебных страницах (политика) – без кнопок
 import { langOf, useT, href, messenger, LANGS, LANG_LABEL, LANG_NAME } from "../i18n";
@@ -41,7 +41,7 @@ const m = messenger(lang);
   .hdr__brand { display: flex; align-items: center; gap: 8px; }
   .hdr__sep { width: 1.5px; height: 20px; background: var(--gray-300); margin: 0 8px; }
   .hdr__sub { font-weight: 600; font-size: 18px; line-height: 26px; color: var(--gray-600); }
-  /* выбор языка (CMO 24.11.2026): выпадающий список; на первом экране – в правом углу, когда появляются кнопки, сдвигается влево */
+  /* выбор языка (CMO 23.11.2026): выпадающий список; на первом экране – в правом углу, когда появляются кнопки, сдвигается влево */
   .lng { position: relative; margin-inline-start: auto; }
   .lng summary { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px 0 12px; border-radius: 99px; cursor: pointer; list-style: none;
                  font-weight: 600; font-size: 14px; color: var(--gray-700); transition: background .2s; }

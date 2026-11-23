@@ -3,6 +3,7 @@
 // переключатель городов над фото, доход «до» и «после» – карточки на своих половинах слайдера, город и площадь – подпись
 // под фото. Слева – оффер, кнопки и короткие факты. На мобильном – одна колонка, фото 4:5.
 import { CITIES } from "../data/site";
+import pin from "../../public/assets/figma/pin-active.svg?raw";   // встроено: иконка вкладки без отдельного запроса
 import { langOf, useT, href, messenger, LANGS, LANG_LABEL } from "../i18n";
 const lang = langOf(Astro.url.pathname);
 const t = useT(lang);
@@ -32,7 +33,7 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
       <div class="tabs" role="tablist" aria-label={t("Cases by city")}>
         {cities.map((c, i) => (
           <button type="button" class={`tab ${i === 0 ? "tab--on" : ""}`} role="tab" aria-selected={i === 0 ? "true" : "false"} data-city={c.id}>
-            <img src="/assets/figma/pin-active.svg" width="18" height="18" alt="" />{c.name}<i class="tab__bar" aria-hidden="true"></i>
+            <span class="tab__pin" aria-hidden="true" set:html={pin} />{c.name}<i class="tab__bar" aria-hidden="true"></i>
           </button>
         ))}
       </div>
@@ -64,26 +65,38 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
   const set = (v: number) => { after.style.clipPath = `inset(0 0 0 ${v}%)`; handle.style.left = `${v}%`; };
   range.addEventListener("input", () => set(+range.value));
   const tabs = Array.from(box.querySelectorAll<HTMLButtonElement>("[data-city]"));
+  // смена кейса (CMO 23.11.2026): снимки нового кейса сначала грузятся и декодируются в фоне, подменяются уже готовыми –
+  // на медленной сети раньше показывался пустой кадр. Вкладка выделяется сразу, фото, цифры и подпись – вместе, когда готовы
+  const SIZES = "(max-width: 1000px) 100vw, 56vw";
+  let token = 0, busy = false;
   const show = (t: HTMLButtonElement) => {
-    const c = cities.find((x: any) => x.id === t.dataset.city);
+    const c = cities.find((x: any) => x.id === t.dataset.city), my = ++token; busy = true;
     box.querySelectorAll("[data-city]").forEach((x) => { x.classList.toggle("tab--on", x === t); x.setAttribute("aria-selected", String(x === t)); });
-    box.querySelectorAll<HTMLElement>("[data-img]").forEach((e) => {
-      e.classList.add("is-swap");
-      const b = c.photos[e.dataset.img!];
-      setTimeout(() => { (e as HTMLImageElement).srcset = `${b}-640.webp 640w, ${b}-1024.webp 1024w`; (e as HTMLImageElement).src = `${b}-1024.webp`; e.classList.remove("is-swap"); }, 200);
+    const ready = (["before", "after"] as const).map((k) => {
+      const b = c.photos[k], im = new Image(); im.sizes = SIZES; im.srcset = `${b}-640.webp 640w, ${b}-1024.webp 1024w`; im.src = `${b}-1024.webp`;
+      return im.decode().catch(() => {});
     });
-    (["before", "after", "name", "space", "note"] as const).forEach((k) => (box.querySelector(`[data-v=${k}]`)!.textContent = c[k]));
-    const ba = box.querySelector<HTMLElement>(".ba")!; ba.classList.remove("is-pop"); void ba.offsetWidth; ba.classList.add("is-pop");
-    warm(tabs[(tabs.indexOf(t) + 1) % tabs.length]);
+    Promise.race([Promise.all(ready), new Promise((r) => setTimeout(r, 10000))]).then(() => {
+      if (my !== token) return;   // за время загрузки выбрали другой кейс
+      box.querySelectorAll<HTMLImageElement>("[data-img]").forEach((e) => {
+        const b = c.photos[e.dataset.img!]; e.classList.add("is-swap");
+        setTimeout(() => { e.srcset = `${b}-640.webp 640w, ${b}-1024.webp 1024w`; e.src = `${b}-1024.webp`; e.classList.remove("is-swap"); }, 150);
+      });
+      setTimeout(() => (["before", "after", "name", "space", "note"] as const).forEach((k) => (box.querySelector(`[data-v=${k}]`)!.textContent = c[k])), 150);
+      const ba = box.querySelector<HTMLElement>(".ba")!; ba.classList.remove("is-pop"); void ba.offsetWidth; ba.classList.add("is-pop");
+      busy = false; left = STEP;
+      warm(tabs[(tabs.indexOf(t) + 1) % tabs.length]);
+    });
   };
   // фото следующего кейса – заранее, чтобы при переключении не было пустого кадра; на слабом соединении не грузим
-  const size = () => (innerWidth <= 1000 ? 640 : 1024);
   const warm = (t: HTMLButtonElement) => {
     if (slowNet) return;
     const c = cities.find((x: any) => x.id === t.dataset.city);
-    (['before', 'after'] as const).forEach((k) => { const i = new Image(); i.decoding = 'async'; i.src = `${c.photos[k]}-${size()}.webp`; });
+    (['before', 'after'] as const).forEach((k) => { const i = new Image(); i.sizes = SIZES; i.srcset = `${c.photos[k]}-640.webp 640w, ${c.photos[k]}-1024.webp 1024w`; i.src = `${c.photos[k]}-1024.webp`; });
   };
-  addEventListener('load', () => setTimeout(() => warm(tabs[1]), 1500), { once: true });
+  // следующий кейс – сразу после первого фото (раньше ждали загрузки всей страницы, а она из-за роликов позже первого автопереключения)
+  const firstImg = box.querySelector<HTMLImageElement>("[data-img]")!;
+  if (firstImg.complete) setTimeout(() => warm(tabs[1]), 300); else firstImg.addEventListener("load", () => setTimeout(() => warm(tabs[1]), 300), { once: true });
   // автопереключение кейсов (CMO 23.11.2026): раз в 5 с, тонкая полоска прогресса под активной вкладкой;
   // клик по вкладке или движение слайдера останавливает автопоказ; пауза при наведении и когда первый экран не виден
   const STEP = 5000;
@@ -91,7 +104,7 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
   const cur = () => tabs.findIndex((t) => t.classList.contains("tab--on"));
   const bar = () => tabs.forEach((t, i) => t.style.setProperty("--p", i === cur() && auto ? String(1 - left / STEP) : "0"));
   const tick = (now: number) => {
-    if (auto && !hover && seen && !document.hidden) { left -= now - last; if (left <= 0) { show(tabs[(cur() + 1) % tabs.length]); left = STEP; } }
+    if (auto && !hover && seen && !busy && !document.hidden) { left -= now - last; if (left <= 0) { show(tabs[(cur() + 1) % tabs.length]); left = STEP; } }
     last = now; bar(); if (auto) requestAnimationFrame(tick); else bar();
   };
   const stop = () => { auto = false; box.classList.add("is-manual"); bar(); };
@@ -124,9 +137,9 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
   .case { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
   .tabs { display: flex; gap: 6px; padding: 4px; background: var(--gray-100); border-radius: 100px; width: fit-content; }
   .tab { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 16px 0 12px; border-radius: 100px; font-weight: 600; font-size: 15px; color: var(--gray-500); transition: background .2s, box-shadow .2s, color .2s; }
-  .tab img { width: 18px; opacity: .35; filter: grayscale(1); transition: .2s; }
+  .tab .tab__pin { opacity: .35; filter: grayscale(1); transition: .2s; }
   .tab--on { background: var(--white); color: var(--gray-900); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-  .tab--on img { opacity: 1; filter: none; }
+  .tab--on .tab__pin { opacity: 1; filter: none; }
   /* прогресс автопоказа: тонкая полоска внизу активной вкладки */
   .tab { position: relative; overflow: hidden; }
   .tab__bar { position: absolute; left: 14px; right: 14px; bottom: 4px; height: 2px; border-radius: 2px; background: var(--brand); opacity: .55; transform-origin: left; transform: scaleX(var(--p, 0)); }
@@ -136,6 +149,8 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
   .ba { position: relative; height: clamp(400px, calc((100svh - var(--hdr-h) - 150px) * .85), 600px); border-radius: 28px; overflow: hidden; background: var(--gray-100); }
   .ba__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 60%; transition: opacity .2s; }
   .ba__img.is-swap { opacity: .2; }
+  .tab__pin { display: inline-flex; width: 18px; height: 18px; }
+  .tab__pin :global(svg) { width: 18px; height: 18px; }
   .ba__handle { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: var(--white); pointer-events: none; box-shadow: 0 0 12px rgba(0,0,0,.2); z-index: 1; }
   .ba__handle span { position: absolute; top: 50%; left: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: var(--white); box-shadow: 0 4px 14px rgba(0,0,0,.2); display: grid; place-items: center; }
   .ba__handle svg { width: 22px; fill: none; stroke: var(--gray-900); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

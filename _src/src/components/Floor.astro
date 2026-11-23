@@ -106,15 +106,15 @@ const t = useT(lang);
   items.forEach((it, i) => { const c = vis[i].cloneNode(true) as HTMLElement; c.classList.remove("is-on"); it.querySelector(".vis--inline")!.replaceWith(c); });
 
   // сцена: «до» → свайп (сцена 3) → ролик ×2,2 → на 2/3 ролика плашка «после» (.is-cap) → конец ролика (.is-done)
-  type S = HTMLElement & { _t?: number; _end?: number; _start?: number };
+  type S = HTMLElement & { _t?: number; _d?: number; _end?: number; _start?: number };
   function start(sc: S) {
     sc.classList.remove("is-on", "is-done", "is-cap"); void sc.offsetWidth; sc.classList.add("is-on");
     sc._end = 0; sc._start = performance.now();
     const v = sc.querySelector("video");
-    if (!v) { clearTimeout(sc._t); if (sc.dataset.chart !== undefined) runChart(sc, still);
+    if (!v) { clearTimeout(sc._t); clearTimeout(sc._d); if (sc.dataset.chart !== undefined) runChart(sc, still);
               if (still) { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); return; }
               sc._t = window.setTimeout(() => sc.classList.add("is-cap"), +(sc.dataset.ms || 1200) * .66);
-              window.setTimeout(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); }, +(sc.dataset.ms || 1200)); return; }
+              sc._d = window.setTimeout(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); }, +(sc.dataset.ms || 1200)); return; }
     clearTimeout(sc._t); v.pause();
     if (still) { v.poster = v.poster.replace("-a.webp", "-b.webp"); sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); return; }
     v.currentTime = 0;
@@ -177,8 +177,10 @@ const t = useT(lang);
   const expected = (sc: S) => { const v = sc.querySelector("video"); if (!v) return +(sc.dataset.ms || 1200); return +(v.dataset.pre || 0) + 1000 * (v.duration || 4) / RATE; };
 
   // автопоказ: следующий пункт – через HOLD после окончания ролика; полоска – доля ожидаемого времени
-  let active = 0, inView = false, hover = false, pausedAt = 0;
-  const running = () => desk.matches && inView && !hover && !document.hidden && !still;
+  let active = 0, inView = false, hover = false, manual = false;
+  // ручной выбор пункта (CMO 23.11.2026) останавливает автопоказ: выбранный пункт остаётся, пока блок не ушёл с экрана;
+  // блок вернулся в экран – автопоказ заново с первого пункта
+  const running = () => desk.matches && inView && !hover && !manual && !document.hidden && !still;
   function go(i: number) {
     active = (i + n) % n;
     items.forEach((it, k) => { it.classList.toggle("is-on", k === active); it.style.setProperty("--p", "0"); });
@@ -197,47 +199,35 @@ const t = useT(lang);
       else if (!sc._end && now - sc._start > expected(sc) + 4000) { sc.classList.add("is-done", "is-cap"); sc._end = now; }
     }
     requestAnimationFrame(tick);
-  sec.querySelectorAll<HTMLVideoElement>("video").forEach((v) => v.addEventListener("timeupdate", () => {
-    if (v.duration && v.currentTime / v.duration >= CAP_AT) v.closest(".vis")!.classList.add("is-cap");
-  }));
-
-  // замер для подстройки скорости (CMO 22.11.2026): какой пункт досмотрен (ролик доиграл) и сколько секунд блок был в экране
-  const done = new Set<number>(); let shownAt = 0, shownMs = 0;
-  function seen(sc: HTMLElement) {
-    const i = +(sc.dataset.vis || 0) + 1;
-    if (done.has(i)) return; done.add(i);
-    (window as any).dataLayer?.push({ event: "floor_item_viewed", item: i, site_variant: location.pathname });
   }
-  new IntersectionObserver((es) => {
-    const on = es[0].isIntersecting;
-    if (on) shownAt = performance.now();
-    else if (shownAt) {
-      shownMs += performance.now() - shownAt; shownAt = 0;
-      (window as any).dataLayer?.push({ event: "floor_block_left", max_item: done.size ? Math.max(...done) : 0,
-        seconds_visible: Math.round(shownMs / 1000), site_variant: location.pathname });
-    }
-  }, { threshold: .3 }).observe(sec);
-  }
-  const pause = (on: boolean) => {
-    const sc = vis[active] as S, v = sc.querySelector("video"); if (!v) return;
-    if (on) { pausedAt = performance.now(); v.pause(); }
-    else if (pausedAt) { const d = performance.now() - pausedAt; sc._start! += d; if (sc._end) sc._end += d; else v.play().catch(() => {}); pausedAt = 0; }
-  };
+  // наведение останавливает только автопереключение, ролик доигрывает (CMO 23.11.2026: раньше ролик вставал на паузу, и после клика
+  // по пункту под курсором время наведения переносилось на новую сцену – следующее переключение откладывалось на те же секунды).
+  // Курсор ушёл: досмотренная сцена держится ещё HOLD и идёт дальше
+  const leave = () => { const sc = vis[active] as S; if (sc._end) sc._end = Math.max(sc._end, performance.now() - HOLD / 2); };
   new IntersectionObserver((es) => {
     const was = inView; inView = es[0].intersectionRatio >= .3;
     if (inView && !was && desk.matches) {
       sec.querySelectorAll<HTMLVideoElement>(".stage video").forEach((v) => (v.preload = "auto"));   // все ролики – заранее
-      go(active);
+      manual = false; go(0);
     }
   }, { threshold: [0, .3] }).observe(sec.querySelector(".stage")!);
-  sec.addEventListener("mouseenter", () => { hover = true; pause(true); });
-  sec.addEventListener("mouseleave", () => { hover = false; pause(false); });
+  // вкладку скрыли и вернули: браузер ставил ролик на паузу – продолжаем с того же места, время скрытия не засчитываем
+  let hiddenAt = 0;
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { hiddenAt = performance.now(); return; }
+    const sc = vis[active] as S, d = hiddenAt ? performance.now() - hiddenAt : 0; hiddenAt = 0;
+    if (sc._start) sc._start += d; if (sc._end) sc._end += d;
+    const v = sc.querySelector("video");
+    if (desk.matches && inView && v && v.paused && !v.ended && !sc._end && !still) v.play().catch(() => {});
+  });
+  sec.addEventListener("mouseenter", () => { hover = true; });
+  sec.addEventListener("mouseleave", () => { hover = false; leave(); });
   items.forEach((it, i) => it.querySelector("button")!.addEventListener("click", () => {
-    if (desk.matches) { go(i); (window as any).dataLayer?.push({ event: "floor_item_clicked", item: i + 1 }); }
+    if (desk.matches) { manual = true; go(i); (window as any).dataLayer?.push({ event: "floor_item_clicked", item: i + 1 }); }
   }));
   requestAnimationFrame(tick);
   sec.querySelectorAll<HTMLVideoElement>("video").forEach((v) => v.addEventListener("timeupdate", () => {
-    if (v.duration && v.currentTime / v.duration >= CAP_AT) v.closest(".vis")!.classList.add("is-cap");
+    const vs = v.closest(".vis")!; if (v.duration && v.currentTime / v.duration >= CAP_AT && !vs.classList.contains("is-cap")) vs.classList.add("is-cap");
   }));
 
   // замер для подстройки скорости (CMO 22.11.2026): какой пункт досмотрен (ролик доиграл) и сколько секунд блок был в экране
