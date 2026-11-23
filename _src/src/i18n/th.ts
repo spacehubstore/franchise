@@ -89,6 +89,8 @@ const th: Record<string, string> = {
   "1 level": "1 ชั้น",
   "4.8 m or more": "4.8 ม. ขึ้นไป",
   "2 levels": "2 ชั้น",
+  "4.8 m": "4.8 ม.",
+  "16 ft": "16 ฟุต",
   "Under {h}": "ต่ำกว่า {h}",
   "{h} or more": "{h} ขึ้นไป",
   "See my income": "ดูรายได้ของฉัน",

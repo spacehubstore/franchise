@@ -82,10 +82,13 @@ const t = useT(lang);
   .node { position: absolute; top: 16px; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--gray-900); box-shadow: inset 0 0 0 3px var(--gray-600); transition: box-shadow .3s; transition-delay: var(--t); }
   .node--agree small { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 3px 9px; border-radius: 99px; background: var(--gray-800); font-style: normal; font-size: 12px; font-weight: 700; color: var(--gray-300); }
   .dur { position: absolute; top: 30px; transform: translateX(-50%); font-style: normal; font-weight: 700; font-size: 15px; white-space: nowrap; color: var(--gray-400); transition: color .3s; transition-delay: var(--t); }
-  .finish { grid-column: 4; grid-row: 2; position: relative; padding-left: 22px; align-self: start; }
-  .finish i { position: absolute; left: 0; top: 16px; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; background: var(--gray-700); transition: background .3s, box-shadow .3s; transition-delay: var(--t); }
+  .finish { grid-column: 4; grid-row: 2; position: relative; padding-inline-start: 22px; align-self: start; }
+  .finish i { position: absolute; inset-inline-start: 0; top: 16px; width: 20px; height: 20px; margin-top: -10px; margin-inline-start: -10px; border-radius: 50%; background: var(--gray-700); transition: background .3s, box-shadow .3s; transition-delay: var(--t); }
   .finish b { display: block; font-size: 28px; line-height: 32px; font-weight: 800; margin-top: -1px; }
   .finish span { font-size: 14px; color: var(--gray-400); }
+  /* справа налево (арабский): шкала зеркалится целиком, подписи на ней разворачиваются обратно */
+  :global([dir=rtl]) .track { transform: scaleX(-1); }
+  :global([dir=rtl]) .dur, :global([dir=rtl]) .node--agree small { transform: translateX(-50%) scaleX(-1); }
   .tl.in .node { box-shadow: inset 0 0 0 3px var(--brand); }
   .tl.in .dur { color: var(--white); }
   .tl.in .finish i { background: var(--brand); box-shadow: 0 0 0 6px rgba(255, 79, 0, .22); }
@@ -113,7 +116,7 @@ const t = useT(lang);
     /* телефон: этапы друг под другом, шкала скрыта, срок – под названием этапа */
     .tl__grid { grid-template-columns: 1fr; row-gap: 16px; }
     .track { display: none; }
-    .st { flex-direction: row; text-align: left; gap: 16px; align-items: center; display: grid; grid-template-columns: 96px 1fr; grid-template-rows: auto auto; }
+    .st { flex-direction: row; text-align: start; gap: 16px; align-items: center; display: grid; grid-template-columns: 96px 1fr; grid-template-rows: auto auto; }
     .st img { grid-row: 1 / 3; width: 96px; border-radius: 18px; }
     .st b { margin: 0; align-self: end; font-size: 18px; }
     .st p { align-self: start; }

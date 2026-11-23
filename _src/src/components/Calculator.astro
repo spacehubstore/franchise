@@ -141,7 +141,7 @@ const t = useT(lang);
   }));
   onUnit((u) => {
     st.unit = u; fill(); calc();
-    const h = u === "ft" ? "16 ft" : "4.8 m";
+    const h = ct(u === "ft" ? "16 ft" : "4.8 m");
     root.querySelector("[data-hl='1']")!.textContent = ct("Under {h}", { h }); root.querySelector("[data-hl='2']")!.textContent = ct("{h} or more", { h });
   });
 </script>

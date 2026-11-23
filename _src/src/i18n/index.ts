@@ -2,16 +2,20 @@
 // Ключ перевода – сама английская фраза: английская версия не меняется, на другом языке без перевода – английский текст.
 // Мессенджер зависит от языка: тайская версия – LINE вместо WhatsApp во всех кнопках.
 import th from "./th";
+import ar from "./ar";
 import { CONTACTS } from "../data/site";
 
-export const LANGS = ["en", "th"] as const;
+export const LANGS = ["en", "th", "ar"] as const;
 export type Lang = (typeof LANGS)[number];
-export const LANG_LABEL: Record<Lang, string> = { en: "EN", th: "ไทย" };
-const DICT: Record<Lang, Record<string, string>> = { en: {}, th };
+export const LANG_LABEL: Record<Lang, string> = { en: "EN", th: "TH", ar: "AR" };      // код на кнопке списка
+export const LANG_NAME: Record<Lang, string> = { en: "English", th: "ไทย", ar: "العربية" };  // название в списке – на своём языке
+const DICT: Record<Lang, Record<string, string>> = { en: {}, th, ar };
+export const dirOf = (lang: Lang) => (lang === "ar" ? "rtl" : "ltr");   // арабский – справа налево
 
 // язык по адресу страницы (сервер) или по <html lang> (браузер)
-export const langOf = (path: string): Lang => (path.startsWith("/th") ? "th" : "en");
-export const pageLang = (): Lang => (typeof document !== "undefined" && document.documentElement.lang === "th" ? "th" : "en");
+const isLang = (x: string): x is Lang => (LANGS as readonly string[]).includes(x);
+export const langOf = (path: string): Lang => { const x = path.split("/")[1] || ""; return isLang(x) && x !== "en" ? x : "en"; };
+export const pageLang = (): Lang => { const x = typeof document !== "undefined" ? document.documentElement.lang : ""; return isLang(x) ? x : "en"; };
 
 // перевод: t("Get in touch"); шаблоны с подстановкой – t("Check the number. Example for {c}: {n}", { c, n })
 export function tr(lang: Lang, s: string, v?: Record<string, string | number>) {

@@ -25,6 +25,7 @@ export function defaultCountry(): CountryCode {
   const s = store().country as CountryCode;
   if (s) return s;
   if (pageLang() === "th") return "TH";
+  if (pageLang() === "ar") return "AE";
   try { const tz = Intl.DateTimeFormat().resolvedOptions().timeZone; if (TZ[tz]) return TZ[tz]; } catch { /* нет часового пояса */ }
   return "AE";
 }

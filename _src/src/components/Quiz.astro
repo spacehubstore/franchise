@@ -189,7 +189,7 @@ const t = useT(lang);
     $$<HTMLButtonElement>("[data-a]").forEach((c) => (c.textContent = ct((u === "ft" ? AREA_FT : AREA_M2)[`${c.dataset.a}-${c.dataset.b}`])));
     $$<HTMLButtonElement>("[data-h]").forEach((c) => (c.textContent = ct(HEIGHT[c.dataset.h!][u === "ft" ? 1 : 0])));
     $$("[data-au]").forEach((e) => (e.textContent = u === "ft" ? ct("sq ft") : "m²"));
-    $$("[data-hint]").forEach((e) => (e.textContent = ct("From about {h} we can add a second level", { h: u === "ft" ? "16 ft" : "4.8 m" })));
+    $$("[data-hint]").forEach((e) => (e.textContent = ct("From about {h} we can add a second level", { h: ct(u === "ft" ? "16 ft" : "4.8 m") })));
     areas.forEach((a) => (a.value = st.area_m2 ? Math.round(st.area_m2 * (u === "ft" ? SQFT : 1)).toLocaleString("en-US") : ""));
   };
   $$<HTMLButtonElement>("[data-a]").forEach((c) => c.addEventListener("click", () => {
