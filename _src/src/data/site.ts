@@ -34,6 +34,6 @@ export const CITIES: City[] = [
     photos: { before: "/assets/case-rig-before", after: "/assets/case-rig-after" } },
 ];
 
-// Приёмник заявок: сервис в Google Cloud → amoCRM (решение CMO 22.11.2026, вариант «а»). Пока адреса нет – заявка уходит
-// в WhatsApp с заполненным текстом, чтобы не потерять ни одной. Лендинг не публикуется без рабочего приёмника.
-export const FORM_ENDPOINT = "";
+// Приёмник заявок (CMO 23.11.2026): Cloud Run franchise-lead в проекте хаба → amoCRM «Неразобранное» + BigQuery franchise_leads.site_leads.
+// Код – hub/06-directions/franchise/lead-service. При сбое сервиса заявка уходит в WhatsApp с заполненным текстом.
+export const FORM_ENDPOINT = "https://franchise-lead-536155493213.europe-west1.run.app/lead";
