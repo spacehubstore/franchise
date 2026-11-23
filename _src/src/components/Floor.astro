@@ -10,24 +10,27 @@ const items = [
   // заголовки – CMO 22.11.2026; «up to 4–5×» (заголовок и плашка сцены 1) – кейсы лендинга: Шарджа 4,8× (ставки модели Романенкова 24.09), Бангкок ~4,6× (F-1783)
   { t: "Same space, up to 4–5× the income", d: "Small units rent for more per m² than one tenant leasing the whole floor" },
   { t: "Up to 80% more space to rent", d: "Where the ceiling allows, a loft tier of smaller units goes above the main ones" },
-  { t: "No staff on site", d: "Customers book, pay and open their unit in the app 24/7. Our dispatch centre watches every facility on CCTV" },
+  { t: "No staff on site", d: "Customers book, pay and open their unit in the app 24/7. Every facility is equipped with CCTV cameras" },
   { t: "Steady cash flow every month", d: "Dozens of tenants pay monthly. If one leaves, income dips by a few percent" },
 ];
 const F = (s: string) => ({ a: `/assets/floor/${s}-a.webp`, b: `/assets/floor/${s}-b.webp` });
 const V = (s: string) => `/assets/floor/${s}.mp4`;
+import { langOf, useT } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
 ---
 <section class="fl wrap" data-floor>
   <div class="fl__grid">
     <div class="fl__left">
       <div class="fl__head">
-        <h2>One floor, dozens of tenants</h2>
-        <p>Self-storage splits a space into lockable units that people and small businesses rent by the month</p>
+        <h2>{t("One floor, dozens of tenants")}</h2>
+        <p>{t("Self-storage splits a space into lockable units that people and small businesses rent by the month")}</p>
       </div>
       <ol class="acc">
         {items.map((it, i) => (
           <li class={`acc__it ${i === 0 ? "is-on" : ""}`} data-i={i}>
-            <button type="button" class="acc__t"><span class="acc__n">0{i + 1}</span>{it.t}</button>
-            <p class="acc__d">{it.d}</p>
+            <button type="button" class="acc__t"><span class="acc__n">0{i + 1}</span>{t(it.t)}</button>
+            <p class="acc__d">{t(it.d)}</p>
             <i class="acc__bar"><b></b></i>
             <div class="vis vis--inline" data-vis={i}></div>
           </li>
@@ -37,7 +40,7 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
         <img class="stat__glow" src="/assets/figma/glow-49.svg" alt="" aria-hidden="true" />
         <b>$62B</b>
         <!-- Grand View Research: мировой рынок self-storage $61,7 млрд (2025) → $104,8 млрд (2033), CAGR 7,1 % (2026–2033); проверено 22.11.2026 -->
-        <span>global self-storage market, growing 7% a year<small>Source: <a href="https://www.grandviewresearch.com/industry-analysis/self-storage-market-report" target="_blank" rel="noopener nofollow">Grand View Research</a>, 2025 size, 2026–2033 forecast</small></span>
+        <span>{t("global self-storage market, growing 7% a year")}<small>{t("Source:")} <a href="https://www.grandviewresearch.com/industry-analysis/self-storage-market-report" target="_blank" rel="noopener nofollow">Grand View Research</a>{t(", 2025 size, 2026–2033 forecast")}</small></span>
       </div>
     </div>
 
@@ -45,29 +48,29 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
       <div class="vis sc s1 is-on" data-vis="0">
         <div class="fr"><video src={V("s1")} poster={F("s1").a} muted playsinline preload="metadata"></video></div>
         <div class="cap cap--static">
-          <div class="cap__a"><small>Small units</small><b>4–5× the income</b><span>small units rent for more per m² than one big lease</span></div>
+          <div class="cap__a"><small>{t("Small units")}</small><b>{t("4–5× the income")}</b><span>{t("small units rent for more per m² than one big lease")}</span></div>
         </div>
       </div>
 
       <div class="vis sc s2" data-vis="1">
         <div class="fr"><video src={V("s2")} poster={F("s2").a} muted playsinline preload="metadata"></video></div>
         <div class="cap cap--static">
-          <div class="cap__a"><small>Loft tier</small><b>+80% area</b><span>from the same space, above the units</span></div>
+          <div class="cap__a"><small>{t("Loft tier")}</small><b>{t("+80% area")}</b><span>{t("from the same space, above the units")}</span></div>
         </div>
       </div>
 
       <div class="vis sc s3" data-vis="2">
         <div class="fr fr--s3"><video src={V("s3")} poster={F("s3").a} muted playsinline preload="metadata" data-pre="900"></video></div>
-        <div class="phone"><img src="/assets/figma/inc-phone.webp" alt="" loading="lazy" /><div class="slide"><span class="slide__t slide__t--a">Open</span><span class="slide__t slide__t--b">Unlocked</span><i class="knob"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i></div></div>
+        <div class="phone"><img src="/assets/figma/inc-phone.webp" alt="" loading="lazy" /><div class="slide"><span class="slide__t slide__t--a">{t("Open")}</span><span class="slide__t slide__t--b">{t("Unlocked")}</span><i class="knob"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i></div></div>
         <svg class="sig" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M2 30 C 30 2, 70 2, 98 24" /></svg>
         <div class="cap cap--static">
-          <div class="cap__a"><small>Self-service, 24/7</small><b>Nobody to hire</b><span>customers book, pay and open units themselves</span></div>
+          <div class="cap__a"><small>{t("Self-service, 24/7")}</small><b>{t("Nobody to hire")}</b><span>{t("customers book, pay and open units themselves")}</span></div>
         </div>
       </div>
 
       <div class="vis sc s4" data-vis="3" data-ms="3000" data-chart>
         <div class="cap cap--static">
-          <div class="cap__a"><small>Monthly income, 12 months</small><b>No month at zero</b><span>one tenant leaving can't stop your income</span></div>
+          <div class="cap__a"><small>{t("Monthly income, 12 months")}</small><b>{t("No month at zero")}</b><span>{t("one tenant leaving can't stop your income")}</span></div>
         </div>
         <div class="ln">
           <svg viewBox="0 0 560 230" aria-hidden="true">
@@ -75,13 +78,13 @@ const V = (s: string) => `/assets/floor/${s}.mp4`;
             <text class="ln__ax" x="34" y="204">$0</text><text class="ln__ax" x="34" y="119">$6k</text><text class="ln__ax" x="34" y="34">$12k</text>
             <defs><clipPath id="ln-clip"><rect class="ln__clip" x="0" y="0" width="0" height="230" /></clipPath></defs>
             <g clip-path="url(#ln-clip)"><path class="ln__one" d="" /><path class="ln__many" d="" /></g>
-            <text class="ln__ax ln__m" x="40" y="222">Month 1</text><text class="ln__ax ln__m ln__end" x="460" y="222">12</text>
+            <text class="ln__ax ln__m" x="40" y="222">{t("Month 1")}</text><text class="ln__ax ln__m ln__end" x="460" y="222">12</text>
           </svg>
-          <div class="ln__lab ln__lab--many" data-l="many"><b>25 tenants</b><span>$9,700</span></div>
-          <div class="ln__lab ln__lab--one" data-l="one"><b>1 tenant</b><span>$2,220</span></div>
+          <div class="ln__lab ln__lab--many" data-l="many"><b>{t("25 tenants")}</b><span>$9,700</span></div>
+          <div class="ln__lab ln__lab--one" data-l="one"><b>{t("1 tenant")}</b><span>$2,220</span></div>
           <i class="ln__dot ln__dot--many" data-h="many"></i><i class="ln__dot ln__dot--one" data-h="one"></i>
         </div>
-        <p class="foot">Sharjah, 185 m², SpaceHub model, after management commission. Tenant changes illustrative</p>
+        <p class="foot">{t("Sharjah, 185 m², SpaceHub model, after management commission. Tenant changes illustrative")}</p>
       </div>
       <span class="stage__n" data-count>1 / {items.length}</span>
     </div>

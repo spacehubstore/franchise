@@ -4,7 +4,10 @@
 // про безопасность – только видеонаблюдение, без диспетчерской 24/7 (CMO 23.11, F-1291).
 // Анимация: у ответа на долю секунды «печатает…», затем текст. Включается, когда вопрос дошёл до нижней трети экрана;
 // пролистанные вопросы показываются сразу, без анимации, – чтение не задерживается.
-import { CONTACTS } from "../data/site";
+import { langOf, useT, href, messenger } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
+const m = messenger(lang);
 const qa = [
   { q: "Is the feasibility study paid?", a: ["Yes, $3,000", "You order it only after the free assessment confirms your space fits"] },
   { q: "What do I do after opening?", a: ["Keep the space clean and pay the utility bills", "Everything else is on us: finding customers, marketing, customer support and care, the app and the website"], r: "🙌" },
@@ -12,20 +15,21 @@ const qa = [
   { q: "How fast can it open?", a: ["10–13 weeks from the start of the feasibility study to opening, in markets where we already work"], r: "⚡" },
   { q: "How is the facility secured?", a: ["Every facility is equipped with CCTV cameras", "Customers open their units from the app"] },
 ];
+const tr_ = t;
 ---
 <section class="faq wrap" id="faq">
   <div class="faq__head">
-    <h2>Before you ask</h2>
-    <p>Questions owners ask us on the first call</p>
+    <h2>{t("Before you ask")}</h2>
+    <p>{t("Questions owners ask us on the first call")}</p>
   </div>
   <div class="chat">
     <img class="chat__glow" src="/assets/figma/faq-glow.svg" alt="" aria-hidden="true" />
     {qa.map((x) => (
       <div class="turn" data-turn>
-        <p class="msg msg--q">{x.q}</p>
+        <p class="msg msg--q">{t(x.q)}</p>
         <div class="ans">
           <span class="typing" aria-hidden="true"><i></i><i></i><i></i></span>
-          {x.a.map((t, i) => <p class={`msg msg--a ${i === x.a.length - 1 && x.r ? "has-r" : ""}`} style={`--i:${i}`}>{t}{i === x.a.length - 1 && x.r && <span class="react">{x.r}</span>}</p>)}
+          {x.a.map((t, i) => <p class={`msg msg--a ${i === x.a.length - 1 && x.r ? "has-r" : ""}`} style={`--i:${i}`}>{tr_(t)}{i === x.a.length - 1 && x.r && <span class="react">{x.r}</span>}</p>)}
         </div>
       </div>
     ))}
@@ -33,10 +37,10 @@ const qa = [
       <div class="ans">
         <span class="typing" aria-hidden="true"><i></i><i></i><i></i></span>
         <div class="msg msg--a msg--cta" style="--i:0">
-          <p>Have another question?</p>
+          <p>{t("Have another question?")}</p>
           <div class="cta">
-            <a class="btn btn--sm btn--light" href={CONTACTS.whatsapp.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-loc="faq">Ask on WhatsApp</a>
-            <button type="button" class="btn btn--sm btn--or" data-open-faq data-ev="faq_cta" data-loc="faq">Get a free assessment</button>
+            <a class="btn btn--sm btn--light" href={m.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger={m.id} data-loc="faq">{t("Ask on {m}", { m: m.name })}</a>
+            <button type="button" class="btn btn--sm btn--or" data-open-faq data-ev="faq_cta" data-loc="faq">{t("Get a free assessment")}</button>
           </div>
         </div>
       </div>
@@ -46,9 +50,10 @@ const qa = [
 
 <script>
   import { openLead } from "../lib/leadModal";
+  import { ct } from "../i18n";
   const root = document.querySelector<HTMLElement>("#faq")!;
   root.querySelector("[data-open-faq]")!.addEventListener("click", () => openLead({
-    form: "faq", title: "Free assessment of your space", lead: "We get in touch within 1 working hour and tell you if the space fits",
+    form: "faq", title: ct("Free assessment of your space"), lead: ct("We get in touch within 1 working hour and tell you if the space fits"),
     text: (who) => `Franchise request from FAQ: free assessment. ${who}`,
   }));
   // вопрос дошёл до нижней трети экрана – «печатает…» и ответ; уже пролистанный – сразу, без анимации

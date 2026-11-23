@@ -1,23 +1,26 @@
 ---
 // Единое окно заявки (CMO 22.11.2026): калькулятор, «Feasibility study» и другие кнопки открывают его через lib/leadModal.ts.
 // Поля одни и те же везде: имя, город, телефон с маской страны, согласие. Email не спрашиваем.
+import { langOf, useT, href } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
 ---
 <dialog class="cm" data-lead-modal aria-labelledby="lm-h">
   <form class="cm__f" novalidate>
-    <button type="button" class="cm__x" data-lm-close aria-label="Close">×</button>
+    <button type="button" class="cm__x" data-lm-close aria-label={t("Close")}>×</button>
     <h3 id="lm-h" data-lm-h></h3>
     <p class="cm__lead" data-lm-lead></p>
-    <label class="cf__f"><span>Name</span><input name="name" autocomplete="name" placeholder="Your name" /></label>
-    <label class="cf__f"><span>City</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
-    <div class="cf__f cf__ph"><span>Phone number</span>
-      <select name="code" aria-label="Country code"></select><i></i>
+    <label class="cf__f"><span>{t("Name")}</span><input name="name" autocomplete="name" placeholder={t("Your name")} /></label>
+    <label class="cf__f"><span>{t("City")}</span><input name="city" autocomplete="address-level2" placeholder={t("e.g. Bangkok")} /></label>
+    <div class="cf__f cf__ph"><span>{t("Phone number")}</span>
+      <select name="code" aria-label={t("Country code")}></select><i></i>
       <input name="phone" type="tel" autocomplete="tel-national" placeholder="81 234 5678" />
     </div>
     <div class="cf__checks">
-      <label><input type="checkbox" name="agree" /> <span>I agree to the processing of my data under the <a href="/privacy" target="_blank">privacy policy</a></span></label>
+      <label><input type="checkbox" name="agree" /> <span>{t("I agree to the processing of my data under the")} <a href={href(lang, "/privacy")} target="_blank">{t("privacy policy")}</a></span></label>
     </div>
-    <button class="btn btn--or" type="submit">Send</button>
-    <div class="cm__ok" hidden data-lm-ok><b>Thank you</b><span>Alexey will get in touch within 1 working hour</span></div>
+    <button class="btn btn--or" type="submit">{t("Send")}</button>
+    <div class="cm__ok" hidden data-lm-ok><b>{t("Thank you")}</b><span>{t("Alexey will get in touch within 1 working hour")}</span></div>
   </form>
 </dialog>
 

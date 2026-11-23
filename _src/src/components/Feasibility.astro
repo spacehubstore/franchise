@@ -42,35 +42,39 @@ const at = (p: [number, number][], x: number) => {
 const LINE_MS = 1200, LINE_DELAY = 350, T = (f: number) => Math.round(LINE_DELAY + LINE_MS * f);
 const HIT_MS = T(at(pInc, CX)), LAB_X = X(33), LAB_MS = T(at(pInc, LAB_X));
 const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5, 22], ["Full", 22, 36]];
+import { langOf, useT } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
+const tr_ = t;
 ---
 <section class="fs-wrap wrap" id="study">
   <div class="fs">
     <div class="fs__left">
       <div class="fs__head">
-        <h2>Feasibility study</h2>
-        <p>Start with a free assessment. If your space fits, the study shows what to build, at what price and what it earns</p>
+        <h2>{t("Feasibility study")}</h2>
+        <p>{t("Start with a free assessment. If your space fits, the study shows what to build, at what price and what it earns")}</p>
       </div>
       <ol class="fs__stages">
         {stages.map((s, i) => (
           <li class={i === 1 ? "on" : ""}>
-            <b><span>0{i + 1}.</span>{s.t}<em>{s.w}</em></b>
-            <p>{s.d}</p>
-            {s.note && <small>{s.note}</small>}
+            <b><span>0{i + 1}.</span>{t(s.t)}<em>{t(s.w)}</em></b>
+            <p>{t(s.d)}</p>
+            {s.note && <small>{t(s.note)}</small>}
           </li>
         ))}
       </ol>
-      <button type="button" class="btn btn--or fs__cta" data-open-study data-ev="study_cta" data-loc="feasibility">Start with a free assessment</button>
+      <button type="button" class="btn btn--or fs__cta" data-open-study data-ev="study_cta" data-loc="feasibility">{t("Start with a free assessment")}</button>
     </div>
 
     <div class="fs__cards">
       <div class="fc" data-play data-card="market">
-        <div class="fc__t"><h3>Market and competitors</h3><p>Who stores nearby: homes and offices around the address. Competitors, their prices and the unit sizes the area is missing</p></div>
+        <div class="fc__t"><h3>{t("Market and competitors")}</h3><p>{t("Who stores nearby: homes and offices around the address. Competitors, their prices and the unit sizes the area is missing")}</p></div>
         <div class="fc__img">
           <img src="/assets/study/market.webp" width="960" height="717" alt="" loading="lazy" />
-          <span class="mk mk--me" style="left:51%;top:42.5%;--d:0ms">Your space</span>
+          <span class="mk mk--me" style="left:51%;top:42.5%;--d:0ms">{t("Your space")}</span>
           {pins.map((p, i) => (
             <span class={`mk ${p.c ? "mk--" + p.c : ""}`} style={`left:${p.x}%;top:${p.y}%;--d:${260 + i * 170}ms`}>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={ICON[p.i]} /></svg>{p.t}
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={ICON[p.i]} /></svg>{t(p.t)}
             </span>
           ))}
         </div>
@@ -78,8 +82,8 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
 
       <div class="fc" data-play data-card="layout">
         <div class="fc__t">
-          <h3>Unit layout</h3>
-          <p>The mix of unit sizes that earns the most from your floor, based on our rental data. A second level where the ceiling allows</p>
+          <h3>{t("Unit layout")}</h3>
+          <p>{t("The mix of unit sizes that earns the most from your floor, based on our rental data. A second level where the ceiling allows")}</p>
         </div>
         <div class="fc__img">
           <img src="/assets/study/layout.webp" width="960" height="717" alt="" loading="lazy" data-final />
@@ -91,7 +95,7 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
 
       <div class="fc" data-play data-card="budget">
         <div class="fc__t">
-          <h3>Equipment budget</h3><p>Every item your layout needs, with delivery and installation, in one total price</p>
+          <h3>{t("Equipment budget")}</h3><p>{t("Every item your layout needs, with delivery and installation, in one total price")}</p>
         </div>
         <div class="fc__img">
           <img src="/assets/study/budget.webp" width="960" height="717" alt="" loading="lazy" data-final />
@@ -101,32 +105,32 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
 
       <div class="fc fc--model" data-play data-card="model">
         <div class="fc__t">
-          <span class="fc__tag">The result of the study</span>
-          <h3>Financial model</h3>
-          <p>Occupancy, revenue, costs and your net income, month by month for 10 years, and what the property is worth. The calculator above, built for your address</p>
+          <span class="fc__tag">{t("The result of the study")}</span>
+          <h3>{t("Financial model")}</h3>
+          <p>{t("Occupancy, revenue, costs and your net income, month by month for 10 years, and what the property is worth. The calculator above, built for your address")}</p>
         </div>
         <svg class="fm" viewBox={`-2 -2 ${W + 4} ${H + 12}`} aria-hidden="true" style={`--hit:${HIT_MS}ms;--line:${LINE_MS}ms;--ld:${LINE_DELAY}ms;--lab:${LAB_MS}ms`}>
           {phases.map(([t, a, b], i) => (
             <g class="fm__ph" style={`--d:${i * 90}ms`}>
               <rect x={X(a)} y="0" width={X(b) - X(a) - (i < 2 ? 2 : 0)} height={H} rx="6" class={`fm__band fm__band--${i}`} />
-              <text x={X(a) + 8} y="17" class="fm__phl">{t}</text>
+              <text x={X(a) + 8} y="17" class="fm__phl">{tr_(t)}</text>
             </g>
           ))}
           <path d={gain} class="fm__gain" />
           <path d={`M0 ${RENT}H${W}`} class="fm__rent" />
-          <text x={W - 8} y={RENT - 8} class="fm__lab fm__lab--rent" text-anchor="end">Today's rent</text>
+          <text x={W - 8} y={RENT - 8} class="fm__lab fm__lab--rent" text-anchor="end">{t("Today's rent")}</text>
           <path d={d(pRev)} class="fm__line fm__line--rev" pathLength="1" />
           <path d={d(pInc)} class="fm__line" pathLength="1" />
-          <text x={W - 8} y={Y(1) - 8} class="fm__lab fm__lab--rev fm__in" text-anchor="end">Revenue</text>
-          <text x={W - 8} y={Y(0.8) - 9} class="fm__lab fm__in" text-anchor="end">Your income</text>
+          <text x={W - 8} y={Y(1) - 8} class="fm__lab fm__lab--rev fm__in" text-anchor="end">{t("Revenue")}</text>
+          <text x={W - 8} y={Y(0.8) - 9} class="fm__lab fm__in" text-anchor="end">{t("Your income")}</text>
           <g class="fm__hit">
             <circle cx={CX} cy={RENT} r="13" class="fm__pulse" /><circle cx={CX} cy={RENT} r="6.5" class="fm__dot" />
             <path d={`M${CX + 10} ${RENT + 9}L${CX + 22} ${RENT + 21}`} class="fm__lead" />
-            <text x={CX + 26} y={RENT + 30} class="fm__lab">You earn more than today's rent</text>
+            <text x={CX + 26} y={RENT + 30} class="fm__lab">{t("You earn more than today's rent")}</text>
           </g>
         </svg>
       </div>
-      <button type="button" class="btn btn--or fs__cta fs__cta--m" data-open-study data-ev="study_cta" data-loc="feasibility_bottom">Start with a free assessment</button>
+      <button type="button" class="btn btn--or fs__cta fs__cta--m" data-open-study data-ev="study_cta" data-loc="feasibility_bottom">{t("Start with a free assessment")}</button>
     </div>
   </div>
 </section>
@@ -134,9 +138,10 @@ const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5,
 <script>
   import { slowNet } from "../lib/net";
   import { openLead } from "../lib/leadModal";
+  import { ct } from "../i18n";
   const root = document.querySelector<HTMLElement>("#study")!;
   root.querySelectorAll("[data-open-study]").forEach((b) => b.addEventListener("click", () => openLead({
-    form: "feasibility", title: "Free assessment of your space", lead: "We get in touch within 1 working hour and tell you if the space fits. The study comes after, only if it does",
+    form: "feasibility", title: ct("Free assessment of your space"), lead: ct("We get in touch within 1 working hour and tell you if the space fits. The study comes after, only if it does"),
     text: (who) => `Franchise request: free assessment (feasibility block). ${who}`,
   })));
   // Анимация карточек (CMO 22.11.2026: была нестабильной). Запуск – по положению при каждой прокрутке, не по пересечению узкой

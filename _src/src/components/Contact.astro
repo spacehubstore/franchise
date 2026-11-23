@@ -1,39 +1,41 @@
 ---
 // Финальный блок заявки (Figma 1448:2383), переработан (CMO 23.11.2026): заголовок «Let’s discuss your project» (вернули), три шага «что дальше» убраны
-// (повторяли таймлайн и блок исследования), кнопка «Get in touch» (подходит и тем, у кого нет помещения). LINE – только для часового пояса Таиланда.
+// (повторяли таймлайн и блок исследования), кнопка «Get in touch» (подходит и тем, у кого нет помещения). Мессенджер – по языку страницы (тайская версия – LINE).
 // Телефон: заголовок → форма → Алексей и мессенджеры. Отправка – lib/lead.ts.
-import { CONTACTS } from "../data/site";
+import { langOf, useT, href, messenger, LANGS, LANG_LABEL } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
+const m = messenger(lang);
 ---
 <section class="ct wrap" id="contact">
   <div class="ct__box">
     <div class="ct__head">
-      <h2>Let’s discuss<br />your project</h2>
-      <p>We reply within 1 working hour</p>
+      <h2 set:html={t("Let’s discuss<br />your project")} />
+      <p>{t("We reply within 1 working hour")}</p>
     </div>
     <div class="who">
       <img src="/assets/alexey-round.webp" width="300" height="300" alt="Alexey Romanenkov" loading="lazy" />
       <div class="who__side">
-        <div class="who__txt"><b>Alexey Romanenkov</b><span>Head of partnerships</span></div>
+        <div class="who__txt"><b>Alexey Romanenkov</b><span>{t("Head of partnerships")}</span></div>
         <div class="who__msg">
-        <a href={CONTACTS.whatsapp.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="contact"><img src="/assets/figma/whatsapp-24.svg" width="20" height="20" alt="" />WhatsApp</a>
-        <a href={CONTACTS.line.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="line" data-loc="contact" data-line hidden><i class="line-ic">LINE</i>LINE</a>
+        <a href={m.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger={m.id} data-loc="contact"><img src={m.icon} width="20" height="20" alt="" />{m.name}</a>
         </div>
       </div>
     </div>
     <form class="cf" data-cf novalidate>
-      <label class="cf__f"><span>Name</span><input name="name" autocomplete="name" placeholder="Your name" /></label>
-      <label class="cf__f"><span>City</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
+      <label class="cf__f"><span>{t("Name")}</span><input name="name" autocomplete="name" placeholder={t("Your name")} /></label>
+      <label class="cf__f"><span>{t("City")}</span><input name="city" autocomplete="address-level2" placeholder={t("e.g. Bangkok")} /></label>
       <div class="cf__f cf__ph">
-        <span>Phone number</span>
-        <select name="code" aria-label="Country code"></select>
+        <span>{t("Phone number")}</span>
+        <select name="code" aria-label={t("Country code")}></select>
         <i></i>
         <input name="phone" type="tel" autocomplete="tel-national" placeholder="81 234 5678" />
       </div>
       <div class="cf__checks">
-        <label><input type="checkbox" name="agree" /> <span>I agree to the processing of my data under the <a href="/privacy" target="_blank">privacy policy</a></span></label>
+        <label><input type="checkbox" name="agree" /> <span>{t("I agree to the processing of my data under the")} <a href={href(lang, "/privacy")} target="_blank">{t("privacy policy")}</a></span></label>
       </div>
-      <button class="btn btn--or" type="submit">Get in touch</button>
-      <div class="cf__ok" hidden data-cf-ok><b>Thank you</b><span>Alexey will contact you within 1 working hour</span></div>
+      <button class="btn btn--or" type="submit">{t("Get in touch")}</button>
+      <div class="cf__ok" hidden data-cf-ok><b>{t("Thank you")}</b><span>{t("Alexey will contact you within 1 working hour")}</span></div>
     </form>
   </div>
 </section>
@@ -41,8 +43,6 @@ import { CONTACTS } from "../data/site";
 <script>
   import { sendLead } from "../lib/lead";
   import { prepare, ready } from "../lib/formsLazy";
-  // LINE – мессенджер Таиланда: показываем только при таиландском часовом поясе
-  try { if (Intl.DateTimeFormat().resolvedOptions().timeZone === "Asia/Bangkok") document.querySelector<HTMLElement>("#contact [data-line]")!.hidden = false; } catch { /* нет часового пояса */ }
   const form = document.querySelector<HTMLFormElement>("[data-cf]")!;
   prepare(form);
   form.addEventListener("submit", async (e) => {
