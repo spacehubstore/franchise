@@ -31,7 +31,6 @@ import { CONTACTS } from "../data/site";
       </div>
       <div class="cf__checks">
         <label><input type="checkbox" name="agree" /> <span>I agree to the processing of my data under the <a href="/privacy" target="_blank">privacy policy</a></span></label>
-        <label><input type="checkbox" name="ad_consent" /> <span>I agree that SpaceHub may share my phone number in encrypted (hashed) form with Google and Meta to measure advertising. Optional</span></label>
       </div>
       <button class="btn btn--or" type="submit">Get in touch</button>
       <div class="cf__ok" hidden data-cf-ok><b>Thank you</b><span>Alexey will contact you within 1 working hour</span></div>
@@ -51,7 +50,7 @@ import { CONTACTS } from "../data/site";
     const f = new FormData(form);
     const { ok, phone } = (await ready(form)).checkForm(form, "contact");
     if (!ok) return;
-    const how = await sendLead({ ad_consent: !!form.querySelector<HTMLInputElement>("[name=ad_consent]")?.checked, form: "contact", name: f.get("name"), city: f.get("city"), phone },
+    const how = await sendLead({ form: "contact", name: f.get("name"), city: f.get("city"), phone },
                                `Franchise request. ${f.get("name")}, ${phone}, ${f.get("city") || ""}`);
     (window as any).dataLayer?.push({ event: "callback_form_sent", form_location: "partner", lead_form: "contact", site_variant: location.pathname, delivery: how });
     form.querySelector<HTMLElement>("[data-cf-ok]")!.hidden = false;

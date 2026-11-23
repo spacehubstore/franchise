@@ -77,5 +77,3 @@ label.is-err { color: var(--brand); }
 
 /* шкала отступов секций (CMO 23.11.2026): обычные блоки 64 px сверху и снизу (телефон 48), блоки с цветным фоном – 96 (телефон 64) */
 
-/* галочка рекламного согласия (CMO 23.11.2026): необязательная, мельче основной */
-label:has(> input[name="ad_consent"]) { font-size: 13px !important; line-height: 18px !important; color: var(--gray-500) !important; }
