@@ -1,6 +1,8 @@
 """Шар из точек для блока «Think global, act local» (CMO 24.11.2026): суша Natural Earth 1:50m (world-atlas@2, land-50m.json),
 равномерные точки по сфере (спираль Фибоначчи), ортографическая проекция с горизонтом сверху.
-Выход: public/assets/net/globe.svg (суша) и src/data/globe.json (пины и дуги от Дубая в долях кадра).
+Выход: scripts/globe.svg (суша) и src/data/globe.json (пины и дуги от Дубая в долях кадра).
+На сайт идёт растр: globe.svg → public/assets/net/globe-1440.webp и globe-2880.webp (прозрачный фон, headless Chrome 1× и 2×).
+SVG из 9 тыс. точек браузер рисует в основном потоке – разовая задача 100–200 мс на телефоне; WebP декодируется в фоне (24.11.2026).
 
 Запуск: python3 scripts/gen_globe.py <land-50m.json> [lon0 lat0 R top roll]"""
 import json, math, sys, pathlib
@@ -71,7 +73,7 @@ for k in range(LEVELS):
     d = "".join(f"M{x:.0f} {y:.0f}h0" for x, y in grp)
     svg.append(f'<path d="{d}" stroke="#8a8a94" stroke-opacity="{.3 + .6 * c:.2f}" stroke-width="{2.2 + 2.6 * c:.1f}" stroke-linecap="round"/>')
 svg.append("</svg>")
-(HERE / "public/assets/net/globe.svg").write_text("".join(svg))
+(HERE / "scripts/globe.svg").write_text("".join(svg))
 
 CITIES = [("Tallinn", 24.75, 59.44), ("Ljubljana", 14.5, 46.05), ("Istanbul", 28.98, 41.0), ("Dubai", 55.27, 25.2), ("Bangkok", 100.5, 13.75)]
 def arc(a, b, n=48):

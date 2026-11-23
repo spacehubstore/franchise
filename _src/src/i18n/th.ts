@@ -275,5 +275,14 @@ const th: Record<string, string> = {
   "Check your space": "ตรวจสอบพื้นที่",
   "Questions": "คำถาม",
   "Timeline": "ระยะเวลา",
+  // блок сети (Network.astro, CMO 24.11.2026)
+  "Think global, act local": "คิดระดับโลก ลงมือในท้องถิ่น",
+  "SpaceHub in Europe, the Middle East and Asia": "SpaceHub ในยุโรป ตะวันออกกลาง และเอเชีย",
+  "soon": "เร็วๆ นี้",
+  "UAE": "ยูเออี",
+  "Thailand": "ไทย",
+  "Türkiye": "ตุรกี",
+  "Estonia": "เอสโตเนีย",
+  "Slovenia": "สโลวีเนีย",
 };
 export default th;

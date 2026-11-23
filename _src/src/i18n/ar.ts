@@ -275,5 +275,14 @@ const ar: Record<string, string> = {
   "Check your space": "قيّم مساحتك",
   "Questions": "الأسئلة",
   "Timeline": "الجدول الزمني",
+  // блок сети (Network.astro, CMO 24.11.2026)
+  "Think global, act local": "فكّر عالميًا، وتصرّف محليًا",
+  "SpaceHub in Europe, the Middle East and Asia": "SpaceHub في أوروبا والشرق الأوسط وآسيا",
+  "soon": "قريبًا",
+  "UAE": "الإمارات",
+  "Thailand": "تايلاند",
+  "Türkiye": "تركيا",
+  "Estonia": "إستونيا",
+  "Slovenia": "سلوفينيا",
 };
 export default ar;
