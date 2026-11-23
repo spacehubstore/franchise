@@ -1,0 +1,312 @@
+---
+// Блок «What the feasibility study includes» (Figma 1913:1363), переработан (CMO 22.11.2026):
+// слева два этапа – бесплатная оценка и платное исследование (цена – в FAQ), справа четыре документа исследования.
+// Иллюстрации – Nano Banana Pro в стиле One floor, по реальным фото оснащения (landing-icons/gen_study*.py: market-4, layout-8,
+// budget-1; layout-0 и budget-0 – первые кадры роликов «падения»). Надписи поверх – кодом, позиции в % от кадра 4:3. Планировка – размеры модели Шарджи (14.8 × 12.5 м = 185 м², F-1783), статично на чертеже.
+// Финмодель – схема без сумм: стройка, рост заполнения, выход на целевую загрузку, 4–5× к текущей аренде (как на первом экране).
+// Анимация – одна карточка за раз: играет, когда карточка доходит до середины экрана, и останавливается в конечном виде.
+const stages = [
+  { t: "Free assessment", w: "48 hours", d: "Send the address and a few photos. We tell you if the space fits" },
+  { t: "Feasibility study", w: "2 weeks", d: "If it fits, we prepare four documents for your address", note: "Paid step, only after the assessment" },
+];
+// пины: что анализ смотрит вокруг адреса – конкуренты и источники спроса (жильё, бизнес). Без цен: блок о составе исследования.
+// x, y – кончик пина в % кадра 4:3; порядок падения – ваш адрес, затем конкуренты, затем спрос
+const ICON: Record<string, string> = {
+  rival: "M3 10.5 12 4l9 6.5V20H3zM8 20v-6h8v6M8 17h8",
+  home: "M5 20V9l7-5 7 5v11zM9 12h2M13 12h2M9 16h2M13 16h2",
+  work: "M4 20V8h16v12zM9 8V5h6v3M4 13h16",
+};
+const pins: { x: number; y: number; t: string; i: string; c?: string }[] = [
+  { x: 14, y: 44, t: "Competitor", i: "rival", c: "dark" }, { x: 81, y: 42, t: "Competitor", i: "rival", c: "dark" },
+  { x: 30, y: 64, t: "Apartments", i: "home" }, { x: 66, y: 72, t: "Apartments", i: "home" }, { x: 69, y: 15, t: "Offices", i: "work" },
+];
+// Финмодель – схема без цифр (CMO 22.11.2026, вариант A): только линии с подписями прямо над ними, без легенды и столбцов.
+// Выручка объекта – тонкая линия, доход владельца – главная, сегодняшняя аренда – пунктир; фазы (отделка, заполнение,
+// полная загрузка) – фоном. Точка безубыточности – где доход владельца впервые выше аренды. Пропорции на глаз:
+// отделка (на схеме шире, чтобы читалась подпись), полная загрузка к ~22 мес, доход владельца 80 % выручки, аренда – нижняя четверть шкалы.
+const W = 520, H = 170, TOPY = 30, M = 36, X = (m: number) => +(m * (W / M)).toFixed(1), Y = (v: number) => +(H - v * (H - TOPY)).toFixed(1);
+const rev = (m: number) => (m < 5 ? 0 : 1 - (1 - Math.min(1, (m - 5) / 17)) ** 2);
+const inc = (m: number) => 0.8 * rev(m), RENT_V = 0.25, RENT = Y(RENT_V);
+const path = (f: (m: number) => number) => Array.from({ length: M * 4 + 1 }, (_, i) => [X(i / 4), Y(f(i / 4))] as [number, number]);
+const pRev = path(rev), pInc = path(inc);
+const d = (p: [number, number][]) => "M" + p.map((q) => q.join(",")).join("L");
+let mx = 5; while (inc(mx) < RENT_V) mx += 0.01;
+const CX = X(mx);
+const gain = "M" + pInc.filter(([x]) => x >= CX).map((q) => q.join(",")).join("L") + `L${W},${RENT}L${CX},${RENT}Z`;
+// когда линия доходит до точки x – доля длины пути; по ней появляются подписи и точка
+const at = (p: [number, number][], x: number) => {
+  let all = 0, to = 0;
+  for (let i = 1; i < p.length; i++) { const l = Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); all += l; if (p[i][0] <= x) to += l; }
+  return to / all;
+};
+const LINE_MS = 1200, LINE_DELAY = 350, T = (f: number) => Math.round(LINE_DELAY + LINE_MS * f);
+const HIT_MS = T(at(pInc, CX)), LAB_X = X(33), LAB_MS = T(at(pInc, LAB_X));
+const phases: [string, number, number][] = [["Fit-out", 0, 5], ["Filling up", 5, 22], ["Full", 22, 36]];
+---
+<section class="fs-wrap wrap" id="study">
+  <div class="fs">
+    <div class="fs__left">
+      <div class="fs__head">
+        <h2>Feasibility study</h2>
+        <p>Start with a free assessment. If your space fits, the study shows what to build, at what price and what it earns</p>
+      </div>
+      <ol class="fs__stages">
+        {stages.map((s, i) => (
+          <li class={i === 1 ? "on" : ""}>
+            <b><span>0{i + 1}.</span>{s.t}<em>{s.w}</em></b>
+            <p>{s.d}</p>
+            {s.note && <small>{s.note}</small>}
+          </li>
+        ))}
+      </ol>
+      <button type="button" class="btn btn--or fs__cta" data-open-study data-ev="study_cta" data-loc="feasibility">Start with a free assessment</button>
+    </div>
+
+    <div class="fs__cards">
+      <div class="fc" data-play data-card="market">
+        <div class="fc__t"><h3>Market and competitors</h3><p>Who stores nearby: homes and offices around the address. Competitors, their prices and the unit sizes the area is missing</p></div>
+        <div class="fc__img">
+          <img src="/assets/study/market.webp" width="960" height="717" alt="" loading="lazy" />
+          <span class="mk mk--me" style="left:51%;top:42.5%;--d:0ms">Your space</span>
+          {pins.map((p, i) => (
+            <span class={`mk ${p.c ? "mk--" + p.c : ""}`} style={`left:${p.x}%;top:${p.y}%;--d:${260 + i * 170}ms`}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={ICON[p.i]} /></svg>{p.t}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div class="fc" data-play data-card="layout">
+        <div class="fc__t">
+          <h3>Unit layout</h3>
+          <p>The mix of unit sizes that earns the most from your floor, based on our rental data. A second level where the ceiling allows</p>
+        </div>
+        <div class="fc__img">
+          <img src="/assets/study/layout.webp" width="960" height="717" alt="" loading="lazy" data-final />
+          <video class="fc__vid" muted playsinline preload="none" poster="/assets/study/layout-0.webp" data-drop data-src="/assets/study/layout.mp4" hidden></video>
+          <span class="dim" style="left:27%;top:79%;--r:34.7deg">14.8 m</span>
+          <span class="dim" style="left:73.5%;top:81%;--r:-33.6deg">12.5 m</span>
+        </div>
+      </div>
+
+      <div class="fc" data-play data-card="budget">
+        <div class="fc__t">
+          <h3>Equipment budget</h3><p>Every item your layout needs, with delivery and installation, in one total price</p>
+        </div>
+        <div class="fc__img">
+          <img src="/assets/study/budget.webp" width="960" height="717" alt="" loading="lazy" data-final />
+          <video class="fc__vid" muted playsinline preload="none" poster="/assets/study/budget-0.webp" data-drop data-src="/assets/study/budget.mp4" hidden></video>
+        </div>
+      </div>
+
+      <div class="fc fc--model" data-play data-card="model">
+        <div class="fc__t">
+          <span class="fc__tag">The result of the study</span>
+          <h3>Financial model</h3>
+          <p>Occupancy, revenue, costs and your net income, month by month for 10 years, and what the property is worth. The calculator above, built for your address</p>
+        </div>
+        <svg class="fm" viewBox={`-2 -2 ${W + 4} ${H + 12}`} aria-hidden="true" style={`--hit:${HIT_MS}ms;--line:${LINE_MS}ms;--ld:${LINE_DELAY}ms;--lab:${LAB_MS}ms`}>
+          {phases.map(([t, a, b], i) => (
+            <g class="fm__ph" style={`--d:${i * 90}ms`}>
+              <rect x={X(a)} y="0" width={X(b) - X(a) - (i < 2 ? 2 : 0)} height={H} rx="6" class={`fm__band fm__band--${i}`} />
+              <text x={X(a) + 8} y="17" class="fm__phl">{t}</text>
+            </g>
+          ))}
+          <path d={gain} class="fm__gain" />
+          <path d={`M0 ${RENT}H${W}`} class="fm__rent" />
+          <text x={W - 8} y={RENT - 8} class="fm__lab fm__lab--rent" text-anchor="end">Today's rent</text>
+          <path d={d(pRev)} class="fm__line fm__line--rev" pathLength="1" />
+          <path d={d(pInc)} class="fm__line" pathLength="1" />
+          <text x={W - 8} y={Y(1) - 8} class="fm__lab fm__lab--rev fm__in" text-anchor="end">Revenue</text>
+          <text x={W - 8} y={Y(0.8) - 9} class="fm__lab fm__in" text-anchor="end">Your income</text>
+          <g class="fm__hit">
+            <circle cx={CX} cy={RENT} r="13" class="fm__pulse" /><circle cx={CX} cy={RENT} r="6.5" class="fm__dot" />
+            <path d={`M${CX + 10} ${RENT + 9}L${CX + 22} ${RENT + 21}`} class="fm__lead" />
+            <text x={CX + 26} y={RENT + 30} class="fm__lab">You earn more than today's rent</text>
+          </g>
+        </svg>
+      </div>
+      <button type="button" class="btn btn--or fs__cta fs__cta--m" data-open-study data-ev="study_cta" data-loc="feasibility_bottom">Start with a free assessment</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { slowNet } from "../lib/net";
+  import { openLead } from "../lib/leadModal";
+  const root = document.querySelector<HTMLElement>("#study")!;
+  root.querySelectorAll("[data-open-study]").forEach((b) => b.addEventListener("click", () => openLead({
+    form: "feasibility", title: "Free assessment of your space", lead: "We get in touch within 1 working hour and tell you if the space fits. The study comes after, only if it does",
+    text: (who) => `Franchise request: free assessment (feasibility block). ${who}`,
+  })));
+  // Анимация карточек (CMO 22.11.2026: была нестабильной). Запуск – по положению при каждой прокрутке, не по пересечению узкой
+  // полосы: при быстрой прокрутке и переходе по якорю полоса проскакивалась, и карточка оставалась пустой. Ролики грузятся целиком
+  // (fetch → blob), без частичных запросов, на которых Safari подвисал. Любой сбой или задержка – сразу итоговая картинка.
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const noVideo = still || slowNet;   // слабое соединение: карточки сразу в итоговом виде, ролики не грузим
+  const cards = Array.from(root.querySelectorAll<HTMLElement>("[data-play]"));
+  const blobs = new Map<HTMLVideoElement, Promise<string>>();
+  const load = (v: HTMLVideoElement) => {
+    if (!blobs.has(v)) blobs.set(v, fetch(v.dataset.src!).then((r) => { if (!r.ok) throw 0; return r.blob(); }).then((b) => URL.createObjectURL(b)));
+    return blobs.get(v)!;
+  };
+  // итог: картинка с готовым состоянием поверх ролика
+  // итог проявляется поверх последнего кадра ролика, видео убирается только после – без пустого кадра между ними
+  const fin = (v: HTMLVideoElement) => { const img = v.parentElement!.querySelector<HTMLElement>("[data-final]")!; img.classList.remove("is-wait"); setTimeout(() => (v.hidden = true), 450); };
+  const drops = Array.from(root.querySelectorAll<HTMLVideoElement>("[data-drop]"));
+  if (!noVideo) drops.forEach((v) => { v.hidden = false; v.parentElement!.querySelector<HTMLElement>("[data-final]")!.classList.add("is-wait"); });
+  const drop = (v: HTMLVideoElement) => {
+    if (noVideo) return fin(v);
+    let done = false; const end = () => { if (!done) { done = true; fin(v); } };
+    const guard = setTimeout(end, 1800);   // ролик не начал играть за 1.8 с – показываем итог
+    load(v).then((url) => {
+      v.src = url; v.playbackRate = 1.6;
+      v.addEventListener("playing", () => { clearTimeout(guard); setTimeout(end, ((v.duration || 4) / 1.6) * 1000 + 1200); }, { once: true });
+      v.addEventListener("ended", end, { once: true }); v.addEventListener("error", end, { once: true });
+      v.play().catch(end);
+    }).catch(end);
+  };
+  const start = (c: HTMLElement, animate: boolean) => {
+    c.dataset.started = "1";
+    if (!animate) c.classList.add("instant");
+    c.classList.add("play");
+    const v = c.querySelector<HTMLVideoElement>("[data-drop]");
+    if (v) animate ? drop(v) : fin(v);
+    (window as any).dataLayer?.push({ event: "study_card_viewed", card: c.dataset.card });
+  };
+  if (still) cards.forEach((c) => start(c, false));
+  else {
+    let last = 0, raf = 0;
+    const check = () => {
+      raf = 0;
+      const h = innerHeight, now = performance.now();
+      for (const c of cards) {
+        if (c.dataset.started) continue;
+        const r = c.getBoundingClientRect();
+        if (r.bottom < 0) { start(c, false); continue; }            // уже проскочили – сразу итог, без анимации
+        const v = c.querySelector<HTMLVideoElement>("[data-drop]");
+        if (v && !noVideo && r.top < h * 2) load(v).catch(() => {});             // ролик – заранее, за два экрана
+        if (r.top < h * 0.62) {                                      // верх карточки прошёл 62 % экрана – играем, даже если она уже уходит вверх
+          if (now - last < 700) { setTimeout(() => { if (!raf) raf = requestAnimationFrame(check); }, 700 - (now - last)); break; }
+          last = now; start(c, true); setTimeout(kick, 720); break;   // по одной карточке за раз; следующую проверим сами, без новой прокрутки
+        }
+      }
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(check); };
+    addEventListener("scroll", kick, { passive: true }); addEventListener("resize", kick); kick();
+  }
+</script>
+
+<style>
+  .fs-wrap { padding-block: 64px; }
+  .fs { background: var(--gray-900); color: var(--white); border-radius: 32px; padding: 72px; display: flex; gap: 64px; max-width: 1296px; margin: 0 auto; }
+  .fs__left { flex: none; width: 420px; display: flex; flex-direction: column; gap: 36px; position: sticky; top: calc(var(--hdr-h) + 32px); align-self: flex-start; }
+  .fs__head { display: flex; flex-direction: column; gap: 20px; }
+  .fs__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
+  .fs__head p { font-weight: 500; font-size: 20px; line-height: 28px; color: var(--gray-300); }
+  .fs__stages { list-style: none; display: flex; flex-direction: column; gap: 24px; }
+  .fs__stages b { display: flex; align-items: baseline; gap: 16px; font-weight: 700; font-size: 26px; line-height: 30px; }
+  .fs__stages b span { width: 44px; flex: none; }
+  .fs__stages em { margin-left: auto; font-style: normal; font-weight: 600; font-size: 14px; line-height: 20px; padding: 4px 12px; border-radius: 99px; border: 1px solid var(--gray-600); color: var(--gray-300); white-space: nowrap; }
+  .fs__stages p { padding-left: 60px; margin-top: 10px; font-weight: 500; font-size: 18px; line-height: 26px; color: var(--gray-300); }
+  .fs__stages small { display: block; padding-left: 60px; margin-top: 6px; font-size: 14px; color: var(--gray-500); }
+  .fs__stages .on b { color: var(--brand); }
+  .fs__stages .on em { border-color: var(--brand); color: var(--brand); }
+  .fs__cta { align-self: flex-start; }
+  .fs__cta--m { display: none; }
+
+  .fs__cards { flex: 1; min-width: 0; display: grid; gap: 8px; }
+  .fc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 20px; align-items: center; border-radius: 24px; padding: 20px 20px 20px 28px; background: var(--white); color: var(--gray-900); }
+  .fc__t { display: flex; flex-direction: column; gap: 12px; }
+  .fc h3 { font-weight: 700; font-size: 24px; line-height: 28px; letter-spacing: -0.48px; }
+  .fc p { font-weight: 500; font-size: 15px; line-height: 22px; color: var(--gray-700); }
+  .fc__img { position: relative; aspect-ratio: 960 / 717; border-radius: 16px; overflow: hidden; background: var(--white); }
+  .fc__img img { width: 100%; height: 100%; display: block; }
+
+  /* надписи поверх иллюстраций */
+  .mk { position: absolute; white-space: nowrap; font-weight: 700; font-size: 12px; line-height: 16px; }
+  .mk { display: inline-flex; align-items: center; gap: 4px; transform: translate(-50%, calc(-100% - 6px)); padding: 4px 9px 4px 6px; border-radius: 99px; background: var(--white); color: var(--gray-900); box-shadow: 0 6px 14px rgba(0,0,0,.16); }
+  .mk::after { content: ""; position: absolute; left: 50%; top: 100%; margin-left: -5px; border: 5px solid transparent; border-top-color: var(--white); }
+  .mk svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; color: var(--brand); }
+  .mk--dark { background: var(--gray-900); color: var(--white); }
+  .mk--dark::after { border-top-color: var(--gray-900); }
+  .mk--dark svg { color: var(--white); }
+  .mk--me { background: var(--brand); color: var(--white); padding: 5px 12px; }
+  .mk--me::after { border-top-color: var(--brand); }
+  .dim { transform: translate(-50%, -50%) rotate(var(--r)); padding: 1px 6px; background: var(--white); color: var(--gray-700); font-weight: 700; font-size: 12px; }
+  .fc__img [data-final] { position: relative; z-index: 1; transition: opacity .35s; }
+  .fc__img [data-final].is-wait { opacity: 0; }
+  .fc.instant * { animation-duration: 0s !important; animation-delay: 0s !important; transition-duration: 0s !important; transition-delay: 0s !important; }
+  .fc__vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--white); }
+  .dim { position: absolute; transform: translate(-50%, -50%) rotate(var(--r)); padding: 0 5px; background: var(--white); white-space: nowrap; font: 700 11px/14px "Manrope", sans-serif; color: var(--gray-600); }
+
+  /* финансовая модель – итог, выделена */
+  .fc--model { grid-template-columns: 1fr; gap: 20px; padding: 32px 28px 26px; background: var(--brand); color: var(--white); box-shadow: 0 24px 60px rgba(255, 79, 0, .28); }
+  .fc--model .fc__t { max-width: 540px; }
+  .fc--model h3 { font-size: 30px; line-height: 34px; }
+  .fc--model p { font-size: 16px; line-height: 24px; color: rgba(255, 255, 255, .88); }
+  .fc__tag { align-self: flex-start; padding: 4px 12px; border-radius: 99px; background: rgba(255, 255, 255, .18); font-weight: 700; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+  .fm { width: 100%; height: auto; overflow: visible; }
+  .fm text { font-family: "Manrope", sans-serif; }
+  .fm__band { fill: rgba(255, 255, 255, .06); }
+  .fm__band--2 { fill: rgba(255, 255, 255, .1); }
+  .fm__phl { fill: rgba(255, 255, 255, .75); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .fm__gain { fill: rgba(255, 255, 255, .2); }
+  .fm__rent { stroke: rgba(255, 255, 255, .85); stroke-width: 2; stroke-dasharray: 6 5; }
+  .fm__line { fill: none; stroke: var(--white); stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+  .fm__line--rev { stroke: rgba(255, 255, 255, .55); stroke-width: 2; }
+  .fm__dot { fill: var(--white); stroke: var(--brand); stroke-width: 3; }
+  .fm__pulse { fill: rgba(255, 255, 255, .3); transform-box: fill-box; transform-origin: center; }
+  .fm__lead { stroke: var(--white); stroke-width: 1.5; }
+  .fm__lab { fill: var(--white); font-size: 13px; font-weight: 800; }
+  .fm__lab--rev { fill: rgba(255, 255, 255, .8); font-weight: 700; }
+  .fm__lab--rent { fill: rgba(255, 255, 255, .9); font-weight: 700; }
+
+  /* анимация: начальное состояние только до .play; без JS всё видно */
+  .fc[data-play]:not(.play) .mk { opacity: 0; }
+  .fc.play .mk { animation: pinDrop .7s var(--d) both; }
+  @keyframes pinDrop {
+    0% { opacity: 0; transform: translate(-50%, calc(-100% - 90px)); animation-timing-function: cubic-bezier(.5, 0, 1, .6); }
+    55% { opacity: 1; transform: translate(-50%, calc(-100% - 6px)); animation-timing-function: cubic-bezier(0, .4, .5, 1); }
+    72% { transform: translate(-50%, calc(-100% - 16px)); animation-timing-function: cubic-bezier(.5, 0, 1, .6); }
+    86% { transform: translate(-50%, calc(-100% - 6px)); }
+    93% { transform: translate(-50%, calc(-100% - 9px)); }
+    100% { opacity: 1; transform: translate(-50%, calc(-100% - 6px)); }
+  }
+  /* финмодель: фазы проявляются, линии прорисовываются, подписи – когда линия до них дошла, на пересечении с арендой точка и зона */
+  .fc[data-play]:not(.play) .fm__ph, .fc[data-play]:not(.play) .fm__lab--rent { opacity: 0; }
+  .fm__ph, .fm__lab--rent { transition: opacity .4s var(--d, 0ms); }
+  .fc[data-play]:not(.play) .fm__line { stroke-dashoffset: 1; }
+  .fm__line { stroke-dasharray: 1; stroke-dashoffset: 0; transition: stroke-dashoffset var(--line) cubic-bezier(.45, 0, .55, 1) var(--ld); }
+  .fc[data-play]:not(.play) .fm__in, .fc[data-play]:not(.play) .fm__hit { opacity: 0; }
+  .fm__in { transition: opacity .3s var(--lab); }
+  .fm__hit { transition: opacity .25s var(--hit); }
+  .fc.play .fm__pulse { animation: fmPulse 1s ease-out var(--hit) 2 both; }
+  @keyframes fmPulse { from { transform: scale(.4); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+  .fc[data-play]:not(.play) .fm__gain { clip-path: inset(0 100% 0 0); }
+  .fm__gain { clip-path: inset(0 0 0 0); transition: clip-path .9s cubic-bezier(.4, 0, .2, 1) var(--hit); }
+  @media (prefers-reduced-motion: reduce) { .fc.play .mk { animation: none; opacity: 1; } .fm__ph, .fm__lab--rent, .fm__line, .fm__in, .fm__hit, .fm__gain { transition: none; } .fc.play .fm__pulse { animation: none; opacity: 0; } }
+
+  @media (max-width: 1100px) {
+    .fs { flex-direction: column; padding: 40px 20px; gap: 32px; border-radius: 24px; }
+    .fs__left { width: 100%; position: static; }
+  }
+  @media (max-width: 900px) {
+    .fs-wrap { padding-block: 48px; }
+    .fs__head h2 { font-size: 32px; line-height: 38px; }
+    .fs__head p, .fs__stages p { font-size: 17px; line-height: 24px; }
+    .fs__stages b { font-size: 22px; gap: 10px; flex-wrap: wrap; }
+    .fs__stages b span { width: 36px; }
+    .fs__stages em { margin-left: 0; }
+    .fs__stages p, .fs__stages small { padding-left: 46px; }
+    .fs__cta { align-self: stretch; }
+    /* мобилка (CMO 23.11.2026): кнопка после финмодели, а не под этапами */
+    .fs__left .fs__cta { display: none; }
+    .fs__cta--m { display: flex; justify-content: center; margin-top: 8px; }
+    .fc { grid-template-columns: 1fr; gap: 14px; padding: 20px 14px 14px; }
+    .fc__t { padding-inline: 6px; }
+    .fc--model { padding: 24px 18px 20px; }
+    .fc--model h3 { font-size: 26px; line-height: 30px; }
+    .fm__lab { font-size: 19px; } .fm__phl { font-size: 15px; }
+  }
+</style>

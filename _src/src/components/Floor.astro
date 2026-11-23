@@ -1,0 +1,394 @@
+---
+// «One floor, dozens of tenants» (Figma 1819:1403). Автопоказ (CMO 22.11.2026): пункты сменяются сами, когда блок виден;
+// полоска прогресса под активным пунктом, клик переключает, наведение – пауза. Заголовок в левой колонке, высота сцены – от окна.
+// Ролики 4 с в стиле 3D-иллюстраций квиза (кадры Nano Banana Pro, движение Gemini Omni Flash, `hub/06-directions/franchise/
+// landing-icons/gen_floor_google.py`, `gen_floor_v2.py`) идут ×1,6: пункт ~4 с – столько держится внимание на строке и картинке.
+// Подписи – одна плашка на сцену в одном месте: «до» на старте, «после» в момент окончания ролика (CMO 22.11.2026:
+// подписи должны читаться вместе с анимацией). Смена пункта – по факту окончания ролика, не по таймеру.
+// Тексты пунктов – макет v7 и решения CMO (второй уровень «до 80 %», 20.10.2026); 2,5–3× – макет v7; 25 и 96 % – по планировке сцены.
+const items = [
+  // заголовки – CMO 22.11.2026; «up to 4–5×» (заголовок и плашка сцены 1) – кейсы лендинга: Шарджа 4,8× (ставки модели Романенкова 24.09), Бангкок ~4,6× (F-1783)
+  { t: "Same space, up to 4–5× the income", d: "Small units rent for more per m² than one tenant leasing the whole floor" },
+  { t: "Up to 80% more space to rent", d: "Where the ceiling allows, a loft tier of smaller units goes above the main ones" },
+  { t: "No staff on site", d: "Customers book, pay and open their unit in the app 24/7. Our dispatch centre watches every facility on CCTV" },
+  { t: "Steady cash flow every month", d: "Dozens of tenants pay monthly. If one leaves, income dips by a few percent" },
+];
+const F = (s: string) => ({ a: `/assets/floor/${s}-a.webp`, b: `/assets/floor/${s}-b.webp` });
+const V = (s: string) => `/assets/floor/${s}.mp4`;
+---
+<section class="fl wrap" data-floor>
+  <div class="fl__grid">
+    <div class="fl__left">
+      <div class="fl__head">
+        <h2>One floor, dozens of tenants</h2>
+        <p>Self-storage splits a space into lockable units that people and small businesses rent by the month</p>
+      </div>
+      <ol class="acc">
+        {items.map((it, i) => (
+          <li class={`acc__it ${i === 0 ? "is-on" : ""}`} data-i={i}>
+            <button type="button" class="acc__t"><span class="acc__n">0{i + 1}</span>{it.t}</button>
+            <p class="acc__d">{it.d}</p>
+            <i class="acc__bar"><b></b></i>
+            <div class="vis vis--inline" data-vis={i}></div>
+          </li>
+        ))}
+      </ol>
+      <div class="stat">
+        <img class="stat__glow" src="/assets/figma/glow-49.svg" alt="" aria-hidden="true" />
+        <b>$62B</b>
+        <!-- Grand View Research: мировой рынок self-storage $61,7 млрд (2025) → $104,8 млрд (2033), CAGR 7,1 % (2026–2033); проверено 22.11.2026 -->
+        <span>global self-storage market, growing 7% a year<small>Source: <a href="https://www.grandviewresearch.com/industry-analysis/self-storage-market-report" target="_blank" rel="noopener nofollow">Grand View Research</a>, 2025 size, 2026–2033 forecast</small></span>
+      </div>
+    </div>
+
+    <div class="stage" aria-hidden="true">
+      <div class="vis sc s1 is-on" data-vis="0">
+        <div class="fr"><video src={V("s1")} poster={F("s1").a} muted playsinline preload="metadata"></video></div>
+        <div class="cap cap--static">
+          <div class="cap__a"><small>Small units</small><b>4–5× the income</b><span>small units rent for more per m² than one big lease</span></div>
+        </div>
+      </div>
+
+      <div class="vis sc s2" data-vis="1">
+        <div class="fr"><video src={V("s2")} poster={F("s2").a} muted playsinline preload="metadata"></video></div>
+        <div class="cap cap--static">
+          <div class="cap__a"><small>Loft tier</small><b>+80% area</b><span>from the same space, above the units</span></div>
+        </div>
+      </div>
+
+      <div class="vis sc s3" data-vis="2">
+        <div class="fr fr--s3"><video src={V("s3")} poster={F("s3").a} muted playsinline preload="metadata" data-pre="900"></video></div>
+        <div class="phone"><img src="/assets/figma/inc-phone.webp" alt="" loading="lazy" /><div class="slide"><span class="slide__t slide__t--a">Open</span><span class="slide__t slide__t--b">Unlocked</span><i class="knob"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i></div></div>
+        <svg class="sig" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M2 30 C 30 2, 70 2, 98 24" /></svg>
+        <div class="cap cap--static">
+          <div class="cap__a"><small>Self-service, 24/7</small><b>Nobody to hire</b><span>customers book, pay and open units themselves</span></div>
+        </div>
+      </div>
+
+      <div class="vis sc s4" data-vis="3" data-ms="3000" data-chart>
+        <div class="cap cap--static">
+          <div class="cap__a"><small>Monthly income, 12 months</small><b>No month at zero</b><span>one tenant leaving can't stop your income</span></div>
+        </div>
+        <div class="ln">
+          <svg viewBox="0 0 560 230" aria-hidden="true">
+            <line class="ln__g" x1="40" y1="200" x2="460" y2="200" /><line class="ln__g" x1="40" y1="115" x2="460" y2="115" /><line class="ln__g" x1="40" y1="30" x2="460" y2="30" />
+            <text class="ln__ax" x="34" y="204">$0</text><text class="ln__ax" x="34" y="119">$6k</text><text class="ln__ax" x="34" y="34">$12k</text>
+            <defs><clipPath id="ln-clip"><rect class="ln__clip" x="0" y="0" width="0" height="230" /></clipPath></defs>
+            <g clip-path="url(#ln-clip)"><path class="ln__one" d="" /><path class="ln__many" d="" /></g>
+            <text class="ln__ax ln__m" x="40" y="222">Month 1</text><text class="ln__ax ln__m ln__end" x="460" y="222">12</text>
+          </svg>
+          <div class="ln__lab ln__lab--many" data-l="many"><b>25 tenants</b><span>$9,700</span></div>
+          <div class="ln__lab ln__lab--one" data-l="one"><b>1 tenant</b><span>$2,220</span></div>
+          <i class="ln__dot ln__dot--many" data-h="many"></i><i class="ln__dot ln__dot--one" data-h="one"></i>
+        </div>
+        <p class="foot">Sharjah, 185 m², SpaceHub model, after management commission. Tenant changes illustrative</p>
+      </div>
+      <span class="stage__n" data-count>1 / {items.length}</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { slowNet } from "../lib/net";
+  // холодный трафик (CMO 22.11.2026): пункт ~2,5–3 с, круг ~11 с; плашка «После» – на 2/3 ролика, пока картинка ещё движется
+  const RATE = 2.2, HOLD = 800, CAP_AT = .66;
+  const sec = document.querySelector<HTMLElement>("[data-floor]")!;
+  const items = Array.from(sec.querySelectorAll<HTMLElement>(".acc__it"));
+  const vis = Array.from(sec.querySelectorAll<HTMLElement>(".stage .vis"));
+  const count = sec.querySelector<HTMLElement>("[data-count]")!;
+  const n = items.length;
+  const desk = matchMedia("(min-width: 1101px)");
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches || slowNet;
+  if (slowNet) sec.querySelectorAll<HTMLVideoElement>("video").forEach((v) => { v.preload = "none"; v.removeAttribute("src"); v.load(); });
+  items.forEach((it, i) => { const c = vis[i].cloneNode(true) as HTMLElement; c.classList.remove("is-on"); it.querySelector(".vis--inline")!.replaceWith(c); });
+
+  // сцена: «до» → свайп (сцена 3) → ролик ×2,2 → на 2/3 ролика плашка «после» (.is-cap) → конец ролика (.is-done)
+  type S = HTMLElement & { _t?: number; _end?: number; _start?: number };
+  function start(sc: S) {
+    sc.classList.remove("is-on", "is-done", "is-cap"); void sc.offsetWidth; sc.classList.add("is-on");
+    sc._end = 0; sc._start = performance.now();
+    const v = sc.querySelector("video");
+    if (!v) { clearTimeout(sc._t); if (sc.dataset.chart !== undefined) runChart(sc, still);
+              if (still) { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); return; }
+              sc._t = window.setTimeout(() => sc.classList.add("is-cap"), +(sc.dataset.ms || 1200) * .66);
+              window.setTimeout(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); }, +(sc.dataset.ms || 1200)); return; }
+    clearTimeout(sc._t); v.pause();
+    if (still) { v.poster = v.poster.replace("-a.webp", "-b.webp"); sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); return; }
+    v.currentTime = 0;
+    v.onended = () => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); };
+    sc._t = window.setTimeout(() => { v.playbackRate = RATE; v.play().catch(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); }); }, +(v.dataset.pre || 0));
+  }
+
+  // график сцены 4 (CMO 22.11.2026): доход в $ за 12 месяцев. 25 арендаторов × $388 = $9,700 и 1 арендатор $2,220 (Шарджа, модель Романенкова 24.09),
+  // 1 арендатор $3,000; арендаторы уходят и приходят (иллюстрация). Линии и подписи на их концах бегут слева направо, события ±N всплывают
+  const MANY = [25, 25, 24, 24, 25, 26, 25, 23, 24, 25, 26, 25], ONE = [1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1];
+  const X = (m: number) => 40 + m * (420 / 11), Y = (usd: number) => 200 - usd * 170 / 12000;
+  const usd = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
+  const pts = (arr: number[], per: number) => arr.map((n, m) => [X(m), Y(n * per)] as [number, number]);
+  const smooth = (p: [number, number][]) => p.reduce((d, [x, y], i) => {
+    if (!i) return `M${x} ${y}`;
+    const [x0, y0] = p[i - 1], cx = (x - x0) / 2;
+    return d + ` C${x0 + cx} ${y0} ${x - cx} ${y} ${x} ${y}`;
+  }, "");
+  function runChart(sc: HTMLElement, instant: boolean) {
+    const svg = sc.querySelector("svg")!, box = sc.querySelector<HTMLElement>(".ln")!;
+    const P = { many: pts(MANY, 388), one: pts(ONE, 2220) };
+    svg.querySelector(".ln__many")!.setAttribute("d", smooth(P.many));
+    svg.querySelector(".ln__one")!.setAttribute("d", smooth(P.one));
+    // у копии сцены в мобильном списке тот же id – делаем свой, иначе линии режет чужой clipPath
+    const cp = svg.querySelector("clipPath")!, id = "ln-" + Math.random().toString(36).slice(2, 8);
+    cp.id = id; svg.querySelector("g[clip-path]")!.setAttribute("clip-path", `url(#${id})`);
+    const clip = svg.querySelector<SVGRectElement>(".ln__clip")!;
+    const heads = { many: box.querySelector<HTMLElement>('[data-h="many"]')!, one: box.querySelector<HTMLElement>('[data-h="one"]')! };
+    const labs = { many: box.querySelector<HTMLElement>('[data-l="many"]')!, one: box.querySelector<HTMLElement>('[data-l="one"]')! };
+    box.querySelectorAll(".ln__ev").forEach((e) => e.remove());
+    const D = instant ? 0 : 2400, t0 = performance.now(); let lastM = 0;
+    const place = (el: HTMLElement, x: number, y: number) => {
+      const r = svg.getBoundingClientRect(), k = r.width / 560;
+      el.style.left = `${x * k}px`; el.style.top = `${y * k}px`;
+    };
+    const ev = (x: number, y: number, txt: string, up: boolean) => {
+      const e = document.createElement("i"); e.className = "ln__ev" + (up ? " ln__ev--up" : ""); e.textContent = txt;
+      box.appendChild(e); place(e, x, y); e.addEventListener("animationend", () => e.remove());
+    };
+    const frame = (now: number) => { try {
+      const p = D ? Math.min(1, Math.max(0, (now - t0) / D)) : 1, xm = 40 + 420 * p, m = Math.min(11, Math.floor(p * 11 + 1e-6));
+      clip.setAttribute("width", String(xm));
+      for (const k of ["many", "one"] as const) {
+        const arr = k === "many" ? MANY : ONE, per = k === "many" ? 388 : 2220, pp = P[k];
+        const f = Math.min(1, p * 11 - m), y = m < 11 ? pp[m][1] + (pp[m + 1][1] - pp[m][1]) * (3 * f * f - 2 * f * f * f) : pp[11][1];
+        place(heads[k], xm, y);
+        place(labs[k], 40, pp[0][1]);
+        const lb = labs[k].querySelector("b")!, lv = labs[k].querySelector("span")!, nt = `${arr[m]} tenant${arr[m] === 1 ? "" : "s"}`;
+        if (lb.textContent !== nt) { lb.textContent = nt; lv.textContent = usd(arr[m] * per); labs[k].classList.remove("blip"); void labs[k].offsetWidth; labs[k].classList.add("blip"); }
+        if (D && m > lastM) for (let j = lastM + 1; j <= m; j++) {
+          const dn = arr[j] - arr[j - 1];
+          if (dn) ev(X(j), pp[j][1], (dn > 0 ? "+" : "−") + Math.abs(dn), dn > 0);
+        }
+      }
+      lastM = m;
+      if (p < 1 && sc.classList.contains("is-on")) requestAnimationFrame(frame);
+    } catch (e) { console.error("chart", e); } };
+    requestAnimationFrame(frame);
+  }
+  const expected = (sc: S) => { const v = sc.querySelector("video"); if (!v) return +(sc.dataset.ms || 1200); return +(v.dataset.pre || 0) + 1000 * (v.duration || 4) / RATE; };
+
+  // автопоказ: следующий пункт – через HOLD после окончания ролика; полоска – доля ожидаемого времени
+  let active = 0, inView = false, hover = false, pausedAt = 0;
+  const running = () => desk.matches && inView && !hover && !document.hidden && !still;
+  function go(i: number) {
+    active = (i + n) % n;
+    items.forEach((it, k) => { it.classList.toggle("is-on", k === active); it.style.setProperty("--p", "0"); });
+    vis.forEach((v, k) => { if (k !== active) { v.classList.remove("is-on", "is-done", "is-cap"); v.querySelector("video")?.pause(); } });
+    count.textContent = `${active + 1} / ${n}`;
+    start(vis[active] as S);
+  }
+  function tick(now: number) {
+    const sc = vis[active] as S;
+    if (running() && sc._start) {
+      const total = expected(sc) + HOLD;
+      const p = sc._end ? Math.min(1, (expected(sc) + (now - sc._end)) / total) : Math.min(.95 * expected(sc) / total, (now - sc._start) / total);
+      items[active].style.setProperty("--p", String(p));
+      if (sc._end && now - sc._end >= HOLD) go(active + 1);
+      // ролик не дошёл до конца за ожидаемое время + 4 с (сеть) – показываем «после» и идём дальше
+      else if (!sc._end && now - sc._start > expected(sc) + 4000) { sc.classList.add("is-done", "is-cap"); sc._end = now; }
+    }
+    requestAnimationFrame(tick);
+  sec.querySelectorAll<HTMLVideoElement>("video").forEach((v) => v.addEventListener("timeupdate", () => {
+    if (v.duration && v.currentTime / v.duration >= CAP_AT) v.closest(".vis")!.classList.add("is-cap");
+  }));
+
+  // замер для подстройки скорости (CMO 22.11.2026): какой пункт досмотрен (ролик доиграл) и сколько секунд блок был в экране
+  const done = new Set<number>(); let shownAt = 0, shownMs = 0;
+  function seen(sc: HTMLElement) {
+    const i = +(sc.dataset.vis || 0) + 1;
+    if (done.has(i)) return; done.add(i);
+    (window as any).dataLayer?.push({ event: "floor_item_viewed", item: i, site_variant: location.pathname });
+  }
+  new IntersectionObserver((es) => {
+    const on = es[0].isIntersecting;
+    if (on) shownAt = performance.now();
+    else if (shownAt) {
+      shownMs += performance.now() - shownAt; shownAt = 0;
+      (window as any).dataLayer?.push({ event: "floor_block_left", max_item: done.size ? Math.max(...done) : 0,
+        seconds_visible: Math.round(shownMs / 1000), site_variant: location.pathname });
+    }
+  }, { threshold: .3 }).observe(sec);
+  }
+  const pause = (on: boolean) => {
+    const sc = vis[active] as S, v = sc.querySelector("video"); if (!v) return;
+    if (on) { pausedAt = performance.now(); v.pause(); }
+    else if (pausedAt) { const d = performance.now() - pausedAt; sc._start! += d; if (sc._end) sc._end += d; else v.play().catch(() => {}); pausedAt = 0; }
+  };
+  new IntersectionObserver((es) => {
+    const was = inView; inView = es[0].intersectionRatio >= .3;
+    if (inView && !was && desk.matches) {
+      sec.querySelectorAll<HTMLVideoElement>(".stage video").forEach((v) => (v.preload = "auto"));   // все ролики – заранее
+      go(active);
+    }
+  }, { threshold: [0, .3] }).observe(sec.querySelector(".stage")!);
+  sec.addEventListener("mouseenter", () => { hover = true; pause(true); });
+  sec.addEventListener("mouseleave", () => { hover = false; pause(false); });
+  items.forEach((it, i) => it.querySelector("button")!.addEventListener("click", () => {
+    if (desk.matches) { go(i); (window as any).dataLayer?.push({ event: "floor_item_clicked", item: i + 1 }); }
+  }));
+  requestAnimationFrame(tick);
+  sec.querySelectorAll<HTMLVideoElement>("video").forEach((v) => v.addEventListener("timeupdate", () => {
+    if (v.duration && v.currentTime / v.duration >= CAP_AT) v.closest(".vis")!.classList.add("is-cap");
+  }));
+
+  // замер для подстройки скорости (CMO 22.11.2026): какой пункт досмотрен (ролик доиграл) и сколько секунд блок был в экране
+  const done = new Set<number>(); let shownAt = 0, shownMs = 0;
+  function seen(sc: HTMLElement) {
+    const i = +(sc.dataset.vis || 0) + 1;
+    if (done.has(i)) return; done.add(i);
+    (window as any).dataLayer?.push({ event: "floor_item_viewed", item: i, site_variant: location.pathname });
+  }
+  new IntersectionObserver((es) => {
+    const on = es[0].isIntersecting;
+    if (on) shownAt = performance.now();
+    else if (shownAt) {
+      shownMs += performance.now() - shownAt; shownAt = 0;
+      (window as any).dataLayer?.push({ event: "floor_block_left", max_item: done.size ? Math.max(...done) : 0,
+        seconds_visible: Math.round(shownMs / 1000), site_variant: location.pathname });
+    }
+  }, { threshold: .3 }).observe(sec);
+
+  // мобильный: каждая сцена проигрывается, когда попадает в экран
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting && !e.target.classList.contains("is-on")) start(e.target as S); }), { threshold: .45 });
+  items.forEach((it) => io.observe(it.querySelector(".vis")!));
+</script>
+
+<style>
+  .fl { padding-block: 64px; }
+  .fl__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: start; max-width: 1296px; margin: 0 auto; }
+  .fl__left { display: flex; flex-direction: column; gap: 24px; }
+  .fl__head { display: flex; flex-direction: column; gap: 12px; }
+  .fl__head h2 { font-weight: 700; font-size: clamp(34px, 3.2vw, 44px); line-height: 1.12; letter-spacing: -1px; text-wrap: balance; }
+  .fl__head p { font-weight: 500; font-size: 17px; line-height: 25px; color: var(--gray-600); }
+  .acc { list-style: none; }
+  .acc__it { padding: 14px 0; border-bottom: 1px solid var(--gray-200); }
+  .acc__t { display: flex; gap: 12px; align-items: baseline; font-weight: 700; font-size: 20px; line-height: 26px; letter-spacing: -0.3px; color: var(--gray-400); text-align: left; transition: color .3s; }
+  .acc__n { font-size: 13px; font-weight: 600; color: var(--gray-300); font-variant-numeric: tabular-nums; transition: color .3s; }
+  .acc__d { height: 0; overflow: hidden; opacity: 0; padding-left: 31px; font-weight: 500; font-size: 15px; line-height: 22px;
+            transition: height .4s cubic-bezier(.4,0,.2,1), opacity .3s, margin-top .4s cubic-bezier(.4,0,.2,1); }
+  .acc__bar { display: block; height: 2px; margin: 12px 0 0 31px; background: var(--gray-100); border-radius: 2px; overflow: hidden; opacity: 0; transition: opacity .3s; }
+  .acc__bar b { display: block; height: 100%; width: calc(var(--p, 0) * 100%); background: var(--brand); }
+  .acc__it.is-on .acc__t { color: var(--gray-900); }
+  .acc__it.is-on .acc__n { color: var(--brand); }
+  .acc__it.is-on .acc__d { height: 66px; opacity: 1; margin-top: 6px; }
+  .acc__it.is-on .acc__bar { opacity: 1; }
+  .acc__it > .vis { display: none; }
+  /* карточка роста рынка (Figma 1819:1403): серый фон, оранжевое свечение, крупная цифра; цифра и текст в строку – экономит высоту */
+  .stat { position: relative; overflow: hidden; background: var(--gray-100); border-radius: var(--radius-l); padding: 20px 24px; display: flex; align-items: center; gap: 18px; }
+  .stat__glow { position: absolute; right: -100px; top: -63px; width: 418px; max-width: none; pointer-events: none; }
+  .stat b { position: relative; flex: none; font-weight: 700; font-size: 44px; line-height: 1; letter-spacing: -1px; color: var(--brand); }
+  .stat span { position: relative; font-weight: 500; font-size: 15px; line-height: 21px; }
+  .stat small a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  .stat small a:hover { color: var(--brand); }
+  .stat small { display: block; margin-top: 4px; font-size: 11px; line-height: 14px; color: var(--gray-500); }
+
+  .stage { position: relative; height: clamp(400px, calc(100svh - var(--hdr-h) - 140px), 600px); border-radius: var(--radius-l); background: #fff; border: 1px solid var(--gray-200); overflow: hidden; }
+  .stage__n { position: absolute; right: 16px; bottom: 12px; font-size: 12px; font-weight: 600; color: var(--gray-400); font-variant-numeric: tabular-nums; }
+  .vis { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(.985);
+         transition: opacity .45s ease, transform .6s cubic-bezier(.2,.7,.2,1); pointer-events: none; }
+  .vis.is-on { opacity: 1; transform: none; }
+
+  /* ролик сцены: белый фон кадра сливается с фоном сцены */
+  .fr { position: relative; width: 100%; }
+  .fr video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; mix-blend-mode: multiply; }
+
+  /* плашка сцены: «до» → «после» в одном месте, смена – по окончании ролика */
+  .cap { position: absolute; left: 5%; top: 6%; display: grid; min-width: 230px; max-width: 46%; }
+  .cap > div { grid-area: 1 / 1; display: flex; flex-direction: column; gap: 2px; border-radius: 16px; padding: 12px 16px; box-shadow: 0 12px 30px rgba(0,0,0,.08); transition: opacity .35s, transform .45s cubic-bezier(.2,1.3,.4,1); }
+  .cap small { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .cap b { font-weight: 700; font-size: 24px; line-height: 28px; letter-spacing: -0.4px; }
+  .cap span { font-size: 13px; line-height: 18px; }
+  .cap__a { background: var(--white); color: var(--gray-900); }
+  .cap__a small, .cap__a span { color: var(--gray-500); }
+  .cap__b { background: var(--brand); color: var(--white); opacity: 0; transform: translateY(8px) scale(.96); }
+  .cap__b small, .cap__b span { color: rgba(255,255,255,.88); }
+  .is-cap .cap__a { opacity: 0; transform: translateY(-6px); }
+  .is-cap .cap__b { opacity: 1; transform: none; }
+  .meter { display: block; height: 8px; margin: 6px 0 4px; border-radius: 4px; background: rgba(0,0,0,.08); overflow: hidden; }
+  .cap__b .meter { background: rgba(255,255,255,.3); }
+  .meter u { display: block; height: 100%; width: calc(var(--w) * 100%); background: var(--brand); border-radius: 4px; }
+  .cap__b .meter u { background: var(--white); width: 100%; transition: width .6s .15s; }
+  .is-cap .cap__b .meter u { width: calc(var(--w) * 100%); }
+
+  /* 3: приложение открывает бокс */
+  .fr--s3 { width: 74%; margin-left: 30%; margin-top: 8%; }
+  .phone { position: absolute; left: 3%; bottom: 5%; width: 25%; }
+  .phone img { width: 100%; filter: drop-shadow(0 20px 30px rgba(0,0,0,.12)); }
+  /* ползунок «Open» поверх нарисованного в телефоне (Figma inc-phone: дорожка x 52–549, y 977–1088 из 600×1225) */
+  .slide { position: absolute; left: 8.67%; top: 79.76%; width: 82.8%; height: 9.06%; border-radius: 999px; background: #f5f5f5; container-type: inline-size; overflow: hidden; }
+  .slide__t { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 500; font-size: 7.4cqw; color: #18181b; transition: opacity .3s; }
+  .slide__t--b { opacity: 0; color: var(--brand); font-weight: 700; }
+  .knob { position: absolute; left: 2%; top: 9%; height: 82%; aspect-ratio: 1; border-radius: 50%; background: var(--brand); display: grid; place-items: center; box-shadow: 0 4px 10px rgba(255,79,0,.35); }
+  .knob svg { width: 42%; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; }
+  .knob .shackle { transform-origin: 16px 11px; }
+  .is-on .knob { animation: swipe .55s cubic-bezier(.5,0,.3,1) .3s forwards; }
+  .is-on .knob .shackle { animation: unlock .2s .85s forwards; }
+  .is-on .slide__t--a { animation: out .2s .35s forwards; }
+  .is-on .slide__t--b { animation: in .25s .8s forwards; }
+  @keyframes swipe { to { left: 79.7%; } }
+  @keyframes unlock { to { transform: translateY(-2.5px) rotate(18deg); } }
+  .sig { position: absolute; left: 22%; top: 38%; width: 22%; height: 12%; overflow: visible; }
+  .sig path { fill: none; stroke: var(--brand); stroke-width: 2.5; stroke-dasharray: 5 6; vector-effect: non-scaling-stroke; opacity: 0; }
+  .is-on .sig path { animation: in .25s .85s forwards, flow .8s linear .85s 3; }
+
+  /* 4: две линии дохода в $ за 12 месяцев; подпись каждой линии бежит на её конце, события ±N всплывают и гаснут */
+  .s4 { flex-direction: column; justify-content: center; padding: 16% 6% 8%; }
+  .ln { position: relative; width: 100%; }
+  .ln svg { display: block; width: 100%; height: auto; aspect-ratio: 560 / 230; overflow: visible; }
+  .ln__g { stroke: var(--gray-200); stroke-dasharray: 3 5; }
+  .ln__ax { font: 500 11px "Manrope", sans-serif; fill: var(--gray-400); text-anchor: end; }
+  .ln__m { text-anchor: start; } .ln__end { text-anchor: end; }
+  .ln__one, .ln__many { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .ln__many { stroke: var(--brand); stroke-width: 5; }
+  .ln__one { stroke: var(--gray-400); stroke-width: 4; }
+  /* подпись линии закреплена над её началом, цифры меняются по ходу; на конце линии – точка */
+  .ln__lab { position: absolute; transform: translate(0, calc(-100% - 8px)); display: flex; align-items: baseline; gap: 8px; white-space: nowrap; pointer-events: none; }
+  .ln__lab b { font-size: 13px; font-weight: 600; color: var(--gray-600); font-variant-numeric: tabular-nums; }
+  .ln__lab span { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; font-variant-numeric: tabular-nums; }
+  .ln__lab--many span { color: var(--brand); } .ln__lab--one span { color: var(--gray-600); }
+  .ln__lab.blip span { animation: blip .35s ease-out; }
+  @keyframes blip { 40% { transform: scale(1.12); } }
+  .ln__lab span { display: inline-block; transform-origin: left center; }
+  .ln__dot { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); pointer-events: none; }
+  .ln__dot--many { background: var(--brand); } .ln__dot--one { background: var(--gray-400); }
+  .cap--static .cap__a { opacity: 1 !important; transform: none !important; }
+  :global(.ln__ev) { position: absolute; transform: translate(-50%, -100%); font-style: normal; font-weight: 700; font-size: 12px; padding: 2px 7px; border-radius: 100px;
+                     background: var(--gray-900); color: #fff; pointer-events: none; animation: ev .9s ease-out forwards; }
+  :global(.ln__ev--up) { background: var(--brand); }
+  @keyframes ev { 0% { opacity: 0; margin-top: 0; } 20% { opacity: 1; margin-top: -8px; } 75% { opacity: 1; } 100% { opacity: 0; margin-top: -22px; } }
+  .pin { position: absolute; left: 42%; top: 40%; transform: translate(-50%, -100%) scale(.6); opacity: 0; background: var(--gray-900); color: var(--white); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 100px; transition: opacity .3s, transform .4s cubic-bezier(.2,1.4,.4,1); }
+  .pin::after { content: ""; position: absolute; left: 50%; bottom: -5px; margin-left: -5px; border: 5px solid transparent; border-bottom: 0; border-top-color: var(--gray-900); }
+  .is-cap .pin { opacity: 1; transform: translate(-50%, -100%); }
+  .foot { position: absolute; left: 5%; bottom: 12px; font-size: 12px; color: var(--gray-400); opacity: 0; transition: opacity .4s .3s; }
+  .is-cap .foot { opacity: 1; }
+
+  @keyframes in { to { opacity: 1; transform: none; } }
+  @keyframes out { to { opacity: 0; } }
+  @keyframes flow { to { stroke-dashoffset: -22; } }
+
+  @media (max-width: 1100px) {
+    .fl { padding-block: 48px; }
+    .fl__grid { grid-template-columns: 1fr; gap: 24px; }
+    .fl__head h2 { font-size: 32px; line-height: 38px; }
+    .stage { display: none; }
+    .stat { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .acc__t { font-size: 19px; line-height: 24px; color: var(--gray-900); }
+    .acc__n { color: var(--brand); }
+    .acc__d { height: auto; opacity: 1; margin-top: 6px; }
+    .acc__bar { display: none; }
+    .acc__it > .vis { display: flex; position: relative; opacity: 1; min-height: 230px; padding: 16px 0 24px; margin-top: 16px; border-radius: 20px; border: 1px solid var(--gray-200); background: #fff; overflow: hidden; }
+    /* мобилка (CMO 23.11.2026): плашки над сценами убраны – текст пункта рядом и читается */
+    .cap { display: none; }
+    .cap > div { padding: 8px 12px; } .cap b { font-size: 17px; line-height: 20px; } .cap span { font-size: 11px; line-height: 14px; }
+    .foot { bottom: 8px; font-size: 11px; }
+    .acc__it > .s4 { padding: 16px 10px 24px; }
+    .acc__it > .s4 .foot { position: static; margin-top: 10px; }
+    .ln__lab span { font-size: 15px; } .ln__lab b { font-size: 11px; }
+  }
+</style>

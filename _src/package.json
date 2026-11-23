@@ -1,0 +1,20 @@
+{
+  "name": "spacehub-franchise-landing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "astro": "^7.4.13",
+    "libphonenumber-js": "^1.13.17"
+  },
+  "private": true
+}

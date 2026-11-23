@@ -1,0 +1,112 @@
+---
+// «Before you ask» (Figma 1933:1306): ответы в виде переписки. Состав – решения 13.10, 15.10 и CMO 22.11.2026:
+// добавлен «What do I do after opening?», убран «Who owns the equipment?». «Has any project failed? No» подтвердил CMO 23.11 (F-1286);
+// про безопасность – только видеонаблюдение, без диспетчерской 24/7 (CMO 23.11, F-1291).
+// Анимация: у ответа на долю секунды «печатает…», затем текст. Включается, когда вопрос дошёл до нижней трети экрана;
+// пролистанные вопросы показываются сразу, без анимации, – чтение не задерживается.
+import { CONTACTS } from "../data/site";
+const qa = [
+  { q: "Is the feasibility study paid?", a: ["Yes, $3,000", "You order it only after the free assessment confirms your space fits"] },
+  { q: "What do I do after opening?", a: ["Keep the space clean and pay the utility bills", "Everything else is on us: finding customers, marketing, customer support and care, the app and the website"], r: "🙌" },
+  { q: "Has any project failed?", a: ["No", "We have never closed a facility for being unprofitable, and no partner has left SpaceHub"], r: "🔥" },
+  { q: "How fast can it open?", a: ["10–13 weeks from the start of the feasibility study to opening, in markets where we already work"], r: "⚡" },
+  { q: "How is the facility secured?", a: ["Every facility is equipped with CCTV cameras", "Customers open their units from the app"] },
+];
+---
+<section class="faq wrap" id="faq">
+  <div class="faq__head">
+    <h2>Before you ask</h2>
+    <p>Questions owners ask us on the first call</p>
+  </div>
+  <div class="chat">
+    <img class="chat__glow" src="/assets/figma/faq-glow.svg" alt="" aria-hidden="true" />
+    {qa.map((x) => (
+      <div class="turn" data-turn>
+        <p class="msg msg--q">{x.q}</p>
+        <div class="ans">
+          <span class="typing" aria-hidden="true"><i></i><i></i><i></i></span>
+          {x.a.map((t, i) => <p class={`msg msg--a ${i === x.a.length - 1 && x.r ? "has-r" : ""}`} style={`--i:${i}`}>{t}{i === x.a.length - 1 && x.r && <span class="react">{x.r}</span>}</p>)}
+        </div>
+      </div>
+    ))}
+    <div class="turn turn--end" data-turn>
+      <div class="ans">
+        <span class="typing" aria-hidden="true"><i></i><i></i><i></i></span>
+        <div class="msg msg--a msg--cta" style="--i:0">
+          <p>Have another question?</p>
+          <div class="cta">
+            <a class="btn btn--sm btn--light" href={CONTACTS.whatsapp.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-loc="faq">Ask on WhatsApp</a>
+            <button type="button" class="btn btn--sm btn--or" data-open-faq data-ev="faq_cta" data-loc="faq">Get a free assessment</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { openLead } from "../lib/leadModal";
+  const root = document.querySelector<HTMLElement>("#faq")!;
+  root.querySelector("[data-open-faq]")!.addEventListener("click", () => openLead({
+    form: "faq", title: "Free assessment of your space", lead: "We get in touch within 1 working hour and tell you if the space fits",
+    text: (who) => `Franchise request from FAQ: free assessment. ${who}`,
+  }));
+  // вопрос дошёл до нижней трети экрана – «печатает…» и ответ; уже пролистанный – сразу, без анимации
+  const turns = Array.from(root.querySelectorAll<HTMLElement>("[data-turn]"));
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!still) {
+    root.classList.add("js");
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      const t = e.target as HTMLElement;
+      if (e.isIntersecting) { t.classList.add("on"); io.unobserve(t); }
+      else if (e.boundingClientRect.bottom < 0) { t.classList.add("on", "now"); io.unobserve(t); }
+    }), { rootMargin: "0px 0px -30% 0px" });
+    turns.forEach((t) => io.observe(t));
+  }
+</script>
+
+<style>
+  .faq { padding-block: 64px; display: flex; flex-direction: column; align-items: center; gap: 64px; }
+  .faq__head { max-width: 768px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
+  .faq__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
+  .faq__head p { font-weight: 500; font-size: 20px; line-height: 28px; }
+  .chat { position: relative; overflow: hidden; width: 100%; max-width: 674px; background: var(--gray-100); border-radius: 24px; padding: 56px 40px; display: flex; flex-direction: column; gap: 40px; }
+  .chat__glow { position: absolute; right: -500px; top: 0; width: 1100px; max-width: none; pointer-events: none; }
+  .turn { position: relative; display: flex; flex-direction: column; gap: 32px; }
+  .msg { font-weight: 500; font-size: 18px; line-height: 26px; padding: 12px 24px; }
+  .msg--q { align-self: flex-end; background: var(--gray-900); color: var(--white); border-radius: 16px 16px 4px 16px; }
+  .ans { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 447px; }
+  .msg--a { position: relative; background: var(--white); color: var(--gray-900); border-radius: 16px; }
+  .ans > .msg--a:nth-child(2) { border-top-left-radius: 4px; }
+  .msg--a.has-r { margin-bottom: 18px; }
+  .react { position: absolute; left: 24px; bottom: -18px; width: 40px; height: 30px; border: 1px solid var(--gray-300); border-radius: 100px; background: var(--white);
+           display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .msg--cta { display: flex; flex-direction: column; gap: 14px; border-top-left-radius: 4px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* «печатает…»: три точки на месте первого пузыря ответа */
+  .typing { display: none; gap: 4px; padding: 14px 18px; border-radius: 4px 16px 16px 16px; background: var(--white); }
+  .typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--gray-400); animation: dot .9s infinite ease-in-out; }
+  .typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes dot { 0%, 60%, 100% { transform: none; opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+  /* до появления вопрос и ответы скрыты; без JS и при отключённой анимации всё видно (класс .js ставит скрипт) */
+  .js .turn:not(.on) .msg { opacity: 0; }
+  .js .turn.on .msg--q { animation: inQ .35s ease-out both; }
+  .js .turn.on .typing { display: inline-flex; position: absolute; left: 0; top: 0; animation: typ .4s linear .1s both; }
+  .js .turn.on .msg--a { animation: inA .3s ease-out both; animation-delay: calc(.45s + var(--i) * .12s); }
+  .js .turn.now .msg { animation: none; opacity: 1; }
+  .js .turn.now .typing { display: none; }
+  @keyframes inQ { from { opacity: 0; transform: translateY(10px); } }
+  @keyframes inA { from { opacity: 0; transform: translateY(6px); } }
+  @keyframes typ { 0% { opacity: 0; } 15%, 85% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+
+  @media (max-width: 900px) {
+    .faq { padding-block: 48px; gap: 32px; }
+    .faq__head h2 { font-size: 32px; line-height: 38px; }
+    .faq__head p { font-size: 17px; line-height: 24px; }
+    .chat { padding: 32px 16px; gap: 28px; }
+    .msg { font-size: 16px; line-height: 24px; padding: 10px 16px; }
+    .ans { max-width: 90%; }
+  }
+</style>

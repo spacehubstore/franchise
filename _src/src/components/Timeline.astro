@@ -1,0 +1,123 @@
+---
+// «From the first call to opening» (Figma 1933:1494), переработан (CMO 23.11.2026): 4 этапа на одной шкале вместо 7 этапов
+// и отдельного ганта. Длина отрезков – по середине сроков макета v7: оценка 48 ч + исследование 2 недели, производство
+// и доставка 5–7 недель, монтаж 3–4 недели, всего 10–13 недель. «Agreement» – отметка на шкале между исследованием
+// и производством. Иллюстрации – в стиле One floor и Feasibility (landing-icons/gen_timeline*.py): монтаж – рабочие, открытие – клиент.
+// Анимация: шкала заполняется слева направо, иллюстрация этапа падает на место, когда заливка до неё доходит.
+const stages = [
+  { t: "Assessment and study", d: "Your space, checked and planned", w: "48 h + 2 weeks", f: 2.3, img: "st-study" },
+  { t: "Production and delivery", d: "Made to your layout", w: "5–7 weeks", f: 6, img: "st-production" },
+  { t: "Installation", d: "Units built on site", w: "3–4 weeks", f: 3.5, img: "st-install" },
+];
+const FILL_MS = 1800;
+const total = stages.reduce((a, s) => a + s.f, 0);
+let acc = 0;
+const at = stages.map((s) => { const v = Math.round((acc / total) * FILL_MS); acc += s.f; return v; });
+// узлы шкалы: старт, границы этапов (первая – подписание договора); середины отрезков – для сроков
+let x = 0;
+const nodes = [{ x: 0, t: 0, agree: false }, ...stages.slice(0, -1).map((s, i) => { x += s.f; return { x: (x / total) * 100, t: Math.round((x / total) * FILL_MS), agree: i === 0 }; })];
+let y = 0;
+const mids = stages.map((s) => { const m = ((y + s.f / 2) / total) * 100; y += s.f; return m; });
+---
+<section class="tl" id="timeline" data-tl style={`--fill:${FILL_MS}ms`}>
+  <div class="tl__head wrap">
+    <h2>From the first call to opening</h2>
+    <p>In markets where we already work</p>
+  </div>
+  <div class="tl__grid wrap" style={`--cols:${stages.map((s) => s.f + "fr").join(" ")} 3fr`}>
+    {stages.map((s, i) => (
+      <div class="st" style={`--d:${at[i] + 150}ms`}>
+        <img src={`/assets/tl/${s.img}.webp`} width="440" height="440" alt="" loading="lazy" />
+        <b>{s.t}</b>
+        <p>{s.d}</p>
+        <small class="st__w">{s.w}</small>
+      </div>
+    ))}
+    <div class="st st--end" style={`--d:${FILL_MS + 100}ms`}>
+      <img src="/assets/tl/st-opening.webp" width="440" height="440" alt="" loading="lazy" />
+      <b>Opening</b>
+      <p>First customers move in</p>
+    </div>
+    <div class="track" aria-hidden="true">
+      <span class="rail"><i class="rail__fill"></i></span>
+      {nodes.map((n) => <i class={`node ${n.agree ? "node--agree" : ""}`} style={`left:${n.x}%;--t:${n.t}ms`}>{n.agree && <small>Agreement</small>}</i>)}
+      {stages.map((s, i) => <em class="dur" style={`left:${mids[i]}%;--t:${at[i]}ms`}>{s.w}</em>)}
+    </div>
+    <div class="finish" style={`--t:${FILL_MS}ms`}><i></i><b>10–13 weeks</b><span>to opening</span></div>
+  </div>
+</section>
+
+<script>
+  // старт, когда блок на треть в экране; уже пролистанный блок показывается сразу
+  const tl = document.querySelector<HTMLElement>("[data-tl]")!;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) tl.classList.add("in", "now");
+  else new IntersectionObserver((es, o) => {
+    const e = es[0];
+    if (e.isIntersecting) { tl.classList.add("in"); o.disconnect(); }
+    else if (e.boundingClientRect.bottom < 0) { tl.classList.add("in", "now"); o.disconnect(); }
+  }, { threshold: .3 }).observe(tl);
+</script>
+
+<style>
+  .tl { background: var(--gray-900); color: var(--white); padding-block: 96px; display: flex; flex-direction: column; gap: 48px; overflow: hidden; }
+  .tl__head { text-align: center; display: flex; flex-direction: column; gap: 16px; align-items: center; }
+  .tl__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
+  .tl__head p { font-weight: 500; font-size: 20px; line-height: 28px; color: var(--gray-300); }
+
+  /* колонки пропорциональны неделям; последняя – финиш */
+  .tl__grid { max-width: 1296px; width: 100%; margin: 0 auto; display: grid; grid-template-columns: var(--cols); grid-template-rows: auto auto; column-gap: 12px; row-gap: 28px; }
+  .st { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; min-width: 0; }
+  .st img { width: min(180px, 100%); aspect-ratio: 1; height: auto; border-radius: 24px; background: var(--white); object-fit: cover; }
+  .st b { font-weight: 700; font-size: 20px; line-height: 24px; letter-spacing: -0.4px; margin-top: 8px; }
+  .st__w { display: none; }
+  .st p { font-weight: 500; font-size: 15px; line-height: 22px; color: var(--gray-400); }
+
+  /* шкала: тонкий рельс, узлы на границах этапов, сроки под отрезками; финиш – оранжевый узел с итогом */
+  .track { grid-column: 1 / 4; grid-row: 2; position: relative; height: 56px; }
+  .rail { position: absolute; left: 0; right: 0; top: 14px; height: 4px; border-radius: 4px; background: var(--gray-700); overflow: hidden; }
+  .rail__fill { position: absolute; inset: 0; background: var(--brand); transform-origin: left; }
+  .node { position: absolute; top: 16px; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--gray-900); box-shadow: inset 0 0 0 3px var(--gray-600); transition: box-shadow .3s; transition-delay: var(--t); }
+  .node--agree small { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 3px 9px; border-radius: 99px; background: var(--gray-800); font-style: normal; font-size: 12px; font-weight: 700; color: var(--gray-300); }
+  .dur { position: absolute; top: 30px; transform: translateX(-50%); font-style: normal; font-weight: 700; font-size: 15px; white-space: nowrap; color: var(--gray-400); transition: color .3s; transition-delay: var(--t); }
+  .finish { grid-column: 4; grid-row: 2; position: relative; padding-left: 22px; align-self: start; }
+  .finish i { position: absolute; left: 0; top: 16px; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; background: var(--gray-700); transition: background .3s, box-shadow .3s; transition-delay: var(--t); }
+  .finish b { display: block; font-size: 28px; line-height: 32px; font-weight: 800; margin-top: -1px; }
+  .finish span { font-size: 14px; color: var(--gray-400); }
+  .tl.in .node { box-shadow: inset 0 0 0 3px var(--brand); }
+  .tl.in .dur { color: var(--white); }
+  .tl.in .finish i { background: var(--brand); box-shadow: 0 0 0 6px rgba(255, 79, 0, .22); }
+
+  /* анимация: шкала заполняется, этапы падают на место по ходу заливки */
+  .tl:not(.in) .rail__fill { transform: scaleX(0); }
+  .rail__fill { transition: transform var(--fill) linear .15s; }
+  .tl:not(.in) .st { opacity: 0; }
+  .tl.in .st { animation: stDrop .7s var(--d) both; }
+  @keyframes stDrop {
+    0% { opacity: 0; transform: translateY(-60px); animation-timing-function: cubic-bezier(.5, 0, 1, .6); }
+    55% { opacity: 1; transform: none; animation-timing-function: cubic-bezier(0, .4, .5, 1); }
+    72% { transform: translateY(-10px); animation-timing-function: cubic-bezier(.5, 0, 1, .6); }
+    86% { transform: none; } 93% { transform: translateY(-3px); } 100% { opacity: 1; transform: none; }
+  }
+  .tl:not(.in) .finish b, .tl:not(.in) .finish span, .tl:not(.in) .node--agree small { opacity: 0; }
+  .finish b, .finish span, .node--agree small { transition: opacity .3s; transition-delay: var(--t); }
+  .tl.now .st { animation: none; opacity: 1; }
+  .tl.now .rail__fill, .tl.now .node, .tl.now .dur, .tl.now .finish i, .tl.now .finish b, .tl.now .finish span, .tl.now .node--agree small { transition: none; }
+
+  @media (max-width: 900px) {
+    .tl { padding-block: 64px; gap: 32px; }
+    .tl__head h2 { font-size: 32px; line-height: 38px; }
+    .tl__head p { font-size: 17px; line-height: 24px; }
+    /* телефон: этапы друг под другом, шкала скрыта, срок – под названием этапа */
+    .tl__grid { grid-template-columns: 1fr; row-gap: 16px; }
+    .track { display: none; }
+    .st { flex-direction: row; text-align: left; gap: 16px; align-items: center; display: grid; grid-template-columns: 96px 1fr; grid-template-rows: auto auto; }
+    .st img { grid-row: 1 / 3; width: 96px; border-radius: 18px; }
+    .st b { margin: 0; align-self: end; font-size: 18px; }
+    .st p { align-self: start; }
+    .st__w { display: block; grid-column: 2; font-weight: 700; font-size: 14px; color: var(--brand); }
+    .st { grid-template-rows: auto auto auto; }
+    .st img { grid-row: 1 / 4; }
+    .finish { grid-column: 1; grid-row: auto; padding: 8px 0 0; text-align: center; }
+    .finish i { display: none; }
+  }
+</style>

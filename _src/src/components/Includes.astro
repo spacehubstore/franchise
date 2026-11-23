@@ -1,0 +1,178 @@
+---
+// Блок «What the franchise includes» (Figma 1316:9773): Technology, Marketing, Operations, Equipment.
+// Микроанимации (CMO 22.11.2026): одно действие на карточку, до 1 с, отдельные движения 200–450 мс (NN/g: 100–500 мс).
+// Десктоп – при наведении, откат 250 мс; без наведения (телефон) – один раз, когда карточка в экране; reduce motion – без анимаций.
+---
+<section class="inc wrap">
+  <div class="inc__head">
+    <h2>What the franchise includes</h2>
+    <p>Four teams work on your facility from day one.<br />Live from our network today</p>
+  </div>
+  <div class="inc__grid">
+    <article class="ic ic--tech" data-mi>
+      <div class="ic__phone"><img src="/assets/figma/inc-phone.webp" width="300" height="612" alt="SpaceHub customer app" loading="lazy" /><div class="slide" aria-hidden="true"><span class="slide__t slide__t--a">Open</span><span class="slide__t slide__t--b">Unlocked</span><i class="knob"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i></div></div>
+      <div class="ic__txt">
+        <h3>Technology</h3>
+        <p>Customer app for booking, payment and Bluetooth access. Owner dashboard updated daily</p>
+      </div>
+    </article>
+    <div class="inc__mid">
+      <article class="ic ic--mkt" data-mi>
+        <div class="ic__txt">
+          <h3>Marketing</h3>
+          <p>Search and maps listings, Google Ads, social campaigns and a landing page for your facility</p>
+        </div>
+        <span class="logo logo--g"><img src="/assets/figma/inc-google.svg" width="50" height="50" alt="Google" /></span>
+        <span class="logo logo--m"><img src="/assets/figma/inc-meta.svg" width="60" height="60" alt="Meta" /></span>
+        <span class="logo logo--p"><img src="/assets/figma/inc-maps.png" width="43" height="55" alt="Google Maps" /></span>
+        <span class="logo logo--t"><img src="/assets/figma/inc-tiktok.svg" width="49" height="54" alt="TikTok" /></span>
+      </article>
+      <article class="ic ic--ops" data-mi>
+        <img class="ic__chat" src="/assets/figma/inc-chat.webp" width="118" height="118" alt="" loading="lazy" />
+
+        <div class="ic__txt">
+          <h3>Operations</h3>
+          <p>Call centre and chat in your language, pricing, contracts, payments and debt collection</p>
+        </div>
+      </article>
+    </div>
+    <article class="ic ic--eq" data-mi>
+      <div class="ic__txt">
+        <h3>Equipment</h3>
+        <p>One partner for the whole fit-out. We design the layout and the unit mix, calculate the cost of the equipment, produce it, deliver it and install it</p>
+      </div>
+      <div class="ic__eq"><video src="/assets/figma/inc-eq.mp4" poster="/assets/figma/inc-eq-a.webp" muted playsinline preload="metadata" aria-label="Workers welding, fitting a door and fixing panels"></video></div>
+    </article>
+  </div>
+</section>
+
+<script>
+  import { slowNet } from "../lib/net";
+  // Микроанимации (CMO 22.11.2026). Technology и Equipment – состояние: при наведении переходят в итог и держат его, без курсора откат.
+  // Marketing и Operations – вспышка: значки всплывают и гаснут, карточка сама возвращается в исходный вид; заново – при новом наведении.
+  // Без наведения (телефон) – один раз, когда карточка в экране.
+  const cards = Array.from(document.querySelectorAll<HTMLElement>("[data-mi]"));
+  // вылет с физикой (CMO 22.11.2026): плашка стартует вверх веером с разной скоростью, летит по дуге под «гравитацией»,
+  // чуть поворачивается и гаснет; старт вразброс до 250 мс, полёт ~0,9 с
+  const G = 1000;   // px/с²
+  function burst(card: HTMLElement, from: HTMLElement[], labels: string[], perSource: number, VX: [number, number], VY: [number, number]) {
+    const box = card.getBoundingClientRect();
+    const n = from.length * perSource, order = Array.from({ length: n }, (_, i) => i).sort(() => Math.random() - .5);
+    from.forEach((src, si) => {
+      const r = src.getBoundingClientRect();
+      for (let k = 0; k < perSource; k++) {
+        const t = labels[(si * perSource + k) % labels.length], d = document.createElement("i");
+        d.className = "pop" + (t.startsWith("+") || t === "Payment" ? " pop--or" : "");
+        d.textContent = t;
+        d.style.left = `${r.left - box.left + r.width / 2}px`; d.style.top = `${r.top - box.top + r.height * .35}px`;
+        card.appendChild(d);
+        const vx = VX[0] + Math.random() * (VX[1] - VX[0]), vy = VY[0] + Math.random() * (VY[1] - VY[0]), rot = (Math.random() * 2 - 1) * 25, T = .85 + Math.random() * .15;
+        const frames = Array.from({ length: 11 }, (_, j) => {
+          const tt = (j / 10) * T, x = vx * tt, y = vy * tt + G * tt * tt / 2;
+          return { transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${rot * j / 10}deg) scale(${j === 0 ? .6 : 1})`, opacity: j < 6 ? 1 : 1 - (j - 5) / 5 };
+        });
+        d.animate(frames, { duration: T * 1000, delay: order[si * perSource + k] * (650 / n) + Math.random() * 40, easing: "linear", fill: "both" }).onfinish = () => d.remove();
+      }
+    });
+  }
+  const mkt = document.querySelector<HTMLElement>(".ic--mkt"), ops = document.querySelector<HTMLElement>(".ic--ops");
+  const fire = (c: HTMLElement) => {
+    if (c === mkt) burst(c, Array.from(c.querySelectorAll<HTMLElement>(".logo")), ["+1 lead"], 3, [-190, 190], [-440, -300]);
+    else if (c === ops) burst(c, [c.querySelector<HTMLElement>(".ic__chat")!], ["Call", "Chat", "Contract", "Payment", "Reminder", "Call"], 6, [-300, -60], [-300, -170]);
+    else {
+      c.classList.add("play");
+      const v = c.querySelector<HTMLVideoElement>("video");
+      if (v) { const mid = (v.duration || 3.6) / 2; if (v.currentTime > mid) v.currentTime = 2 * mid - v.currentTime;
+               v.dataset.dir = "fwd"; v.playbackRate = 1.8; v.play().catch(() => {}); }
+    }
+  };
+  const rest = (c: HTMLElement) => {
+    c.classList.remove("play");
+    const v = c.querySelector<HTMLVideoElement>("video");
+    if (v) { const mid = (v.duration || 3.6) / 2; if (v.currentTime < mid) v.currentTime = 2 * mid - v.currentTime;
+             v.dataset.dir = "back"; v.playbackRate = 2.6; v.play().catch(() => {}); }
+  };
+  // прямая часть останавливается в середине (сборка закончена), обратная – в конце (исходное положение = кадр 0)
+  document.querySelectorAll<HTMLVideoElement>(".ic--eq video").forEach((v) => {
+    // остановка в середине проверяется на каждом кадре (timeupdate приходит раз в ~250 мс и проскакивает середину)
+    const watch = () => {
+      const mid = v.duration / 2;
+      if (v.dataset.dir === "fwd" && v.currentTime >= mid - .06) { v.pause(); return; }
+      if (!v.paused) requestAnimationFrame(watch);
+    };
+    v.addEventListener("play", () => requestAnimationFrame(watch));
+    v.addEventListener("ended", () => { v.currentTime = 0; v.dataset.dir = ""; });
+  });
+  if (slowNet) document.querySelectorAll<HTMLVideoElement>(".ic--eq video").forEach((v) => { v.preload = "none"; v.removeAttribute("src"); v.load(); });
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (matchMedia("(hover: hover)").matches) {
+      cards.forEach((c) => {
+        c.addEventListener("mouseenter", () => fire(c));
+        c.addEventListener("mouseleave", () => rest(c));
+      });
+    } else {
+      const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { fire(e.target as HTMLElement); io.unobserve(e.target); } }), { threshold: .6 });
+      cards.forEach((c) => io.observe(c));
+    }
+  }
+</script>
+
+<style>
+  .inc { padding-block: 64px; display: flex; flex-direction: column; align-items: center; gap: 64px; }
+  .inc__head { max-width: 768px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
+  .inc__head h2 { font-weight: 700; font-size: 48px; line-height: 54px; }
+  .inc__head p { font-weight: 500; font-size: 20px; line-height: 28px; }
+  .inc__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 1296px; height: 565px; }
+  .inc__mid { display: grid; grid-template-rows: 276px 1fr; gap: 12px; min-width: 0; }
+  .ic { position: relative; overflow: hidden; background: var(--gray-100); border-radius: 25px; padding: 32px; display: flex; flex-direction: column; min-width: 0; }
+  .ic__txt { position: relative; display: flex; flex-direction: column; gap: 8px; }
+  .ic h3 { font-weight: 700; font-size: 26px; line-height: 30px; }
+  .ic p { font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0.16px; }
+  .ic--tech { justify-content: flex-end; }
+  .ic__phone { position: absolute; left: 50%; top: -235px; width: 300px; transform: translateX(-50%); }
+  .ic__phone img { width: 100%; display: block; }
+  /* ползунок «Open» поверх нарисованного (Figma inc-phone: дорожка x 52–549, y 977–1088 из 600×1225) */
+  .slide { position: absolute; left: 8.67%; top: 79.76%; width: 82.8%; height: 9.06%; border-radius: 999px; background: #f5f5f5; container-type: inline-size; overflow: hidden; }
+  .slide__t { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 500; font-size: 7.4cqw; color: #18181b; transition: opacity .2s; }
+  .slide__t--b { opacity: 0; color: var(--brand); font-weight: 700; }
+  .knob { position: absolute; left: 2%; top: 9%; height: 82%; aspect-ratio: 1; border-radius: 50%; background: var(--brand); display: grid; place-items: center;
+          box-shadow: 0 4px 10px rgba(255,79,0,.35); transition: left .25s ease-in; }
+  .knob svg { width: 42%; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; }
+  .knob .shackle { transform-origin: 16px 11px; transition: transform .15s; }
+  .play .knob { left: 79.7%; transition: left .45s cubic-bezier(.5,0,.3,1); }
+  .play .knob .shackle { transform: translateY(-2.5px) rotate(18deg); transition-delay: .45s; }
+  .play .slide__t--a { opacity: 0; }
+  .play .slide__t--b { opacity: 1; transition-delay: .4s; }
+  /* Marketing и Operations: плашки вылетают с физикой (скрипт выше), здесь только вид */
+  :global(.pop) { position: absolute; z-index: 3; pointer-events: none; white-space: nowrap; font-style: normal; font-weight: 700; font-size: 12px; line-height: 16px;
+                  padding: 4px 9px; border-radius: 100px; background: var(--white); color: var(--gray-900); box-shadow: 0 6px 14px rgba(0,0,0,.12); opacity: 0; }
+  :global(.pop--or) { background: var(--brand); color: var(--white); }
+  .logo { position: absolute; width: 86px; height: 86px; border-radius: 24px; background: rgba(255,255,255,.2); box-shadow: 4px 4px 4px rgba(0,0,0,.05);
+          display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .logo--g { left: -18px; top: 155px; transform: rotate(-23deg); }
+  .logo--m { left: 108px; top: 132px; transform: rotate(-5deg); }
+  .logo--p { left: 229px; top: 167px; transform: rotate(5deg); }
+  .logo--t { left: 353px; top: 126px; transform: rotate(13deg); }
+  .ic--ops { justify-content: flex-end; align-items: flex-end; }
+  .ic--ops .ic__txt { width: 100%; }
+  .ic__chat { width: 118px; margin: auto 0 8px; }
+  /* Equipment: ролик сборки 3 с (Nano Banana Pro + Gemini Omni, landing-icons/gen_install3.py) идёт ×3 ≈ 1 с при наведении и
+     держит конечный кадр; без курсора – кадр «до» */
+  .ic__eq { position: absolute; left: 30px; top: 150px; width: 540px; max-width: none; }
+  .ic__eq video { display: block; width: 100%; height: auto; aspect-ratio: 1; mix-blend-mode: multiply; }
+  @media (max-width: 900px) {
+    .inc { padding-block: 48px; gap: 32px; }
+    .inc__head h2 { font-size: 32px; line-height: 38px; }
+    .inc__head p { font-size: 17px; line-height: 24px; }
+    .inc__grid { grid-template-columns: 1fr; height: auto; }
+    .inc__mid { grid-template-rows: 300px auto; }
+    .ic { padding: 24px; }
+    .ic h3 { font-size: 22px; line-height: 26px; }
+    .ic--tech { height: 520px; }
+    .ic__phone { top: -250px; width: 280px; }
+    .logo--g { left: 0; top: 190px; } .logo--m { left: 90px; top: 175px; } .logo--p { left: 180px; top: 200px; } .logo--t { left: 270px; top: 170px; }
+    .ic--eq { height: 460px; }
+    .ic__eq { left: 10px; top: 170px; width: 440px; }
+
+  }
+</style>
