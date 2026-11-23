@@ -65,7 +65,7 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
   const set = (v: number) => { after.style.clipPath = `inset(0 0 0 ${v}%)`; handle.style.left = `${v}%`; };
   range.addEventListener("input", () => set(+range.value));
   const tabs = Array.from(box.querySelectorAll<HTMLButtonElement>("[data-city]"));
-  // смена кейса (CMO 24.11.2026): снимки нового кейса сначала грузятся и декодируются в фоне, подменяются уже готовыми –
+  // смена кейса (CMO 23.11.2026): снимки нового кейса сначала грузятся и декодируются в фоне, подменяются уже готовыми –
   // на медленной сети раньше показывался пустой кадр. Вкладка выделяется сразу, фото, цифры и подпись – вместе, когда готовы
   const SIZES = "(max-width: 1000px) 100vw, 56vw";
   let token = 0, busy = false;
