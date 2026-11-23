@@ -52,6 +52,7 @@ const t = useT(lang);
 <script>
   import { slowNet } from "../lib/net";
   import { cover } from "../lib/vframe";
+  import { FOCUS } from "../lib/focus";
   import { ct } from "../i18n";
   // Микроанимации (CMO 22.11.2026). Technology и Equipment – состояние: при наведении переходят в итог и держат его, без курсора откат.
   // Marketing и Operations – вспышка: значки всплывают и гаснут, карточка сама возвращается в исходный вид; заново – при новом наведении.
@@ -117,7 +118,7 @@ const t = useT(lang);
         c.addEventListener("mouseleave", () => rest(c));
       });
     } else {
-      const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { fire(e.target as HTMLElement); io.unobserve(e.target); } }), { threshold: .6 });
+      const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { fire(e.target as HTMLElement); io.unobserve(e.target); } }), FOCUS);   // карточка – у середины экрана
       cards.forEach((c) => io.observe(c));
     }
   }
