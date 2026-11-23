@@ -51,6 +51,7 @@ const t = useT(lang);
 
 <script>
   import { slowNet } from "../lib/net";
+  import { cover } from "../lib/vframe";
   import { ct } from "../i18n";
   // Микроанимации (CMO 22.11.2026). Technology и Equipment – состояние: при наведении переходят в итог и держат его, без курсора откат.
   // Marketing и Operations – вспышка: значки всплывают и гаснут, карточка сама возвращается в исходный вид; заново – при новом наведении.
@@ -87,6 +88,7 @@ const t = useT(lang);
       c.classList.add("play");
       const v = c.querySelector<HTMLVideoElement>("video");
       if (v) { const mid = (v.duration || 3.6) / 2; if (v.currentTime > mid) v.currentTime = 2 * mid - v.currentTime;
+               if (!v.currentTime) cover(v);   // старт с кадра 0 – заставка поверх, пока кадр не нарисован
                v.dataset.dir = "fwd"; v.playbackRate = 1.8; v.play().catch(() => {}); }
     }
   };
