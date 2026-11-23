@@ -30,6 +30,9 @@ const GTM = "GTM-TJVPKFZ";
       (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
       var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;
       j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer',GTM);
+      // просмотр страницы для GA4 (CMO 23.11.2026): page_view в GTM шлёт только тег на virtual_pageview, как у основного сайта;
+      // без него визит без действий в GA4 не виден. Полный адрес – чтобы GA4 прочитал UTM и gclid
+      dataLayer.push({ event: 'virtual_pageview', page_path: location.href, page_title: document.title, page_referrer: document.referrer });
     </script>
   </head>
   <body>
