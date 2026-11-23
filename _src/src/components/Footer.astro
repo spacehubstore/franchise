@@ -1,11 +1,16 @@
 ---
 // Подвал SpaceHub (в Figma подвал Кладовкина – не используем: материалы SpaceHub без связи с Кладовкиным).
 // Цифры сети – только SpaceHub: 17 складов в 4 странах.
-import { CONTACTS } from "../data/site";
+import { CONTACTS, SOCIAL } from "../data/site";
 import { langOf, useT, href, messenger, LANGS, LANG_LABEL } from "../i18n";
 const lang = langOf(Astro.url.pathname);
 const t = useT(lang);
 const m = messenger(lang);
+// иконки 24×24, контур как у остальных иконок лендинга
+const ICON: Record<string, string> = {
+  LinkedIn: '<path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4v11H3zM9.5 9.75h3.8v1.6h.06c.53-.95 1.83-1.95 3.77-1.95 4.03 0 4.77 2.5 4.77 5.76v5.59h-4v-4.96c0-1.18-.02-2.7-1.7-2.7-1.7 0-1.96 1.28-1.96 2.61v5.05H9.5z" fill="currentColor"/>',
+  Instagram: '<rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/>',
+};
 const nav = [["Calculator", "/#calc"], ["Check your space", "/#check"], ["Feasibility study", "/#study"], ["Questions", "/#faq"], ["Timeline", "/#timeline"]].map(([a, b]) => [t(a), href(lang, b)]);
 ---
 <footer class="ft">
@@ -14,6 +19,9 @@ const nav = [["Calculator", "/#calc"], ["Check your space", "/#check"], ["Feasib
       <div class="ft__brand">
         <div class="ft__logo"><img src="/assets/figma/logo-icon.svg" width="36" height="32" alt="" /><img class="ft__wm" src="/assets/figma/logo-wordmark.svg" width="97" height="20" alt="SpaceHub" /><span>franchise</span></div>
         <p>{t("Self-storage franchise. From a small unit to a whole building")}</p>
+        <div class="ft__soc">
+          {SOCIAL.map((s) => <a href={s.url} target="_blank" rel="noopener" aria-label={s.name} title={s.name}><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" set:html={ICON[s.name]} /></a>)}
+        </div>
       </div>
       <nav class="ft__col"><h4>{t("Franchise")}</h4>{nav.map(([t, h]) => <a href={h}>{t}</a>)}</nav>
       <div class="ft__col"><h4>{t("Contact")}</h4>
@@ -36,6 +44,9 @@ const nav = [["Calculator", "/#calc"], ["Check your space", "/#check"], ["Feasib
   .ft__logo span { padding-left: 10px; border-left: 1.5px solid var(--gray-700); font-weight: 600; font-size: 18px; color: var(--gray-400); }
   .ft__wm { filter: invert(1) brightness(2); }
   .ft__brand p { font-size: 16px; line-height: 24px; }
+  .ft__soc { display: flex; gap: 12px; }
+  .ft__soc a { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--gray-800); color: var(--white); transition: background .2s, color .2s; }
+  .ft__soc a:hover { background: var(--brand); }
   .ft__col { display: flex; flex-direction: column; gap: 12px; font-weight: 500; font-size: 15px; }
   .ft__col h4 { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--gray-500); margin-bottom: 4px; }
   .ft__col a { color: var(--white); transition: color .2s; width: fit-content; }
