@@ -70,7 +70,7 @@ const m = messenger(lang);
     };
     const load = () => {
       if (still) { end(); return; }
-      vid.src = webkit ? "/assets/alexey-point.mov" : "/assets/alexey-point.webm"; vid.preload = "auto";
+      vid.src = webkit ? "/assets/alexey-point.mp4" : "/assets/alexey-point.webm"; vid.preload = "auto";
       vid.addEventListener("canplaythrough", () => { ready = true; if (armed) play(); }, { once: true });
       vid.addEventListener("error", end, { once: true });
       vid.load();
