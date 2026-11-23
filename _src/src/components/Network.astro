@@ -114,11 +114,13 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
 
   @media (max-width: 900px) {
     .net { padding-block: 32px 48px; }
+    /* на узком экране шар приближен: пустые края кадра срезаны, у подписей пяти стран больше места */
+    .stage { width: 115%; max-width: none; margin-inline-start: -7.5%; }
     .pin span { top: -12px; padding: 2px 9px; font-size: 11px; line-height: 18px; }
     .pin i { left: -5px; top: -5px; width: 10px; height: 10px; box-shadow: 0 0 0 4px rgba(255, 79, 0, .22); }
     .pin--hub i { left: -7px; top: -7px; width: 14px; height: 14px; }
-    .pin.pin--hub span { left: auto; right: 18px; }   /* на узкой карте подпись ОАЭ справа налезает на Таиланд */
-    .pin--soon span { display: none; }   /* подпись Словении на узкой карте уходит за край экрана, кольцо остаётся */
+    .pin.pin--soon span { right: auto; left: 50%; top: -36px; transform: translateX(-50%); }   /* Словения: сбоку подпись уходит за край экрана – над точкой */
+    .rv.in .pin.pin--soon span { transform: translateX(-50%); }
     .pin--r span { left: 14px; }
     .pin--l span { right: 14px; }
   }
