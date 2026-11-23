@@ -14,7 +14,7 @@ const m = messenger(lang);
       <p>{t("We reply within 1 working hour")}</p>
     </div>
     <div class="who">
-      <span class="ava" data-ava><img class="ava__fig" src="/assets/alexey-rest.webp" data-anim="/assets/alexey-point.webp" data-end="/assets/alexey-end.webp" width="284" height="264" alt="Alexey Romanenkov" loading="lazy" /></span>
+      <span class="ava" data-ava><img class="ava__fig" src="/assets/alexey-rest.webp" data-end="/assets/alexey-end.webp" width="283" height="278" alt="Alexey Romanenkov" /><video class="ava__fig ava__vid" muted playsinline preload="none" width="283" height="278" aria-hidden="true" hidden></video></span>
       <div class="who__side">
         <div class="who__txt"><b>Alexey Romanenkov</b><span>{t("Head of partnerships")}</span></div>
         <div class="who__msg">
@@ -57,20 +57,33 @@ const m = messenger(lang);
   });
   // Алексей показывает на мессенджер, когда блок контактов виден
   const who = document.querySelector<HTMLElement>("#contact .who");
-  const fig = who?.querySelector<HTMLImageElement>(".ava__fig");
-  if (who && fig) {
+  const fig = who?.querySelector<HTMLImageElement>("img.ava__fig"), vid = who?.querySelector<HTMLVideoElement>(".ava__vid");
+  if (who && fig && vid) {
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const play = () => { fig.src = still ? fig.dataset.end! : fig.dataset.anim!; who.classList.add("go"); };
-    if (!("IntersectionObserver" in window)) play();
+    const end = () => { fig.src = fig.dataset.end!; vid.hidden = true; fig.hidden = false; who.classList.add("go"); };
+    // прозрачное видео: WebKit (Safari, все браузеры iPhone) – HEVC с альфой, остальные – WebM VP9 с альфой
+    const ua = navigator.userAgent, webkit = /iPhone|iPad|iPod/.test(ua) || (/Safari/.test(ua) && !/Chrome|Chromium|Edg|OPR/.test(ua));
+    let ready = false, armed = false;
+    const play = () => {
+      vid.hidden = false;
+      vid.play().then(() => { fig.hidden = true; who.classList.add("go"); }).catch(end);
+    };
+    const load = () => {
+      if (still) { end(); return; }
+      vid.src = webkit ? "/assets/alexey-point.mov" : "/assets/alexey-point.webm"; vid.preload = "auto";
+      vid.addEventListener("canplaythrough", () => { ready = true; if (armed) play(); }, { once: true });
+      vid.addEventListener("error", end, { once: true });
+      vid.load();
+    };
+    if (!("IntersectionObserver" in window)) { end(); }
     else {
-      // ролик подгружается заранее, на подходе к блоку; играет, когда блок целиком на экране
-      let ready = false; const pre = new Image();
-      pre.onload = () => (ready = true);
-      const near = new IntersectionObserver((es) => { if (es[0].isIntersecting) { pre.src = still ? fig.dataset.end! : fig.dataset.anim!; near.disconnect(); } }, { rootMargin: "600px" });
-      const io = new IntersectionObserver((es) => { if (es[0].isIntersecting) { io.disconnect(); const go = () => (ready ? setTimeout(play, 300) : setTimeout(go, 100)); go(); } }, { threshold: 0.9 });
+      // ролик подгружается на подходе к блоку; играет один раз, когда блок целиком на экране, и останавливается на жесте
+      const near = new IntersectionObserver((es) => { if (es[0].isIntersecting) { near.disconnect(); load(); } }, { rootMargin: "600px" });
+      const io = new IntersectionObserver((es) => { if (es[0].isIntersecting) { io.disconnect(); armed = true; if (still) end(); else if (ready) setTimeout(play, 250); else setTimeout(() => { if (!ready) end(); }, 6000); } }, { threshold: 0.9 });
       near.observe(who); io.observe(who);
     }
   }
+
 </script>
 
 <style>
@@ -85,14 +98,15 @@ const m = messenger(lang);
   .who { grid-area: who; align-self: start; position: relative; display: flex; align-items: center; gap: 36px; }   /* место под кисть */
   .who__side { display: flex; flex-direction: column; gap: 12px; }
   /* Алексей (CMO 24.11.2026): живое движение – ролик Gemini Omni по его фото, фон вырезан. Внутри круга вся фигура, за кругом только
-     кисть: руки расцепляются, рука поднимается и показывает на кнопку мессенджера, кисть выходит за край круга. Анимированный WebP
+     кисть: руки расцепляются, рука поднимается и показывает на кнопку мессенджера, кисть выходит за край круга. Прозрачное видео (WebM VP9 / HEVC с альфой)
      проигрывается один раз, когда блок виден, и останавливается на жесте. Без анимации – сразу финальный кадр.
      Кадр 284×264: круг 240 px в левом верхнем углу, справа и снизу запас под кисть */
   .ava { flex: none; position: relative; width: 120px; height: 120px; --in: 112px; --b: 4px; }
   .ava::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #ecebe8; border: var(--b) solid rgba(255, 255, 255, .7); }
-  .ava__fig { position: absolute; left: var(--b); top: var(--b); width: calc(var(--in) * 284 / 240); height: auto; max-width: none; }
+  .ava__fig { position: absolute; left: var(--b); top: var(--b); width: calc(var(--in) * 283 / 240); height: calc(var(--in) * 278 / 240); max-width: none; object-fit: fill; }
+  .ava__fig[hidden] { display: none; }
   :global([dir=rtl]) .ava__fig { scale: -1 1; transform-origin: calc(var(--in) / 2) 50%; }   /* справа налево кнопка слева – показывает влево */
-  .who.go .who__msg a:first-child { animation: nudge .7s 1.5s ease-out both; }   /* кнопка отвечает, когда палец на неё указал */
+  .who.go .who__msg a:first-child { animation: nudge .7s 1.7s ease-out both; }   /* кнопка отвечает, когда палец на неё указал */
   @keyframes nudge { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,.75); } 100% { box-shadow: 0 0 0 14px rgba(255,255,255,0); } }
   @media (prefers-reduced-motion: reduce) { .who.go .who__msg a:first-child { animation: none; } }
   .who__txt b { display: block; font-size: 22px; line-height: 28px; }
