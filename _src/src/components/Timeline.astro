@@ -18,32 +18,35 @@ let x = 0;
 const nodes = [{ x: 0, t: 0, agree: false }, ...stages.slice(0, -1).map((s, i) => { x += s.f; return { x: (x / total) * 100, t: Math.round((x / total) * FILL_MS), agree: i === 0 }; })];
 let y = 0;
 const mids = stages.map((s) => { const m = ((y + s.f / 2) / total) * 100; y += s.f; return m; });
+import { langOf, useT } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
 ---
 <section class="tl" id="timeline" data-tl style={`--fill:${FILL_MS}ms`}>
   <div class="tl__head wrap">
-    <h2>From the first call to opening</h2>
-    <p>In markets where we already work</p>
+    <h2>{t("From the first call to opening")}</h2>
+    <p>{t("In markets where we already work")}</p>
   </div>
   <div class="tl__grid wrap" style={`--cols:${stages.map((s) => s.f + "fr").join(" ")} 3fr`}>
     {stages.map((s, i) => (
       <div class="st" style={`--d:${at[i] + 150}ms`}>
         <img src={`/assets/tl/${s.img}.webp`} width="440" height="440" alt="" loading="lazy" />
-        <b>{s.t}</b>
-        <p>{s.d}</p>
-        <small class="st__w">{s.w}</small>
+        <b>{t(s.t)}</b>
+        <p>{t(s.d)}</p>
+        <small class="st__w">{t(s.w)}</small>
       </div>
     ))}
     <div class="st st--end" style={`--d:${FILL_MS + 100}ms`}>
       <img src="/assets/tl/st-opening.webp" width="440" height="440" alt="" loading="lazy" />
-      <b>Opening</b>
-      <p>First customers move in</p>
+      <b>{t("Opening")}</b>
+      <p>{t("First customers move in")}</p>
     </div>
     <div class="track" aria-hidden="true">
       <span class="rail"><i class="rail__fill"></i></span>
-      {nodes.map((n) => <i class={`node ${n.agree ? "node--agree" : ""}`} style={`left:${n.x}%;--t:${n.t}ms`}>{n.agree && <small>Agreement</small>}</i>)}
-      {stages.map((s, i) => <em class="dur" style={`left:${mids[i]}%;--t:${at[i]}ms`}>{s.w}</em>)}
+      {nodes.map((n) => <i class={`node ${n.agree ? "node--agree" : ""}`} style={`left:${n.x}%;--t:${n.t}ms`}>{n.agree && <small>{t("Agreement")}</small>}</i>)}
+      {stages.map((s, i) => <em class="dur" style={`left:${mids[i]}%;--t:${at[i]}ms`}>{t(s.w)}</em>)}
     </div>
-    <div class="finish" style={`--t:${FILL_MS}ms`}><i></i><b>10–13 weeks</b><span>to opening</span></div>
+    <div class="finish" style={`--t:${FILL_MS}ms`}><i></i><b>{t("10–13 weeks")}</b><span>{t("to opening")}</span></div>
   </div>
 </section>
 

@@ -26,34 +26,37 @@ const STEPS: Record<string, Step[]> = {
     { k: "parking", q: "Room to park next to the containers?", opts: [{ v: "Yes", img: "parking-yes" }, { v: "No", img: "parking-no" }, { v: "Not sure", img: "parking-unsure" }] },
   ],
 };
+import { langOf, useT, href } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
 ---
 <section class="qz" id="check" data-quiz>
   <div class="qz__in wrap">
     <div class="qz__head">
-      <h2>Tell us about your space</h2>
-      <p>7 quick questions, about a minute.<br />We get in touch with a free assessment</p>
+      <h2>{t("Tell us about your space")}</h2>
+      <p set:html={t("7 quick questions, about a minute.<br />We get in touch with a free assessment")} />
     </div>
     <div class="qz__body">
 
       <div class="step is-on" data-step="1">
-        <h3>What do you have?</h3>
+        <h3>{t("What do you have?")}</h3>
         <div class="cards">
           <button type="button" class="pick" data-branch="space">
             <i class="radio"></i>
             <img src="/assets/figma/quiz-building.webp" width="340" height="340" alt="" loading="lazy" />
-            <b>A space in a building</b><span>Warehouse, retail, basement, office</span>
+            <b>{t("A space in a building")}</b><span>{t("Warehouse, retail, basement, office")}</span>
           </button>
           <button type="button" class="pick" data-branch="land">
             <i class="radio"></i>
             <img src="/assets/figma/quiz-plot.webp" width="340" height="340" alt="" loading="lazy" />
-            <b>A plot of land</b><span>We place storage containers</span>
+            <b>{t("A plot of land")}</b><span>{t("We place storage containers")}</span>
           </button>
         </div>
       </div>
 
       {Object.entries(STEPS).map(([br, list]) => list.map((s, i) => (
         <div class="step" data-step={i + 2} data-br={br} data-k={s.k}>
-          <h3>{s.q}</h3>
+          <h3>{t(s.q)}</h3>
           {s.area && (
             <div class="num">
               <img src={s.area} width="330" height="240" alt="" loading="lazy" />
@@ -61,9 +64,9 @@ const STEPS: Record<string, Step[]> = {
               <div class="chips" data-area-chips>
                 {[[0, 100], [100, 300], [300, 1000], [1000, 0]].map(([a, b]) => <button type="button" class="chip" data-a={a} data-b={b}></button>)}
               </div>
-              <button type="button" class="num__exact" data-exact-btn>Enter exact area</button>
-              <label class="num__f" data-exact hidden><span>Floor area</span><input inputmode="numeric" autocomplete="off" placeholder="250" data-area /><em data-au>m²</em></label>
-              <p class="num__from" data-from hidden>From your calculation</p>
+              <button type="button" class="num__exact" data-exact-btn>{t("Enter exact area")}</button>
+              <label class="num__f" data-exact hidden><span>{t("Floor area")}</span><input inputmode="numeric" autocomplete="off" placeholder="250" data-area /><em data-au>m²</em></label>
+              <p class="num__from" data-from hidden>{t("From your calculation")}</p>
             </div>
           )}
           {s.height && (
@@ -72,50 +75,50 @@ const STEPS: Record<string, Step[]> = {
               <div class="chips" data-height-chips>
                 {["lt3", "3to48", "ge48", "unsure"].map((v) => <button type="button" class="chip" data-h={v}></button>)}
               </div>
-              <p class="num__hint" data-hint>{s.hint}</p>
+              <p class="num__hint" data-hint>{s.hint && t(s.hint)}</p>
             </div>
           )}
           {s.opts && (
             <div class="opts">{s.opts.map((o) => (
               <button type="button" class="opt" data-v={o.v}>
-                <img src={I(o.img)} width="80" height="80" alt="" loading="lazy" /><b>{o.v}</b><i class="radio"></i>
+                <img src={I(o.img)} width="80" height="80" alt="" loading="lazy" /><b>{t(o.v)}</b><i class="radio"></i>
               </button>
             ))}</div>
           )}
           {s.k === "floor" && (
             <div class="lift" data-lift hidden>
-              <b>Is there a lift or a hoist?</b>
-              <div class="chips chips--2"><button type="button" class="chip" data-lift-v="Yes">Yes</button><button type="button" class="chip" data-lift-v="No">No</button></div>
+              <b>{t("Is there a lift or a hoist?")}</b>
+              <div class="chips chips--2"><button type="button" class="chip" data-lift-v="Yes">{t("Yes")}</button><button type="button" class="chip" data-lift-v="No">{t("No")}</button></div>
             </div>
           )}
         </div>
       )))}
 
       <form class="step fin" data-step="8" novalidate>
-        <h3>Get your free assessment</h3>
-        <p class="fin__lead">We'll get in touch within 1 working hour, ask a few questions and estimate what your space can earn</p>
-        <label class="in"><span>Name</span><input name="name" autocomplete="name" placeholder="Your name" /></label>
-        <label class="in"><span>City of the space</span><input name="city" autocomplete="address-level2" placeholder="e.g. Bangkok" /></label>
-        <div class="in in--ph"><span>Phone number</span>
-          <select name="code" aria-label="Country code"></select><i></i>
+        <h3>{t("Get your free assessment")}</h3>
+        <p class="fin__lead">{t("We'll get in touch within 1 working hour, ask a few questions and estimate what your space can earn")}</p>
+        <label class="in"><span>{t("Name")}</span><input name="name" autocomplete="name" placeholder={t("Your name")} /></label>
+        <label class="in"><span>{t("City of the space")}</span><input name="city" autocomplete="address-level2" placeholder={t("e.g. Bangkok")} /></label>
+        <div class="in in--ph"><span>{t("Phone number")}</span>
+          <select name="code" aria-label={t("Country code")}></select><i></i>
           <input name="phone" type="tel" autocomplete="tel-national" placeholder="81 234 5678" />
         </div>
-        <label class="chk"><input type="checkbox" name="agree" /> <span>I agree to the processing of my data under the <a href="/privacy" target="_blank">privacy policy</a></span></label>
+        <label class="chk"><input type="checkbox" name="agree" /> <span>{t("I agree to the processing of my data under the")} <a href={href(lang, "/privacy")} target="_blank">{t("privacy policy")}</a></span></label>
         <div class="fin__btns">
-          <button type="button" class="btn btn--light" data-back2><img src="/assets/figma/arrow-left.svg" width="20" height="20" alt="" />Back</button>
-          <button class="btn btn--or" type="submit">Send</button>
+          <button type="button" class="btn btn--light" data-back2><img src="/assets/figma/arrow-left.svg" width="20" height="20" alt="" />{t("Back")}</button>
+          <button class="btn btn--or" type="submit">{t("Send")}</button>
         </div>
       </form>
 
       <div class="step done" data-step="9">
         <img src="/assets/alexey.webp" width="96" height="96" alt="" />
-        <h3>Thank you</h3>
-        <p>Alexey, Head of partnerships, will contact you within 1 working hour</p>
+        <h3>{t("Thank you")}</h3>
+        <p>{t("Alexey, Head of partnerships, will contact you within 1 working hour")}</p>
       </div>
 
       <div class="nav" data-nav>
-        <button type="button" class="btn btn--sm btn--light" data-back><img src="/assets/figma/arrow-left.svg" width="20" height="20" alt="" />Back</button>
-        <button type="button" class="btn btn--sm btn--dark" data-next>Next<img src="/assets/figma/arrow-right-w.svg" width="20" height="20" alt="" /></button>
+        <button type="button" class="btn btn--sm btn--light" data-back><img src="/assets/figma/arrow-left.svg" width="20" height="20" alt="" />{t("Back")}</button>
+        <button type="button" class="btn btn--sm btn--dark" data-next>{t("Next")}<img src="/assets/figma/arrow-right-w.svg" width="20" height="20" alt="" /></button>
       </div>
     </div>
   </div>
@@ -125,6 +128,7 @@ const STEPS: Record<string, Step[]> = {
   import { sendLead } from "../lib/lead";
   import { prepare, ready } from "../lib/formsLazy";
   import { onUnit, getUnit, SQFT } from "../lib/units";
+  import { ct } from "../i18n";
   const root = document.querySelector<HTMLElement>("[data-quiz]")!;
   const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
   const $$ = <T extends Element>(s: string) => Array.from(root.querySelectorAll<T>(s));
@@ -182,10 +186,10 @@ const STEPS: Record<string, Step[]> = {
   const HEIGHT: Record<string, [string, string]> = { lt3: ["Under 3 m", "Under 10 ft"], "3to48": ["3–4.8 m", "10–16 ft"], ge48: ["4.8 m or more", "16 ft or more"], unsure: ["Not sure", "Not sure"] };
   const areas = $$<HTMLInputElement>("[data-area]");
   const label = () => { const u = getUnit();
-    $$<HTMLButtonElement>("[data-a]").forEach((c) => (c.textContent = (u === "ft" ? AREA_FT : AREA_M2)[`${c.dataset.a}-${c.dataset.b}`]));
-    $$<HTMLButtonElement>("[data-h]").forEach((c) => (c.textContent = HEIGHT[c.dataset.h!][u === "ft" ? 1 : 0]));
-    $$("[data-au]").forEach((e) => (e.textContent = u === "ft" ? "sq ft" : "m²"));
-    $$("[data-hint]").forEach((e) => (e.textContent = `From about ${u === "ft" ? "16 ft" : "4.8 m"} we can add a second level`));
+    $$<HTMLButtonElement>("[data-a]").forEach((c) => (c.textContent = ct((u === "ft" ? AREA_FT : AREA_M2)[`${c.dataset.a}-${c.dataset.b}`])));
+    $$<HTMLButtonElement>("[data-h]").forEach((c) => (c.textContent = ct(HEIGHT[c.dataset.h!][u === "ft" ? 1 : 0])));
+    $$("[data-au]").forEach((e) => (e.textContent = u === "ft" ? ct("sq ft") : "m²"));
+    $$("[data-hint]").forEach((e) => (e.textContent = ct("From about {h} we can add a second level", { h: u === "ft" ? "16 ft" : "4.8 m" })));
     areas.forEach((a) => (a.value = st.area_m2 ? Math.round(st.area_m2 * (u === "ft" ? SQFT : 1)).toLocaleString("en-US") : ""));
   };
   $$<HTMLButtonElement>("[data-a]").forEach((c) => c.addEventListener("click", () => {

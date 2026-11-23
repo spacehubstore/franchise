@@ -1,0 +1,72 @@
+---
+// Политика конфиденциальности на поддомене франшизы (CMO 23.11.2026): дословная копия общей политики spacehubstore.com
+// (https://spacehubstore.com/thailand/selfstorage/privacy/, снята 23.11.2026), без изменений и добавлений.
+// Отдельной галочки рекламного согласия нет – как на spacehubstore.com, одна галочка о политике.
+// Тайская страница основного сайта (/thailand/th/selfstorage/privacy/) отдаёт тот же английский текст – /th/privacy показывает его же.
+import Base from "../layouts/Base.astro";
+import Header from "./Header.astro";
+import Footer from "./Footer.astro";
+import { langOf, useT } from "../i18n";
+const t = useT(langOf(Astro.url.pathname));
+---
+<Base title={`${t("Privacy policy")} · ${t("SpaceHub franchise")}`} description="SpaceHub privacy policy">
+  <Header cta={false} />
+  <main class="pp wrap">
+    <h1>Privacy policy</h1>
+    <p>SpaceHub, official website <a href="https://spacehubstore.com">https://spacehubstore.com</a>, takes the privacy of visitors very seriously. This document answers the questions of how and why we collect information on our website and what we do with it hereafter.</p>
+    <p>Our clients are legal entities and individuals who need a storage unit rental service. If our client is a legal entity, we process personal data of its representatives. If our client is an individual, we process his or her personal data.</p>
+    <p>We process personal data of all users of our website (<a href="https://spacehubstore.com">https://spacehubstore.com</a>) by applying identification cookies, as you can find out more about in section 3 of this document.</p>
+    <p>If you have any further questions about our Privacy Policy not covered here, please feel free to contact us by emailing to <a href="mailto:support@spacehubstore.com">support@spacehubstore.com</a>.</p>
+
+    <h2>1. Personal data and person responsible for processing</h2>
+    <p>We process as little personal data as possible for the conclusion and subsequent performance of contracts with our clients.</p>
+    <p>Such data include:</p>
+    <ul>
+      <li>personal data, such as: name, surname, personal identification number;</li>
+      <li>contact data, such as: address, telephone number, e-mail address;</li>
+      <li>information related to service provision, such as: data related to performance of contract, enquiries, complaints, information on payment transactions;</li>
+      <li>communication data, such as: data collected via e-mail and website chat rooms; data collected via social media; data transmitted via messages, etc.;</li>
+    </ul>
+    <p>We process personal data of our corporate clients as authorized processor, and we process personal data of individuals as responsible processor. If client is a legal entity, we obtain personal data from it as from responsible processor of this personal data.</p>
+    <p>Moreover, we also process personal data of persons who have contacted us through our website contact form.</p>
+    <p>SpaceHub OÜ does not process any data from banks or any other confidential payment data of Lessee. Payment of invoices and related data processing take place through the Stripe service (stripe.com), which undertakes to protect personal data processed related to payment pursuant to applicable personal data protection law. Lessee (SpaceHub’s client) authorizes processing of its bank data by the Stripe service when paying for services to SpaceHub.</p>
+    <p>Part of our priority to protect privacy of our clients and visitors is an initiative to prevent children's data uploading to the Internet. We encourage parents (or guardians) to monitor, participate in, and control their children's online activities.</p>
+    <p>Spacehubstore.com does not (intentionally) collect any personal information about children under the age of 13. If you suspect that your child has submitted any personally identifiable information about himself or herself to us, we urge you to contact us immediately so that we can delete it promptly.</p>
+
+    <h2>2. Personal data processing rules</h2>
+    <p>We process personal data based on expediency. We determine the purpose of personal data processing and assume it in our further activities. We collect as little personal data as possible, i.e., only the data that is necessary for us to be able to provide our services pursuant to contract.</p>
+    <p>We only process personal data in lawful, fair and transparent manner. We always have a legal basis for personal data processing. We disclose actions we take with personal data.</p>
+    <p>We retain accurate personal data (to the best of our knowledge). We take various actions (physical, technical, organizational) to ensure safety and confidentiality of personal data we collect. We protect personal data against: unlawful or unauthorized destruction, loss, alteration, disclosure, misappropriation or unauthorized access.</p>
+    <p>We consider it important and make every effort to ensure that our employees are aware of and comply with data protection requirements.</p>
+    <p>We only retain personal data for as long as necessary. Necessity is determined according to the purpose for which we collect personal data.</p>
+    <p>We retain personal data for as long as necessary or as permitted under applicable administrative and legal regulations, or as necessary to achieve the purposes specified in data protection terms. We retain personal data relating to disputes until the claim becomes obsolete.</p>
+
+    <h2>3. Application of cookies on website</h2>
+    <p>Cookies are small text files which are stored on website visitor's device and which make the website more user-friendly and ensure its proper functioning. You may agree to use cookies when you visit our website. Furthermore, any website visitors may refuse or restrict the use of cookies on their device by selecting privacy settings in their browser. However, please note that restricting or disabling cookies may adversely affect functionality and operation of our website.</p>
+    <p>Moreover we use cookies provided by third parties, for example:</p>
+    <p>Google Analytics cookies are used to analyze how visitors interact with the website, thus making it possible to identify new visitors and those who have visited the website, what parts of the website they visit, how much time they spend on the website and so on. This information is important for us to better understand behaviour of visitors at our website and to further improve it by making it more user-friendly.</p>
+    <p>Google's search engine cookies allow us to target ads and measure their effectiveness.</p>
+
+    <h2>4. CCTV cameras</h2>
+    <p>In order to protect Lessees and their belongings, CCTV cameras have been installed in SpaceHub warehouses. Surveillance cameras are set up to record 24/7 everything that happens on premises. Only authorized SpaceHub employees have access to cameras and recordings. Surveillance camera recordings are confidential and will not be shared with anyone. Transmission to third parties is only possible in case of official legal request, e.g. made by law enforcement authorities; or if release of recording is mandatory or necessary for performance of contract (e.g. if insured event occurs).</p>
+
+    <h2>5. How to proceed in case of personal data protection breach</h2>
+    <p>If you become aware of data protection breach or if you are threatened with data protection breach, please notify us immediately via email: <a href="mailto:support@spacehubstore.com">support@spacehubstore.com</a>. We take personal data safety very seriously, and we immediately respond to notifications of possible safety breaches.</p>
+
+    <h2>6. Publication of data protection terms</h2>
+    <p>Current data protection terms are available on our website: spacehubstore.com. Please note that we may change them from time to time, so we recommend checking their up-to-dateness. We would also like to point out that Privacy and Personal Data Processing Policy referred to in this document applies solely to online part of our business, i.e. directly to information received/downloaded on the website <a href="https://spacehubstore.com">https://spacehubstore.com</a>. This Policy does not apply to information received via other channels not linked to our website.</p>
+
+    <h2>7. Consent</h2>
+    <p>By using our website (or simply by browsing our website), you give your consent to this Privacy and Personal Data Processing Policy, and you hereby accept its terms.</p>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .pp { max-width: 760px; margin: 0 auto; padding-block: 48px 96px; display: flex; flex-direction: column; gap: 14px; color: var(--gray-700); font-size: 16px; line-height: 26px; }
+  .pp h1 { font-weight: 700; font-size: 44px; line-height: 50px; color: var(--gray-900); margin-bottom: 6px; }
+  .pp h2 { font-weight: 700; font-size: 22px; line-height: 28px; color: var(--gray-900); margin-top: 22px; }
+  .pp ul { padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+  .pp a { color: var(--brand); text-decoration: underline; }
+  @media (max-width: 900px) { .pp { padding-block: 32px 64px; } .pp h1 { font-size: 32px; line-height: 38px; } }
+</style>

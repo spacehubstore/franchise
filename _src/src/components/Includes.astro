@@ -2,25 +2,28 @@
 // Блок «What the franchise includes» (Figma 1316:9773): Technology, Marketing, Operations, Equipment.
 // Микроанимации (CMO 22.11.2026): одно действие на карточку, до 1 с, отдельные движения 200–450 мс (NN/g: 100–500 мс).
 // Десктоп – при наведении, откат 250 мс; без наведения (телефон) – один раз, когда карточка в экране; reduce motion – без анимаций.
+import { langOf, useT } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
 ---
 <section class="inc wrap">
   <div class="inc__head">
-    <h2>What the franchise includes</h2>
-    <p>Four teams work on your facility from day one.<br />Live from our network today</p>
+    <h2>{t("What the franchise includes")}</h2>
+    <p set:html={t("Four teams work on your facility from day one.<br />Live from our network today")} />
   </div>
   <div class="inc__grid">
     <article class="ic ic--tech" data-mi>
-      <div class="ic__phone"><img src="/assets/figma/inc-phone.webp" width="300" height="612" alt="SpaceHub customer app" loading="lazy" /><div class="slide" aria-hidden="true"><span class="slide__t slide__t--a">Open</span><span class="slide__t slide__t--b">Unlocked</span><i class="knob"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i></div></div>
+      <div class="ic__phone"><img src="/assets/figma/inc-phone.webp" width="300" height="612" alt={t("SpaceHub customer app")} loading="lazy" /><div class="slide" aria-hidden="true"><span class="slide__t slide__t--a">{t("Open")}</span><span class="slide__t slide__t--b">{t("Unlocked")}</span><i class="knob"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i></div></div>
       <div class="ic__txt">
-        <h3>Technology</h3>
-        <p>Customer app for booking, payment and Bluetooth access. Owner dashboard updated daily</p>
+        <h3>{t("Technology")}</h3>
+        <p>{t("Customer app for booking, payment and Bluetooth access. Owner dashboard updated daily")}</p>
       </div>
     </article>
     <div class="inc__mid">
       <article class="ic ic--mkt" data-mi>
         <div class="ic__txt">
-          <h3>Marketing</h3>
-          <p>Search and maps listings, Google Ads, social campaigns and a landing page for your facility</p>
+          <h3>{t("Marketing")}</h3>
+          <p>{t("Search and maps listings, Google Ads, social campaigns and a landing page for your facility")}</p>
         </div>
         <span class="logo logo--g"><img src="/assets/figma/inc-google.svg" width="50" height="50" alt="Google" /></span>
         <span class="logo logo--m"><img src="/assets/figma/inc-meta.svg" width="60" height="60" alt="Meta" /></span>
@@ -31,23 +34,24 @@
         <img class="ic__chat" src="/assets/figma/inc-chat.webp" width="118" height="118" alt="" loading="lazy" />
 
         <div class="ic__txt">
-          <h3>Operations</h3>
-          <p>Call centre and chat in your language, pricing, contracts, payments and debt collection</p>
+          <h3>{t("Operations")}</h3>
+          <p>{t("Call centre and chat in your language, pricing, contracts, payments and debt collection")}</p>
         </div>
       </article>
     </div>
     <article class="ic ic--eq" data-mi>
       <div class="ic__txt">
-        <h3>Equipment</h3>
-        <p>One partner for the whole fit-out. We design the layout and the unit mix, calculate the cost of the equipment, produce it, deliver it and install it</p>
+        <h3>{t("Equipment")}</h3>
+        <p>{t("One partner for the whole fit-out. We design the layout and the unit mix, calculate the cost of the equipment, produce it, deliver it and install it")}</p>
       </div>
-      <div class="ic__eq"><video src="/assets/figma/inc-eq.mp4" poster="/assets/figma/inc-eq-a.webp" muted playsinline preload="metadata" aria-label="Workers welding, fitting a door and fixing panels"></video></div>
+      <div class="ic__eq"><video src="/assets/figma/inc-eq.mp4" poster="/assets/figma/inc-eq-a.webp" muted playsinline preload="metadata" aria-label={t("Workers welding, fitting a door and fixing panels")}></video></div>
     </article>
   </div>
 </section>
 
 <script>
   import { slowNet } from "../lib/net";
+  import { ct } from "../i18n";
   // Микроанимации (CMO 22.11.2026). Technology и Equipment – состояние: при наведении переходят в итог и держат его, без курсора откат.
   // Marketing и Operations – вспышка: значки всплывают и гаснут, карточка сама возвращается в исходный вид; заново – при новом наведении.
   // Без наведения (телефон) – один раз, когда карточка в экране.
@@ -62,7 +66,7 @@
       const r = src.getBoundingClientRect();
       for (let k = 0; k < perSource; k++) {
         const t = labels[(si * perSource + k) % labels.length], d = document.createElement("i");
-        d.className = "pop" + (t.startsWith("+") || t === "Payment" ? " pop--or" : "");
+        d.className = "pop" + (t.startsWith("+") || t === ct("Payment") ? " pop--or" : "");
         d.textContent = t;
         d.style.left = `${r.left - box.left + r.width / 2}px`; d.style.top = `${r.top - box.top + r.height * .35}px`;
         card.appendChild(d);
@@ -77,8 +81,8 @@
   }
   const mkt = document.querySelector<HTMLElement>(".ic--mkt"), ops = document.querySelector<HTMLElement>(".ic--ops");
   const fire = (c: HTMLElement) => {
-    if (c === mkt) burst(c, Array.from(c.querySelectorAll<HTMLElement>(".logo")), ["+1 lead"], 3, [-190, 190], [-440, -300]);
-    else if (c === ops) burst(c, [c.querySelector<HTMLElement>(".ic__chat")!], ["Call", "Chat", "Contract", "Payment", "Reminder", "Call"], 6, [-300, -60], [-300, -170]);
+    if (c === mkt) burst(c, Array.from(c.querySelectorAll<HTMLElement>(".logo")), [ct("+1 lead")], 3, [-190, 190], [-440, -300]);
+    else if (c === ops) burst(c, [c.querySelector<HTMLElement>(".ic__chat")!], ["Call", "Chat", "Contract", "Payment", "Reminder", "Call"].map((x) => ct(x)), 6, [-300, -60], [-300, -170]);
     else {
       c.classList.add("play");
       const v = c.querySelector<HTMLVideoElement>("video");

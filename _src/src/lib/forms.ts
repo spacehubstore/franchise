@@ -2,6 +2,7 @@
 // Телефон – libphonenumber-js: формат по мере ввода, страна по вставленному «+971…» / «00971…», в заявку – E.164 (+971501234567).
 import { AsYouType, validatePhoneNumberLength, getCountries, getCountryCallingCode, parsePhoneNumberFromString, isValidPhoneNumber, getExampleNumber, type CountryCode } from "libphonenumber-js";
 import examples from "libphonenumber-js/mobile/examples";
+import { ct, pageLang } from "../i18n";
 
 const TOP: CountryCode[] = ["AE", "TH", "SA", "EE", "PH", "TR"];
 const TZ: Record<string, CountryCode> = { "Asia/Dubai": "AE", "Asia/Bangkok": "TH", "Asia/Riyadh": "SA", "Europe/Tallinn": "EE", "Asia/Manila": "PH", "Europe/Istanbul": "TR" };
@@ -11,9 +12,9 @@ let FULL: Full | null = null;
 const loadFull = () => { if (!FULL) import("libphonenumber-js/max").then((m) => (FULL = m)).catch(() => {}); };
 // номер верен по правилам страны: полные метаданные, пока не загрузились – проверка длины
 const valid = (v: string, c: CountryCode) => (FULL ? FULL.isValidPhoneNumber(v, c) : isValidPhoneNumber(v, c));
-const shortName = (c: CountryCode) => ({ AE: "the UAE", US: "the US", GB: "the UK", PH: "the Philippines" } as Record<string, string>)[c] || names.of(c) || c;
+const shortName = (c: CountryCode) => (pageLang() === "en" ? ({ AE: "the UAE", US: "the US", GB: "the UK", PH: "the Philippines" } as Record<string, string>)[c] : "") || names.of(c) || c;
 const flag = (c: string) => c.replace(/./g, (ch) => String.fromCodePoint(127397 + ch.charCodeAt(0)));
-const names = new Intl.DisplayNames(["en"], { type: "region" });
+const names = new Intl.DisplayNames([pageLang(), "en"], { type: "region" });
 const dl = (o: object) => (window as any).dataLayer?.push(o);
 
 // общие данные форм в пределах вкладки
@@ -23,6 +24,7 @@ function save(k: string, v: string) { try { const s = store(); s[k] = v; session
 export function defaultCountry(): CountryCode {
   const s = store().country as CountryCode;
   if (s) return s;
+  if (pageLang() === "th") return "TH";
   try { const tz = Intl.DateTimeFormat().resolvedOptions().timeZone; if (TZ[tz]) return TZ[tz]; } catch { /* нет часового пояса */ }
   return "AE";
 }
@@ -85,7 +87,7 @@ function initPhone(form: HTMLFormElement): Ph | null {
   inp.addEventListener("focus", loadFull);
   inp.addEventListener("blur", () => {
     if (!inp.value) return;
-    if (!valid(inp.value, country())) { box(inp).classList.remove("is-ok"); showErr(inp, `Check the number. Example for ${shortName(country())}: ${inp.placeholder}`); return; }
+    if (!valid(inp.value, country())) { box(inp).classList.remove("is-ok"); showErr(inp, ct("Check the number. Example for {c}: {n}", { c: shortName(country()), n: inp.placeholder })); return; }
     const p = parsePhoneNumberFromString(inp.value, country()); if (p) { inp.value = p.formatNational(); save("phone", inp.value); }
     mark();
   });
@@ -150,19 +152,19 @@ export function refillForm(form: HTMLFormElement) {
 export function checkForm(form: HTMLFormElement, where: string): { ok: boolean; phone: string } {
   const bad: [HTMLElement, string, string][] = [];
   const name = form.querySelector<HTMLInputElement>('input[name="name"]');
-  if (name && !name.value.trim()) bad.push([name, "name", "Please add your name"]);
+  if (name && !name.value.trim()) bad.push([name, "name", ct("Please add your name")]);
   const ph = PH.get(form);
   let phone = "";
   if (ph) {
     const p = parsePhoneNumberFromString(ph.inp.value, ph.country());
-    if (!ph.inp.value.trim()) bad.push([ph.inp, "phone", "Please add your phone number"]);
-    else if (!p || !valid(ph.inp.value, ph.country())) bad.push([ph.inp, "phone", `Check the number. Example for ${shortName(ph.country())}: ${ph.inp.placeholder}`]);
+    if (!ph.inp.value.trim()) bad.push([ph.inp, "phone", ct("Please add your phone number")]);
+    else if (!p || !valid(ph.inp.value, ph.country())) bad.push([ph.inp, "phone", ct("Check the number. Example for {c}: {n}", { c: shortName(ph.country()), n: ph.inp.placeholder })]);
     else phone = p.number;
   }
   const email = form.querySelector<HTMLInputElement>('input[name="email"]');
-  if (email && email.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim())) bad.push([email, "email", "Check the email"]);
+  if (email && email.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim())) bad.push([email, "email", ct("Check the email")]);
   const agree = form.querySelector<HTMLInputElement>('input[name="agree"]');
-  if (agree && !agree.checked) bad.push([agree.closest("label")!, "agree", "Please confirm the consent"]);
+  if (agree && !agree.checked) bad.push([agree.closest("label")!, "agree", ct("Please confirm the consent")]);
   bad.forEach(([el, f, msg]) => { showErr(el, msg); dl({ event: "form_field_error", form_location: where, field: f }); });
   if (bad.length) { const first = bad[0][0]; (first.querySelector?.("input") as HTMLElement || first).focus?.(); }
   return { ok: !bad.length, phone };

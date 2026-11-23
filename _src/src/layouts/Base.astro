@@ -1,17 +1,21 @@
 ---
 // Общий шаблон: noindex на каждой странице (решение CMO 22.11.2026), GTM SpaceHub, шрифт Manrope.
 import "../styles/tokens.css";
+import { LANGS, langOf, href } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const rest = Astro.url.pathname.replace(/^\/(th)(\/|$)/, "/");   // путь без языка – для ссылок на другие версии
 const { title = "SpaceHub franchise", description = "Turn your space into a self-storage business" } = Astro.props;
 const GTM = "GTM-TJVPKFZ";
 ---
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {LANGS.map((l) => <link rel="alternate" hreflang={l} href={`https://franchise.spacehubstore.com${href(l, rest)}`} />)}
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -19,6 +23,7 @@ const GTM = "GTM-TJVPKFZ";
     <meta name="theme-color" content="#FF4F00" />
     <!-- шрифт со своего сервера (CMO 23.11.2026): один вариативный файл Manrope, латиница, 24 КБ, без соединений с Google -->
     <link rel="preload" href="/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin />
+    {lang === "th" && <link rel="preload" href="/fonts/noto-sans-thai.woff2" as="font" type="font/woff2" crossorigin />}
     <script is:inline define:vars={{ GTM }}>
       window.dataLayer = window.dataLayer || [];
       (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});

@@ -2,24 +2,28 @@
 // Подвал SpaceHub (в Figma подвал Кладовкина – не используем: материалы SpaceHub без связи с Кладовкиным).
 // Цифры сети – только SpaceHub: 17 складов в 4 странах.
 import { CONTACTS } from "../data/site";
-const nav = [["Calculator", "/#calc"], ["Check your space", "/#check"], ["Feasibility study", "/#study"], ["Questions", "/#faq"], ["Timeline", "/#timeline"]];
+import { langOf, useT, href, messenger, LANGS, LANG_LABEL } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
+const m = messenger(lang);
+const nav = [["Calculator", "/#calc"], ["Check your space", "/#check"], ["Feasibility study", "/#study"], ["Questions", "/#faq"], ["Timeline", "/#timeline"]].map(([a, b]) => [t(a), href(lang, b)]);
 ---
 <footer class="ft">
   <div class="ft__in wrap">
     <div class="ft__top">
       <div class="ft__brand">
         <div class="ft__logo"><img src="/assets/figma/logo-icon.svg" width="36" height="32" alt="" /><img class="ft__wm" src="/assets/figma/logo-wordmark.svg" width="97" height="20" alt="SpaceHub" /><span>franchise</span></div>
-        <p>Self-storage franchise. From a small unit to a whole building</p>
+        <p>{t("Self-storage franchise. From a small unit to a whole building")}</p>
       </div>
-      <nav class="ft__col"><h4>Franchise</h4>{nav.map(([t, h]) => <a href={h}>{t}</a>)}</nav>
-      <div class="ft__col"><h4>Contact</h4>
-        <a href={CONTACTS.whatsapp.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="footer">WhatsApp</a>
+      <nav class="ft__col"><h4>{t("Franchise")}</h4>{nav.map(([t, h]) => <a href={h}>{t}</a>)}</nav>
+      <div class="ft__col"><h4>{t("Contact")}</h4>
+        {lang !== "th" && <a href={CONTACTS.whatsapp.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="footer">WhatsApp</a>}
         <a href={CONTACTS.line.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="line" data-loc="footer">LINE</a>
         <a href="https://spacehubstore.com" target="_blank" rel="noopener">spacehubstore.com</a>
       </div>
     </div>
     <div class="ft__word" aria-hidden="true">SpaceHub</div>
-    <div class="ft__bot"><small>© 2026 SpaceHub</small><a href="/privacy" target="_blank">Privacy policy</a></div>
+    <div class="ft__bot"><small>© 2026 SpaceHub</small><a href={href(lang, "/privacy")} target="_blank">{t("Privacy policy")}</a></div>
   </div>
 </footer>
 

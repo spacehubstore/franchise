@@ -2,28 +2,35 @@
 // Первый экран (Figma 1531:5963), две колонки. Всё, что относится к помещению, собрано на фото (CMO 22.11.2026):
 // переключатель городов над фото, доход «до» и «после» – карточки на своих половинах слайдера, город и площадь – подпись
 // под фото. Слева – оффер, кнопки и короткие факты. На мобильном – одна колонка, фото 4:5.
-import { CITIES, CONTACTS } from "../data/site";
-const first = CITIES[0];
-const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from signing to opening", "From a small unit to a whole building"];
+import { CITIES } from "../data/site";
+import { langOf, useT, href, messenger, LANGS, LANG_LABEL } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
+const m = messenger(lang);
+// тайская версия – Бангкок первым; названия, площадь и подпись кейса – на языке страницы
+const cities = (lang === "th" ? [...CITIES].sort((a, b) => (a.id === "bangkok" ? -1 : b.id === "bangkok" ? 1 : 0)) : CITIES)
+  .map((c) => ({ ...c, name: t(c.name), note: t(c.note) }));
+const first = cities[0];
+const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from signing to opening", "From a small unit to a whole building"].map((f) => t(f));
 ---
-<section class="hero" data-cases data-cities={JSON.stringify(CITIES)}>
+<section class="hero" data-cases data-cities={JSON.stringify(cities)}>
   <div class="hero__in wrap">
     <div class="hero__txt">
-      <h1 class="hero__h">Turn your space into a self&#8209;storage business</h1>
-      <p class="hero__lead">We design, equip, open and run the facility</p>
+      <h1 class="hero__h" set:html={t("Turn your space into a self&#8209;storage business")} />
+      <p class="hero__lead">{t("We design, equip, open and run the facility")}</p>
       <div class="hero__btns">
-        <button type="button" class="btn btn--dark" data-open-lead data-ev="get_in_touch_clicked" data-loc="hero">Get in touch</button>
-        <a class="btn btn--light" href={CONTACTS.whatsapp.url} target="_blank" rel="noopener"
-           data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="hero">
-          <img src="/assets/figma/whatsapp-24.svg" width="24" height="24" alt="" />WhatsApp
+        <button type="button" class="btn btn--dark" data-open-lead data-ev="get_in_touch_clicked" data-loc="hero">{t("Get in touch")}</button>
+        <a class="btn btn--light" href={m.url} target="_blank" rel="noopener"
+           data-ev="franchise_messenger_clicked" data-messenger={m.id} data-loc="hero">
+          <img src={m.icon} width="24" height="24" alt="" />{m.name}
         </a>
       </div>
       <ul class="facts">{facts.map((f) => <li>{f}</li>)}</ul>
     </div>
 
     <div class="case">
-      <div class="tabs" role="tablist" aria-label="Cases by city">
-        {CITIES.map((c, i) => (
+      <div class="tabs" role="tablist" aria-label={t("Cases by city")}>
+        {cities.map((c, i) => (
           <button type="button" class={`tab ${i === 0 ? "tab--on" : ""}`} role="tab" aria-selected={i === 0 ? "true" : "false"} data-city={c.id}>
             <img src="/assets/figma/pin-active.svg" width="18" height="18" alt="" />{c.name}<i class="tab__bar" aria-hidden="true"></i>
           </button>
@@ -37,9 +44,9 @@ const facts = ["Free assessment of your space in 48 hours", "8–11 weeks from s
                alt="" fetchpriority="high" decoding="async" />
         ))}
         <div class="ba__handle" data-ba-handle aria-hidden="true"><span><svg viewBox="0 0 24 24"><path d="M9 6 3 12l6 6M15 6l6 6-6 6" /></svg></span></div>
-        <input class="ba__range" type="range" min="0" max="100" value="50" aria-label="Before and after" data-ba-range />
-        <div class="money money--b"><small>Before · leased</small><b data-v="before">{first.before}</b><span>a month</span></div>
-        <div class="money money--a"><small>After · self-storage</small><b data-v="after">{first.after}</b><span>a month</span></div>
+        <input class="ba__range" type="range" min="0" max="100" value="50" aria-label={t("Before and after")} data-ba-range />
+        <div class="money money--b"><small>{t("Before · leased")}</small><b data-v="before">{first.before}</b><span>{t("a month")}</span></div>
+        <div class="money money--a"><small>{t("After · self-storage")}</small><b data-v="after">{first.after}</b><span>{t("a month")}</span></div>
       </div>
 
       <p class="case__cap"><b><span data-v="name">{first.name}</span> · <span data-v="space">{first.space}</span></b><span data-v="note">{first.note}</span></p>

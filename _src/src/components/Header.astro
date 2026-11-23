@@ -3,20 +3,25 @@
 // На первом экране кнопок нет – они дублировали бы кнопки первого экрана; появляются, когда первый экран ушёл (CMO 23.11.2026).
 import { CONTACTS } from "../data/site";
 const { cta = true } = Astro.props;   // на служебных страницах (политика) – без кнопок
+import { langOf, useT, href, messenger, LANGS, LANG_LABEL } from "../i18n";
+const lang = langOf(Astro.url.pathname);
+const t = useT(lang);
+const m = messenger(lang);
 ---
 <header class="hdr">
   <div class="hdr__in">
-    <a class="hdr__brand" href="/" aria-label="SpaceHub franchise">
+    <a class="hdr__brand" href={href(lang, "/")} aria-label="SpaceHub franchise">
       <img src="/assets/figma/logo-icon.svg" width="36" height="32" alt="" />
       <img src="/assets/figma/logo-wordmark.svg" width="97" height="20" alt="SpaceHub" />
       <span class="hdr__sep" aria-hidden="true"></span>
       <span class="hdr__sub">franchise</span>
     </a>
+    <nav class="lng" aria-label="Language">{LANGS.map((l) => <a href={href(l, "/")} hreflang={l} class={l === lang ? "on" : ""} data-lang={l}>{LANG_LABEL[l]}</a>)}</nav>
     {cta && <nav class="hdr__cta" data-hdr-cta>
-      <button type="button" class="btn btn--sm btn--dark" data-open-lead data-ev="get_in_touch_clicked" data-loc="header">Get in touch</button>
-      <a class="btn btn--sm btn--light" href={CONTACTS.whatsapp.url} target="_blank" rel="noopener"
-         data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="header">
-        <img src="/assets/figma/whatsapp-20.svg" width="20" height="20" alt="" />WhatsApp
+      <button type="button" class="btn btn--sm btn--dark" data-open-lead data-ev="get_in_touch_clicked" data-loc="header">{t("Get in touch")}</button>
+      <a class="btn btn--sm btn--light" href={m.url} target="_blank" rel="noopener"
+         data-ev="franchise_messenger_clicked" data-messenger={m.id} data-loc="header">
+        <img src={m.icon} width="20" height="20" alt="" />{m.name}
       </a>
     </nav>}
   </div>
@@ -28,6 +33,10 @@ const { cta = true } = Astro.props;   // на служебных страниц�
   .hdr__brand { display: flex; align-items: center; gap: 8px; }
   .hdr__sep { width: 1.5px; height: 20px; background: var(--gray-300); margin: 0 8px; }
   .hdr__sub { font-weight: 600; font-size: 18px; line-height: 26px; color: var(--gray-600); }
+  /* переключатель языка – всегда виден, рядом с логотипом справа */
+  .lng { display: flex; gap: 2px; margin-left: auto; margin-right: 12px; padding: 3px; border-radius: 99px; background: var(--gray-100); }
+  .lng a { padding: 4px 10px; border-radius: 99px; font-weight: 600; font-size: 13px; color: var(--gray-500); }
+  .lng a.on { background: var(--white); color: var(--gray-900); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
   .hdr__cta { display: flex; gap: 8px; align-items: center; transition: opacity .3s, transform .3s; }
   :global(html.hero-on) .hdr__cta { opacity: 0; transform: translateY(-6px); pointer-events: none; }
   @media (max-width: 900px) {
