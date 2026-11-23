@@ -1,6 +1,6 @@
 // Единое окно заявки (CMO 22.11.2026): одни поля везде – имя, город, телефон, согласие. Разметка – components/LeadModal.astro.
 // Кто открывает, передаёт метку формы, заголовок, подстановку города и страны и данные для заявки (например, расчёт).
-import { sendLead, lastRequestId } from "./lead";
+import { sendLead, lastRequestId, onSubmitOnce } from "./lead";
 import { ready as formReady } from "./formsLazy";
 
 export type LeadOpts = {
@@ -21,8 +21,7 @@ export async function openLead(o: LeadOpts) {
     city.addEventListener("input", () => (city.dataset.touched = "1"));
     dlg.querySelector("[data-lm-close]")!.addEventListener("click", () => dlg.close());
     dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    onSubmitOnce(form, async () => {
       if (!cur) return;
       const { ok, phone } = (await formReady(form)).checkForm(form, cur.form);
       if (!ok) return;
@@ -30,7 +29,7 @@ export async function openLead(o: LeadOpts) {
       const who = `${fd.get("name")}, ${phone}, ${fd.get("city") || ""}`;
       const how = await sendLead({ form: cur.form, name: fd.get("name"), city: fd.get("city"), phone, ...(cur.data || {}) },
                                  cur.text ? cur.text(who) : `Franchise request (${cur.form}): ${who}`);
-      (window as any).dataLayer?.push({ event: "callback_form_sent", form_location: "partner", lead_form: cur.form, site_variant: location.pathname, delivery: how, request_id: lastRequestId });
+      if (how !== "repeat") (window as any).dataLayer?.push({ event: "callback_form_sent", form_location: "partner", lead_form: cur.form, site_variant: location.pathname, delivery: how, request_id: lastRequestId });
       dlg.querySelector<HTMLElement>("[data-lm-ok]")!.hidden = false;
     });
   }
