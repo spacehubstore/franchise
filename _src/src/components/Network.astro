@@ -9,10 +9,14 @@ import G from "../data/globe.json";
 import { langOf, useT } from "../i18n";
 const lang = langOf(Astro.url.pathname);
 const t = useT(lang);
-const META: Record<string, { label: string; side: "l" | "r"; hub?: boolean; soon?: boolean }> = {
-  Tallinn: { label: "Estonia", side: "r" }, Ljubljana: { label: "Slovenia", side: "l", soon: true }, Istanbul: { label: "Türkiye", side: "r" },
-  Dubai: { label: "UAE", side: "r", hub: true }, Bangkok: { label: "Thailand", side: "l" },
+// Площадь – полезная площадь действующих складов страны (CRM SpaceHub, raw_crm_storages.total_usable_area, без тестовых строк,
+// 24.11.2026): ОАЭ 11 складов 5 761 м², Таиланд 3 – 1 286, Эстония 2 – 449, Турция 1 – 244; Словения 77 м² неактивна → «soon».
+// На сайте – вниз до десятков, чтобы цифра не устаревала вверх; при открытии новых складов обновить.
+const META: Record<string, { label: string; side: "l" | "r"; hub?: boolean; soon?: boolean; m2?: number }> = {
+  Tallinn: { label: "Estonia", side: "r", m2: 440 }, Ljubljana: { label: "Slovenia", side: "l", soon: true }, Istanbul: { label: "Türkiye", side: "r", m2: 240 },
+  Dubai: { label: "UAE", side: "r", hub: true, m2: 5760 }, Bangkok: { label: "Thailand", side: "l", m2: 1280 },
 };
+const fmt = (n: number) => n.toLocaleString("en-US");
 const order = ["Dubai", "Istanbul", "Tallinn", "Ljubljana", "Bangkok"];
 const pins = G.pins.map((p) => ({ ...p, ...META[p.city], d: 1500 + order.indexOf(p.city) * 160 }));
 const arcs = G.arcs.map((a) => ({ ...a, d0: 1700 + order.indexOf(a.to) * 160 }));
@@ -34,11 +38,32 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
       <div class={`pin pin--${p.side}${p.hub ? " pin--hub" : ""}${p.soon ? " pin--soon" : ""}`}
            style={`left:${p.x}%; top:${p.y}%; --d:${p.d}ms`}>
         <i></i>
-        <span>{t(p.label)}{p.soon && <em>{t("soon")}</em>}</span>
+        <span>{t(p.label)}{p.soon && <em>{t("soon")}</em>}{p.m2 && <b class="m2"><span data-to={p.m2} style={`--d:${p.d}ms`}>{fmt(p.m2)}</span> m²</b>}</span>
       </div>
     ))}
   </div>
 </section>
+
+<script>
+  // счёт м² от нуля, когда пин появился; без JS и при «уменьшить движение» – сразу итог
+  const box = document.querySelector<HTMLElement>(".net .stage");
+  const nums = [...document.querySelectorAll<HTMLElement>(".net [data-to]")];
+  if (box && nums.length && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const f = (n: number) => n.toLocaleString("en-US");
+    nums.forEach((el) => (el.textContent = "0"));
+    new IntersectionObserver(([e], o) => {
+      if (!e.isIntersecting) return; o.disconnect();
+      nums.forEach((el) => {
+        const to = +el.dataset.to!, delay = parseInt(getComputedStyle(el).getPropertyValue("--d")) + 250, dur = 1400;
+        setTimeout(() => {
+          const t0 = performance.now();
+          const step = (t: number) => { const k = Math.min(1, (t - t0) / dur); el.textContent = f(Math.round(to * (1 - Math.pow(1 - k, 3)) / 10) * 10); if (k < 1) requestAnimationFrame(step); };
+          requestAnimationFrame(step);
+        }, delay);
+      });
+    }, { threshold: .15, rootMargin: "0px 0px -8% 0px" }).observe(box);
+  }
+</script>
 
 <style>
   .net { background: var(--gray-900); color: var(--white); padding-block: 0 72px; overflow: hidden; display: flex; flex-direction: column; gap: 8px; }
@@ -78,6 +103,8 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
   .pin--r span { left: 20px; }
   .pin--l span { right: 20px; }
   .pin em { font-style: normal; font-weight: 600; color: var(--gray-400); }
+  .pin .m2 { font-weight: 800; color: #ffb48f; font-variant-numeric: tabular-nums; }
+  .pin .m2 span { position: static; display: inline; padding: 0; border: 0; background: none; backdrop-filter: none; opacity: 1; transform: none; font: inherit; color: inherit; }
   .rv.in .pin i { transform: scale(1); }
   .rv.in .pin span { opacity: 1; transform: none; }
   @keyframes ping { 0% { transform: scale(.6); opacity: .7; } 100% { transform: scale(1.8); opacity: 0; } }
@@ -90,6 +117,7 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
     .pin span { top: -12px; padding: 2px 9px; font-size: 11px; line-height: 18px; }
     .pin i { left: -5px; top: -5px; width: 10px; height: 10px; box-shadow: 0 0 0 4px rgba(255, 79, 0, .22); }
     .pin--hub i { left: -7px; top: -7px; width: 14px; height: 14px; }
+    .pin.pin--hub span { left: auto; right: 18px; }   /* на узкой карте подпись ОАЭ справа налезает на Таиланд */
     .pin--soon span { display: none; }   /* подпись Словении на узкой карте уходит за край экрана, кольцо остаётся */
     .pin--r span { left: 14px; }
     .pin--l span { right: 14px; }
