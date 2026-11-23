@@ -2,6 +2,7 @@
 // Шапка (Figma 1531:5928): логотип, «franchise», кнопки «Get in touch» (общее окно заявки) и WhatsApp.
 // На первом экране кнопок нет – они дублировали бы кнопки первого экрана; появляются, когда первый экран ушёл (CMO 23.11.2026).
 import { CONTACTS } from "../data/site";
+const { cta = true } = Astro.props;   // на служебных страницах (политика) – без кнопок
 ---
 <header class="hdr">
   <div class="hdr__in">
@@ -11,13 +12,13 @@ import { CONTACTS } from "../data/site";
       <span class="hdr__sep" aria-hidden="true"></span>
       <span class="hdr__sub">franchise</span>
     </a>
-    <nav class="hdr__cta" data-hdr-cta>
+    {cta && <nav class="hdr__cta" data-hdr-cta>
       <button type="button" class="btn btn--sm btn--dark" data-open-lead data-ev="get_in_touch_clicked" data-loc="header">Get in touch</button>
       <a class="btn btn--sm btn--light" href={CONTACTS.whatsapp.url} target="_blank" rel="noopener"
          data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="header">
         <img src="/assets/figma/whatsapp-20.svg" width="20" height="20" alt="" />WhatsApp
       </a>
-    </nav>
+    </nav>}
   </div>
 </header>
 

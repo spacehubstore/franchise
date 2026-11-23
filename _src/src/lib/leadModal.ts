@@ -28,7 +28,7 @@ export async function openLead(o: LeadOpts) {
       if (!ok) return;
       const fd = new FormData(form);
       const who = `${fd.get("name")}, ${phone}, ${fd.get("city") || ""}`;
-      const how = await sendLead({ form: cur.form, name: fd.get("name"), city: fd.get("city"), phone, ...(cur.data || {}) },
+      const how = await sendLead({ ad_consent: !!form.querySelector<HTMLInputElement>("[name=ad_consent]")?.checked, form: cur.form, name: fd.get("name"), city: fd.get("city"), phone, ...(cur.data || {}) },
                                  cur.text ? cur.text(who) : `Franchise request (${cur.form}): ${who}`);
       (window as any).dataLayer?.push({ event: "callback_form_sent", form_location: "partner", lead_form: cur.form, site_variant: location.pathname, delivery: how });
       dlg.querySelector<HTMLElement>("[data-lm-ok]")!.hidden = false;
