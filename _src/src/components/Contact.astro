@@ -52,7 +52,7 @@ import { CONTACTS } from "../data/site";
     if (!ok) return;
     const how = await sendLead({ form: "contact", name: f.get("name"), city: f.get("city"), phone },
                                `Franchise request. ${f.get("name")}, ${phone}, ${f.get("city") || ""}`);
-    (window as any).dataLayer?.push({ event: "franchise_callback_form_sent", form_location: "contact", site_variant: location.pathname, delivery: how });
+    (window as any).dataLayer?.push({ event: "callback_form_sent", form_location: "partner", lead_form: "contact", site_variant: location.pathname, delivery: how });
     form.querySelector<HTMLElement>("[data-cf-ok]")!.hidden = false;
   });
 </script>
