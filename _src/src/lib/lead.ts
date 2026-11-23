@@ -41,10 +41,12 @@ function marks() {
   return o;
 }
 
+// номер последней заявки: тот же уходит в сервис заявок (amoCRM, BigQuery) и в dataLayer – ID транзакции конверсии Google Ads
+export let lastRequestId = "";
 export async function sendLead(lead: Record<string, unknown>, waText: string): Promise<"endpoint" | "whatsapp"> {
   const f = get(sessionStorage, "sh_lead_fields") || {};
   const body = { source: "franchise_site", page: location.href, site_variant: location.pathname,
-                 request_id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+                 request_id: (lastRequestId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
                  ga_client_id: (document.cookie.match(/_ga=GA\d\.\d\.(\d+\.\d+)/) || [])[1] || "",
                  phone_country: f.country || "", ...marks(), ...lead };
   if (FORM_ENDPOINT) {

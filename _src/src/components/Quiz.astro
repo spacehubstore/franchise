@@ -125,7 +125,7 @@ const t = useT(lang);
 </section>
 
 <script>
-  import { sendLead } from "../lib/lead";
+  import { sendLead, lastRequestId } from "../lib/lead";
   import { prepare, ready } from "../lib/formsLazy";
   import { onUnit, getUnit, SQFT } from "../lib/units";
   import { ct } from "../i18n";
@@ -239,7 +239,7 @@ const t = useT(lang);
                 `${f.get("name")}, ${phone}, ${f.get("city") || ""}`;
     const how = await sendLead({ form: "quiz", branch: st.branch, answers: ans, area_unit_shown: getUnit(),
                                  name: f.get("name"), phone, city: f.get("city") }, txt);
-    dl({ event: "callback_form_sent", form_location: "partner", lead_form: "quiz", branch: st.branch, site_variant: location.pathname, delivery: how });
+    dl({ event: "callback_form_sent", form_location: "partner", lead_form: "quiz", branch: st.branch, site_variant: location.pathname, delivery: how, request_id: lastRequestId });
     st.step = 9; show();
   });
   show();
