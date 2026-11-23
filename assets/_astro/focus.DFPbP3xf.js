@@ -1,0 +1,1 @@
+var e={rootMargin:`-40% 0px -40% 0px`,threshold:0};export{e as t};
