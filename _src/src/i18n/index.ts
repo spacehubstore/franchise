@@ -29,8 +29,11 @@ export const ct = (s: string, v?: Record<string, string | number>) => tr(pageLan
 // ссылка внутри языковой версии: href(lang, "/#calc") → "/th/#calc"
 export const href = (lang: Lang, p: string) => (lang === "en" ? p : `/${lang}${p}`);
 
-// мессенджер языка
+// WhatsApp с готовым первым сообщением (CMO 24.11.2026, версия 1 – одно предложение, без кода источника и города)
+export const waUrl = (lang: Lang) => `${CONTACTS.whatsapp.url}?text=${encodeURIComponent(tr(lang, "Hi! I'm interested in the SpaceHub franchise."))}`;
+
+// мессенджер языка; LINE – личная ссылка, текст в неё не передаётся
 export const messenger = (lang: Lang) =>
   lang === "th"
     ? { id: "line", name: "LINE", url: CONTACTS.line.url, icon: "/assets/figma/line-24.svg" }
-    : { id: "whatsapp", name: "WhatsApp", url: CONTACTS.whatsapp.url, icon: "/assets/figma/whatsapp-24.svg" };
+    : { id: "whatsapp", name: "WhatsApp", url: waUrl(lang), icon: "/assets/figma/whatsapp-24.svg" };

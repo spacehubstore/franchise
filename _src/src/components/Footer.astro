@@ -2,7 +2,7 @@
 // Подвал SpaceHub (в Figma подвал Кладовкина – не используем: материалы SpaceHub без связи с Кладовкиным).
 // Цифры сети – только SpaceHub: 17 складов в 4 странах.
 import { CONTACTS, SOCIAL } from "../data/site";
-import { langOf, useT, href, messenger, LANGS, LANG_LABEL } from "../i18n";
+import { langOf, useT, href, messenger, waUrl, LANGS, LANG_LABEL } from "../i18n";
 const lang = langOf(Astro.url.pathname);
 const t = useT(lang);
 const m = messenger(lang);
@@ -25,7 +25,7 @@ const nav = [["Calculator", "/#calc"], ["Check your space", "/#check"], ["Feasib
       </div>
       <nav class="ft__col"><h4>{t("Franchise")}</h4>{nav.map(([t, h]) => <a href={h}>{t}</a>)}</nav>
       <div class="ft__col"><h4>{t("Contact")}</h4>
-        {lang !== "th" && <a href={CONTACTS.whatsapp.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="footer">WhatsApp</a>}
+        {lang !== "th" && <a href={waUrl(lang)} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="whatsapp" data-loc="footer">WhatsApp</a>}
         <a href={CONTACTS.line.url} target="_blank" rel="noopener" data-ev="franchise_messenger_clicked" data-messenger="line" data-loc="footer">LINE</a>
         <a href="https://spacehubstore.com" target="_blank" rel="noopener">spacehubstore.com</a>
       </div>

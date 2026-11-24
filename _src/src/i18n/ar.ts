@@ -284,5 +284,7 @@ const ar: Record<string, string> = {
   "Türkiye": "تركيا",
   "Estonia": "إستونيا",
   "Slovenia": "سلوفينيا",
+  // первое сообщение в WhatsApp (i18n/index.ts waUrl)
+  "Hi! I'm interested in the SpaceHub franchise.": "مرحبًا! أود معرفة المزيد عن امتياز SpaceHub.",
 };
 export default ar;

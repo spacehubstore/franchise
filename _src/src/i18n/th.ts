@@ -284,5 +284,7 @@ const th: Record<string, string> = {
   "Türkiye": "ตุรกี",
   "Estonia": "เอสโตเนีย",
   "Slovenia": "สโลวีเนีย",
+  // первое сообщение в WhatsApp (i18n/index.ts waUrl)
+  "Hi! I'm interested in the SpaceHub franchise.": "สวัสดีครับ/ค่ะ สนใจแฟรนไชส์ SpaceHub",
 };
 export default th;
