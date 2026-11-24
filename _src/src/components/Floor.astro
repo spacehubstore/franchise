@@ -104,14 +104,24 @@ const t = useT(lang);
   const n = items.length;
   const desk = matchMedia("(min-width: 1101px)");
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches || slowNet;
-  if (slowNet) sec.querySelectorAll<HTMLVideoElement>("video").forEach((v) => { v.preload = "none"; v.removeAttribute("src"); v.load(); });
+  // ролики – целиком в память (fetch → blob), как в блоке исследования (CMO 24.11.2026): сцены подвисали при повторном открытии –
+  // на втором круге браузер выбрасывает кадры (readyState 1) и дочитывает файл частичными запросами из кэша, на чём Safari вставал.
+  // Из памяти повторный показ не зависит от сети и кэша. src уходит в data-src до загрузки, заставка остаётся
+  sec.querySelectorAll<HTMLVideoElement>("video").forEach((v) => { v.dataset.src = v.getAttribute("src") || ""; v.dataset.pa = v.poster; v.removeAttribute("src"); v.preload = "none"; v.load(); });
   items.forEach((it, i) => { const c = vis[i].cloneNode(true) as HTMLElement; c.classList.remove("is-on"); it.querySelector(".vis--inline")!.replaceWith(c); });
+  const blobs = new Map<string, Promise<string>>();
+  const blob = (url: string) => { if (!blobs.has(url)) blobs.set(url, fetch(url).then((r) => { if (!r.ok) throw 0; return r.blob(); }).then((b) => URL.createObjectURL(b))); return blobs.get(url)!; };
+  // ролик сцены готов: blob подставлен и метаданные прочитаны (длительность для полоски)
+  const ready = (v: HTMLVideoElement & { _rdy?: Promise<void> }) => v._rdy ||= blob(v.dataset.src!).then((u) => new Promise<void>((res) => {
+    if (v.src !== u) { v.src = u; v.preload = "auto"; }
+    if (v.readyState >= 1) return res();
+    v.addEventListener("loadedmetadata", () => res(), { once: true }); v.addEventListener("error", () => res(), { once: true }); }));
 
   // сцена: «до» → свайп (сцена 3) → ролик ×2,2 → на 2/3 ролика плашка «после» (.is-cap) → конец ролика (.is-done)
-  type S = HTMLElement & { _t?: number; _d?: number; _end?: number; _start?: number };
+  type S = HTMLElement & { _t?: number; _d?: number; _end?: number; _start?: number; _run?: number; _seenT?: number; _stall?: number };
   function start(sc: S) {
     sc.classList.remove("is-on", "is-done", "is-cap"); void sc.offsetWidth; sc.classList.add("is-on");
-    sc._end = 0; sc._start = performance.now();
+    sc._end = 0; sc._start = performance.now(); sc._run = (sc._run || 0); sc._stall = 0;
     const v = sc.querySelector("video");
     if (!v) { clearTimeout(sc._t); clearTimeout(sc._d); if (sc.dataset.chart !== undefined) runChart(sc, still);
               if (still) { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); return; }
@@ -119,10 +129,20 @@ const t = useT(lang);
               sc._d = window.setTimeout(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); }, +(sc.dataset.ms || 1200)); return; }
     clearTimeout(sc._t); v.pause();
     if (still) { uncover(v); v.poster = v.poster.replace("-a.webp", "-b.webp"); sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); return; }
+    if (v.dataset.pa) v.poster = v.dataset.pa;
     cover(v);   // кадр «до» поверх ролика, пока первый кадр не нарисован – без пустого кадра на старте
-    if (v.currentTime) v.currentTime = 0;
-    v.onended = () => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); };
-    sc._t = window.setTimeout(() => { v.playbackRate = RATE; v.play().catch(() => { sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); }); }, +(v.dataset.pre || 0));
+    const run = ++sc._run!;
+    // отказ: «после» – последним кадром ролика, а если ролик не успел загрузиться – конечной картинкой вместо заставки «до»
+    const fail = () => { if (sc._run !== run) return; if (v.readyState < 2) v.poster = (v.dataset.pa || v.poster).replace("-a.webp", "-b.webp");
+                         uncover(v); sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); };
+    v.onended = () => { if (sc._run !== run) return; sc.classList.add("is-done", "is-cap"); sc._end = performance.now(); seen(sc); };
+    // ролик ещё грузится – сцена стоит на кадре «до», отсчёт начинается с готовности; не загрузился за 5 с – сразу «после»
+    const wait = window.setTimeout(fail, 5000);
+    ready(v).then(() => {
+      clearTimeout(wait); if (sc._run !== run || !sc.classList.contains("is-on")) return;
+      sc._start = performance.now(); if (v.currentTime) v.currentTime = 0;
+      sc._t = window.setTimeout(() => { v.playbackRate = RATE; v.play().catch(fail); }, +(v.dataset.pre || 0));
+    }, fail);
   }
 
   // график сцены 4 (CMO 22.11.2026): доход в $ за 12 месяцев. 25 арендаторов × $388 = $9,700 и 1 арендатор $2,220 (Шарджа, модель Романенкова 24.09),
@@ -204,6 +224,13 @@ const t = useT(lang);
       // ролик не дошёл до конца за ожидаемое время + 4 с (сеть) – показываем «после» и идём дальше
       else if (!sc._end && now - sc._start > expected(sc) + 4000) { sc.classList.add("is-done", "is-cap"); sc._end = now; }
     }
+    // сторож (CMO 24.11.2026): ролик должен играть, но время стоит – через 0,8 с повторяем play(), через 1,6 с показываем «после»
+    const v = sc.querySelector("video");
+    if (v && v.src && sc.classList.contains("is-on") && !sc._end && !document.hidden && !still && now - (sc._start || now) > +(v.dataset.pre || 0) + 300) {
+      if (v.currentTime !== sc._seenT) { sc._seenT = v.currentTime; sc._stall = now; }
+      else if (sc._stall && now - sc._stall > 1600) { uncover(v); sc.classList.add("is-done", "is-cap"); sc._end = now; sc._stall = 0; }
+      else if (sc._stall && now - sc._stall > 800 && v.paused && !v.ended) v.play().catch(() => {});
+    }
     requestAnimationFrame(tick);
   }
   // наведение останавливает только автопереключение, ролик доигрывает (CMO 23.11.2026: раньше ролик вставал на паузу, и после клика
@@ -217,10 +244,9 @@ const t = useT(lang);
   // ролики грузятся по очереди, первый – раньше всех (CMO 23.11.2026: первая сцена подвисала – четыре ролика качались разом,
   // и первый догружался дольше, чем шла сцена). Следующий – когда предыдущий загружен целиком или через 4 с
   const chain = (vs: HTMLVideoElement[], k = 0) => {
-    const v = vs[k]; if (!v || v.dataset.q) return; v.dataset.q = "1"; v.preload = "auto";
+    const v = vs[k]; if (!v || v.dataset.q) return; v.dataset.q = "1";
     let go = false; const next = () => { if (!go) { go = true; chain(vs, k + 1); } };
-    if (v.readyState >= 4) return next();
-    v.addEventListener("canplaythrough", next, { once: true }); v.addEventListener("error", next, { once: true }); setTimeout(next, 4000);
+    blob(v.dataset.src!).then(next, next); setTimeout(next, 4000);
   };
   if (!still) new IntersectionObserver((es, o) => { if (!es[0].isIntersecting) return; o.disconnect();
     chain(Array.from(sec.querySelectorAll<HTMLVideoElement>(desk.matches ? ".stage video" : ".acc__it video")));
