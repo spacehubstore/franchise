@@ -1,7 +1,10 @@
 // События поведения для GA4 через GTM-TJVPKFZ (CMO 27.11.2026): по прежним событиям нельзя было отличить «не дошёл до блока»
 // от «увидел и не захотел». Добавлены: глубина прокрутки, показ разделов, показ кнопок заявки, первое действие в калькуляторе,
 // начало ввода в форму. Каждое событие уходит один раз за просмотр страницы. Имена и параметры – в hub/03-audit/gtm-franchise-landing.md.
-const dl = (o: object) => (window as any).dataLayer?.push({ ...o, site_variant: location.pathname });
+// dataLayer хранит значения между событиями: без сброса параметры прошлого события уходили бы и со следующим
+const RESET = { depth: undefined, section: undefined, section_index: undefined, cta_type: undefined, event_location: undefined,
+                lead_form: undefined, form_location: undefined, field: undefined };
+const dl = (o: object) => (window as any).dataLayer?.push({ ...RESET, ...o, site_variant: location.pathname });
 
 // разделы страницы по порядку; имя уходит в параметр section, номер – в section_index
 const SECTIONS: [string, string][] = [
