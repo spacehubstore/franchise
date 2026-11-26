@@ -33,7 +33,7 @@ const t = useT(lang);
           <Units />
         </label>
         <label class="fld">
-          <span class="fld__lb">{t("Earns now")} <img src="/assets/figma/info.svg" width="16" height="16" alt="" title={t("Rent you receive for the whole space a month")} /></span>
+          <span class="fld__lb">{t("Earns now")} <button type="button" class="tip" aria-label={t("Rent you receive for the whole space a month")} data-tip={t("Rent you receive for the whole space a month")}><img src="/assets/figma/info.svg" width="16" height="16" alt="" /></button></span>
           <input data-k="rent" inputmode="numeric" autocomplete="off" />
           <span class="fld__sfx">{t("$ a month")}</span>
         </label>
@@ -162,6 +162,18 @@ const t = useT(lang);
   .fld:focus-within { border-color: var(--gray-900); }
   .fld__lb { position: absolute; left: 12px; top: -9px; display: inline-flex; gap: 4px; align-items: center; padding: 0 4px; background: var(--white); font-weight: 500; font-size: 13px; line-height: 16px; color: var(--gray-500); }
   .fld__lb--static { position: static; padding: 0; }
+  /* подсказка у значка «i» (CMO 26.11.2026): вместо системного title – своя плашка, появляется за 0,12 с без задержки;
+     на телефоне открывается касанием значка (кнопка получает фокус) */
+  .tip { position: relative; display: inline-flex; padding: 0; border: 0; background: none; cursor: help; border-radius: 50%; }
+  .tip:focus-visible { outline: 2px solid var(--gray-900); outline-offset: 2px; }
+  .tip::after { content: attr(data-tip); position: absolute; z-index: 5; bottom: calc(100% + 10px); inset-inline-start: -14px; width: max-content; max-width: 240px;
+    padding: 8px 12px; border-radius: 10px; background: var(--gray-900); color: var(--white); font: 500 13px/18px "Manrope", sans-serif; text-align: start; white-space: normal; text-wrap: balance;
+    box-shadow: 0 8px 24px rgba(24, 24, 27, .18); opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity .12s ease, transform .12s ease; }
+  .tip::before { content: ""; position: absolute; z-index: 5; bottom: calc(100% + 5px); inset-inline-start: 3px; width: 10px; height: 10px; border-radius: 2px; background: var(--gray-900);
+    opacity: 0; transform: translateY(4px) rotate(45deg); pointer-events: none; transition: opacity .12s ease, transform .12s ease; }
+  .tip:hover::after, .tip:focus::after { opacity: 1; transform: none; }
+  .tip:hover::before, .tip:focus::before { opacity: 1; transform: rotate(45deg); }
+  @media (prefers-reduced-motion: reduce) { .tip::after, .tip::before { transition: none; } }
   .fld input, .fld select { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: 500 15px/22px "Manrope", sans-serif; color: var(--gray-900); appearance: none; }
   .fld__caret { pointer-events: none; }
   .fld__sfx { font-weight: 500; font-size: 14px; color: var(--gray-500); white-space: nowrap; }
