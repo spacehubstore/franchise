@@ -39,6 +39,8 @@ const t = useT(lang);
     import { openLead } from "../lib/leadModal";
     import { ct } from "../i18n";
     import { captureTouch } from "../lib/lead";
+    import { initTracking } from "../lib/track";
+    initTracking();   // scroll_depth, section_viewed, cta_viewed, calc_started, form_started (lib/track.ts)
     captureTouch();   // метки визита и первое касание – для заявки (lib/lead.ts)
     // «Get in touch» (первый экран и шапка): общее окно заявки
     document.querySelectorAll<HTMLElement>("[data-open-lead]").forEach((b) => b.addEventListener("click", () => openLead({
