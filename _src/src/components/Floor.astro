@@ -1,6 +1,6 @@
 ---
 // «One floor, dozens of tenants» (Figma 1819:1403). Автопоказ (CMO 22.11.2026): пункты сменяются сами, когда блок виден;
-// полоска прогресса под активным пунктом, клик переключает, наведение – пауза. Заголовок в левой колонке, высота сцены – от окна.
+// полоска прогресса под активным пунктом, клик переключает, наведение на сцену или активный пункт – пауза. Заголовок в левой колонке, высота сцены – от окна.
 // Ролики 4 с в стиле 3D-иллюстраций квиза (кадры Nano Banana Pro, движение Gemini Omni Flash, `hub/06-directions/franchise/
 // landing-icons/gen_floor_google.py`, `gen_floor_v2.py`) идут ×1,6: пункт ~4 с – столько держится внимание на строке и картинке.
 // Подписи – одна плашка на сцену в одном месте: «до» на старте, «после» в момент окончания ролика (CMO 22.11.2026:
@@ -203,7 +203,7 @@ const t = useT(lang);
   const expected = (sc: S) => { const v = sc.querySelector("video"); if (!v) return +(sc.dataset.ms || 1200); return +(v.dataset.pre || 0) + 1000 * (v.duration || 4) / RATE; };
 
   // автопоказ: следующий пункт – через HOLD после окончания ролика; полоска – доля ожидаемого времени
-  let active = 0, inView = false, hover = false, manual = false;
+  let active = 0, inView = false, hover = false, manual = false, overStage = false, overItem = -1;
   // ручной выбор пункта (CMO 23.11.2026) останавливает автопоказ: выбранный пункт остаётся, пока блок не ушёл с экрана;
   // блок вернулся в экран – автопоказ заново с первого пункта
   const running = () => desk.matches && inView && !hover && !manual && !document.hidden && !still;
@@ -212,6 +212,7 @@ const t = useT(lang);
     items.forEach((it, k) => { it.classList.toggle("is-on", k === active); it.style.setProperty("--p", "0"); });
     vis.forEach((v, k) => { if (k !== active) { v.classList.remove("is-on", "is-done", "is-cap"); v.querySelector("video")?.pause(); } });
     count.textContent = `${active + 1} / ${n}`;
+    hover = overStage || overItem === active;   // активный пункт сменился – курсор мог оказаться на нём или уйти с него
     start(vis[active] as S);
   }
   function tick(now: number) {
@@ -260,8 +261,16 @@ const t = useT(lang);
     const v = sc.querySelector("video");
     if (desk.matches && inView && v && v.paused && !v.ended && !sc._end && !still) v.play().catch(() => {});
   });
-  sec.addEventListener("mouseenter", () => { hover = true; });
-  sec.addEventListener("mouseleave", () => { hover = false; leave(); });
+  // пауза – только когда курсор на сцене или на активном пункте слева (CMO 26.11.2026: раньше слушали всю секцию,
+  // и автопоказ вставал почти при любом положении курсора – на заголовке, соседних пунктах, блоке рынка и в полях между ними)
+  const stage = sec.querySelector<HTMLElement>(".stage")!;
+  const setHover = () => { const h = overStage || overItem === active; if (hover && !h) { hover = false; leave(); } else hover = h; };
+  stage.addEventListener("mouseenter", () => { overStage = true; setHover(); });
+  stage.addEventListener("mouseleave", () => { overStage = false; setHover(); });
+  items.forEach((it, i) => {
+    it.addEventListener("mouseenter", () => { overItem = i; setHover(); });
+    it.addEventListener("mouseleave", () => { if (overItem === i) overItem = -1; setHover(); });
+  });
   items.forEach((it, i) => it.querySelector("button")!.addEventListener("click", () => {
     if (desk.matches) { manual = true; go(i); (window as any).dataLayer?.push({ event: "floor_item_clicked", item: i + 1 }); }
   }));
